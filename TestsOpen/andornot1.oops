@@ -1,0 +1,21 @@
+| abc -> OK
+| cba ->
+| cda -> OK
+CLASS Main IS
+    METHOD main IS
+        a, b, c : Integer;
+    BEGIN
+        READ a;
+        READ b;
+        READ c;
+        IF NOT(a < b AND b < c)
+                AND (a < b) # (b < c)
+                OR c > a 
+        THEN
+            IF (5 > 7) # (1 < 2 OR 5 > 7) THEN
+                WRITE 79;
+                WRITE 75;
+            END IF
+        END IF
+    END METHOD
+END CLASS

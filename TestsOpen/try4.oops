@@ -1,0 +1,14 @@
+| Ausgabe: 
+| Yes
+CLASS Main IS
+    METHOD main IS BEGIN
+        TRY
+            THROW 'A';
+        CATCH 'A' DO
+            WRITE 'Y';
+            WRITE 'e';
+            WRITE 's'; 
+            WRITE '\n';
+        END TRY
+    END METHOD
+END CLASS

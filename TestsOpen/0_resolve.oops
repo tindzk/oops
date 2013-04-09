@@ -1,0 +1,19 @@
+CLASS Main IS
+    
+    METHOD main IS 
+        x,y: Integer;
+    BEGIN
+        x := 'A';
+        WRITE x;
+        helper;
+        WRITE x;
+    END METHOD
+    
+    METHOD helper IS
+        x,y: Main;
+    BEGIN
+        x := SELF;
+        WRITE 'B';
+    END METHOD
+    
+END CLASS

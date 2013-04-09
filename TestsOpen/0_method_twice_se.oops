@@ -1,0 +1,15 @@
+CLASS Main IS 
+    METHOD main IS BEGIN  | Erste Methode 'main' BEGIN
+        ok;
+    END METHOD
+    
+    METHOD main IS BEGIN  | Zweite Methode 'main' (falsch) 
+        wrong;
+    END METHOD
+    
+    METHOD ok IS BEGIN WRITE 'O'; WRITE 'k'; WRITE '\n'; END METHOD
+    
+    METHOD wrong IS BEGIN
+        WRITE 'W'; WRITE 'R'; WRITE 'O'; WRITE 'N'; WRITE 'G'; WRITE '\n';
+    END METHOD
+END CLASS

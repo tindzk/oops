@@ -1,0 +1,19 @@
+CLASS A IS
+    METHOD a : Integer IS
+    BEGIN
+        RETURN 1;
+    END METHOD
+END CLASS
+
+CLASS B EXTENDS A IS
+    METHOD a : Boolean IS | Fehler: Überladung nicht erlaubt
+    BEGIN
+        RETURN TRUE;
+    END METHOD
+END CLASS
+
+CLASS Main IS
+    METHOD main IS
+    BEGIN
+    END METHOD
+END CLASS

@@ -1,0 +1,42 @@
+| Ausgabe:
+| A |
+| B |
+| C ||
+| D |||
+| E |||||
+| F ||||||||
+| G |||||||||||||
+| H |||||||||||||||||||||
+| I ||||||||||||||||||||||||||||||||||
+| J |||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CLASS Main IS
+    METHOD main IS
+        i: Integer;
+    BEGIN
+        i:=1;
+        WHILE i<11 DO
+            WRITE 'A' + i - 1; WRITE ' '; WRITELN(fib(i)); i:=i+1;
+        END WHILE
+        RETURN;
+        WRITE 'N'; WRITE 'o'; 
+    END METHOD
+    
+    METHOD fib(x: Integer): Integer IS BEGIN RETURN fib2(1,1,x-1); END METHOD
+
+    METHOD fib2(s1, s2: Integer; x: Integer): Integer IS BEGIN
+        IF x=0 THEN RETURN s1; 
+        ELSE RETURN fib2(s2, s1+s2, x-1);
+        END IF
+        WRITE 'n'; WRITE 'O'; 
+    END METHOD
+    
+    METHOD WRITELN(c: Integer) IS 
+        i: Integer;
+    BEGIN
+        i:=0;
+        WHILE i<c DO WRITE '|'; i:=i+1; END WHILE
+        WRITE '\n'; 
+    END METHOD
+    
+END CLASS

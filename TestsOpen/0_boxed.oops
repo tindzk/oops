@@ -1,0 +1,14 @@
+CLASS Main IS
+    METHOD main IS
+        x, y: Integer;
+        m: Main;
+    BEGIN
+        x := 'A'; | Implizit wird hier eine Box angelegt (fuer 'A')
+        y := x+1; { Hier wird x entpackt, addiert, 
+                    ein 2. Heap-Objekt (Box) erzeugt }
+        y := 'Z'; { Das 3. Heap-Objekt wird erzeugt, das 2. Heap-Objekt ist
+                    nicht mehr sichtbar }
+        WRITE x;  | Hier wird 'A' ausgegeben. 
+        WRITE '\n';
+    END METHOD
+END CLASS

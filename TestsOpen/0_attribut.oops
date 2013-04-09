@@ -1,0 +1,8 @@
+CLASS Main IS
+    attribut: Integer;
+    METHOD main IS
+    BEGIN
+        attribut := 'A'; | ASCII 65
+        WRITE attribut;
+    END METHOD
+END CLASS

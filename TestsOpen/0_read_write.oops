@@ -1,0 +1,8 @@
+CLASS Main IS
+    METHOD main IS
+        x: Integer;
+    BEGIN
+        READ x;
+        WRITE x;
+    END METHOD
+END CLASS

@@ -1,0 +1,12 @@
+CLASS Main IS
+    METHOD main IS BEGIN
+        TRY 
+            WRITE 'O'; 
+            THROW 33;
+            WRITE 'K';
+        CATCH 33 DO
+            WRITE 'n'; WRITE 'o';
+        END TRY
+        WRITE '\n';
+    END METHOD
+END CLASS

@@ -1,0 +1,18 @@
+| Programm muss OK ausgeben und weder X noch Y
+CLASS Main IS
+    METHOD main IS
+    BEGIN
+        IF TRUE THEN
+            WRITE 'O';
+        END IF
+        IF TRUE = TRUE THEN
+            WRITE 'K';
+        END IF
+        IF FALSE THEN
+            WRITE 'X';
+        END IF
+        IF TRUE = FALSE THEN
+            WRITE 'Y';
+        END IF
+    END METHOD
+END CLASS

@@ -1,0 +1,27 @@
+{ 
+  Jetzt mit Funktionsergebnissen aus einem laufen Aufruf heraus. 
+}
+CLASS Main IS
+    METHOD main IS
+        x: Integer;
+    BEGIN
+        TRY
+            x := helper * 1 + 0;
+            WRITE x;
+        CATCH 'b' DO
+            WRITE 'Y';
+            WRITE 'e';
+            WRITE 's'; 
+            WRITE '\n';
+        END TRY
+    END METHOD
+    
+    METHOD helper : Integer IS 
+        x, y, z: Integer;
+    BEGIN
+        READ x;  | 'a'
+        THROW x+1;
+        RETURN 'Q';
+    END METHOD
+    
+END CLASS

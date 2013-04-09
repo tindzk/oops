@@ -1,0 +1,10 @@
+| Test, ob ein THROW in main die finale Ausnahmebehandlung erreicht.
+CLASS Main IS
+    METHOD main IS BEGIN
+        helper;
+    END METHOD
+    
+    METHOD helper IS BEGIN
+        THROW 'Y';
+    END METHOD
+END CLASS

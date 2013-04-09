@@ -1,0 +1,6 @@
+| Test, ob ein THROW in main die finale Ausnahmebehandlung erreicht.
+CLASS Main IS
+    METHOD main IS BEGIN
+        THROW 'X';
+    END METHOD
+END CLASS

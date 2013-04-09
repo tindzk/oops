@@ -1,0 +1,11 @@
+CLASS Main IS
+    METHOD a(a,b : Integer; e,f : Integer) IS
+        c : Integer;
+    BEGIN    
+        c := a+b;
+    END METHOD
+
+    METHOD main IS
+    BEGIN
+    END METHOD
+END CLASS

@@ -1,0 +1,21 @@
+| Gibt "CD" aus. 
+CLASS A IS
+    METHOD b(c : Integer) IS
+    BEGIN
+        WRITE c;
+    END METHOD
+END CLASS
+
+CLASS Main IS
+    METHOD main IS
+        a : A;
+        i : Integer;
+        b : Integer;
+    BEGIN
+        a := NEW A;
+        i := 67;
+        a.b(i);
+        b := 'D';
+        a.b(b);
+    END METHOD
+END CLASS

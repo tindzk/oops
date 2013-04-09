@@ -1,0 +1,12 @@
+CLASS Main IS
+
+  METHOD main IS BEGIN 
+      method;
+  END METHOD
+
+  METHOD method IS
+  BEGIN
+      WRITE 'M';
+  END METHOD
+    
+END CLASS

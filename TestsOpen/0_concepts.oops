@@ -1,0 +1,123 @@
+{ File: concepts_0.oops
+  =====
+  Dieses Programm enthaelt alle lexikalischen und syntaktischen
+  Elemente der Sprache OOPS-0.
+  
+  Autor: Bernd Gersdorf
+  Datum: 2012-02-29
+}
+
+| Ein OOPS-0 Programm enthaelt genau eine Klasse
+
+CLASS Main IS              | ein Kommentar, bis Zeilenende
+    METHOD main IS
+    BEGIN
+        WRITE 'A';         | ein 'A', Schreibanweisung
+        WRITE 66;          | ein 'B', als number Literal. 
+        
+        IF 1=1 THEN
+            WRITE 'O';
+        END IF
+        IF 1=1 THEN
+            WRITE 'K';
+        END IF
+        IF 1=2 THEN
+            WRITE 'n';
+        END IF
+        IF 1=2 THEN
+            WRITE 'o';
+        END IF
+        WRITE '\n';
+        statements;
+        operators;
+        sum;
+    END METHOD
+    
+    v: Integer;                 | eine Variable
+    w,x,y: Integer;             | mehrere Variablen
+    
+    METHOD statements IS        | zweite Methode
+    BEGIN
+        enter;
+        READ v;                 | Leseanweisung
+        WRITE '''; WRITE v; WRITE '''; WRITE '\n';
+        WRITE '\\'; WRITE '\n'; | Literal fuer den Backslash
+        IF v=v THEN ok; END IF | Bedingte Anweisung
+        x:=80;
+        WHILE x>0 DO            | Abweisende Schleife
+            WRITE v; 
+            x:=x-1;
+        END WHILE
+        WRITE '\n';
+    END METHOD
+    
+    METHOD ok IS BEGIN WRITE 'O'; WRITE 'k'; WRITE '\n'; END METHOD
+    
+    METHOD wrong IS BEGIN
+        WRITE 'W'; WRITE 'R'; WRITE 'O'; WRITE 'N'; WRITE 'G'; WRITE '\n';
+    END METHOD
+
+    METHOD enter IS BEGIN
+        WRITE 'E'; WRITE 'n'; WRITE 't'; WRITE 'e'; WRITE 'r'; WRITE '\n'; 
+    END METHOD
+    
+    METHOD operators IS    
+        m : Main;                       | selbstdefinierte Klasse benutzen
+    BEGIN
+        x:=3; y:=8;
+        
+        IF x=y THEN wrong; END IF
+        IF x=x THEN ok; END IF
+        
+        IF x#x THEN wrong; END IF
+        IF x#y THEN ok; END IF
+        
+        IF x<y THEN ok; END IF
+        IF y<x THEN wrong; END IF
+        
+        IF x>y THEN wrong; END IF
+        IF y>x THEN ok; END IF
+        IF y>y THEN wrong; END IF
+        
+        IF x<=x THEN ok; END IF
+        IF x<=y THEN ok; END IF
+        IF y<=x THEN wrong; END IF
+        
+        IF x>=x THEN ok; END IF
+        IF x>=y THEN wrong; END IF
+        IF y>=x THEN ok; END IF
+        
+        IF x+y=11 THEN ok; END IF
+        IF x+y#11 THEN wrong; END IF
+        
+        IF -4=-4 THEN ok; END IF
+        IF -4#-4 THEN wrong; END IF
+        
+        IF 4*4#16 THEN wrong; END IF
+        IF 33 MOD 10 # 3 THEN wrong; END IF
+        IF 33 / 5 # 6 THEN wrong; END IF
+        
+        m := NULL;                      | Verwendung von NULL
+        m := SELF;                      | die originale Main...
+        IF m.x # 3 THEN wrong;          | ... muss noch den alten Wert haben
+        END IF
+        
+        WRITE '-'; WRITE '\n';
+        
+        m := NEW Main;                  | Die neue Main-Instanz
+        m.x := 77;                      | mit x auf 77
+        IF m.x + x # 80 THEN wrong;     | das alte x muss noch da sein.
+        END IF
+    END METHOD
+    
+    METHOD sum IS 
+        s: Integer;                     | lokale Variable
+    BEGIN
+        s:=0; 
+        s:=x+s;
+        s:=y+s;
+        IF s#11 THEN wrong; END IF
+    END METHOD
+    
+END CLASS
+

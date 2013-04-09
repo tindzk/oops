@@ -1,0 +1,18 @@
+| Werfen aus lokaler Methode.
+CLASS Main IS
+    METHOD main IS BEGIN
+        TRY
+            helper;
+        CATCH 'A' DO
+            WRITE 'Y';
+            WRITE 'e';
+            WRITE 's'; 
+            WRITE '\n';
+        END TRY
+    END METHOD
+    
+    METHOD helper IS BEGIN
+        THROW 'A';
+    END METHOD
+    
+END CLASS
