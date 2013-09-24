@@ -18,6 +18,7 @@ class Symbol extends Position {
         BECOMES, NEW,
         SELF,
         NULL,
+        TRUE, FALSE,
         EOF
     };
 
@@ -44,14 +45,15 @@ class Symbol extends Position {
      * Die Methode erzeugt aus diesem Objekt eine darstellbare Zeichenkette.
      * @return Die Zeichenkette.
      */
-    public String toString() {
-        switch (id) {
+    @Override
+	public String toString() {
+        switch (this.id) {
         case IDENT:
-            return "IDENT: " + ident;
+            return "IDENT: " + this.ident;
         case NUMBER:
-            return "NUMBER: " + number;
+            return "NUMBER: " + this.number;
         default:
-            return id.toString();
+            return this.id.toString();
         }
     }
 }

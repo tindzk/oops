@@ -47,6 +47,8 @@ import java.util.LinkedList;
  * literal    ::= number
  *                | character
  *                | NULL
+ *                | TRUE
+ *                | FALSE
  *                | SELF
  *                | NEW identifier
  *                | '(' expression ')'
@@ -63,7 +65,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws CompileException Die entsprechende Fehlermeldung.
      */
     private void unexpectedSymbol() throws CompileException {
-        throw new CompileException("Unerwartetes Symbol " + symbol.id.toString(), symbol);
+        throw new CompileException("Unerwartetes Symbol " + this.symbol.id.toString(), this.symbol);
     }
 
     /**
@@ -74,10 +76,10 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private void expectSymbol(Symbol.Id id) throws CompileException, IOException {
-        if (id != symbol.id) {
-            unexpectedSymbol();
+        if (id != this.symbol.id) {
+            this.unexpectedSymbol();
         }
-        nextSymbol();
+        this.nextSymbol();
     }
 
     /**
@@ -87,11 +89,11 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private Identifier expectIdent() throws CompileException, IOException {
-        if (symbol.id != Symbol.Id.IDENT) {
-            unexpectedSymbol();
+        if (this.symbol.id != Symbol.Id.IDENT) {
+            this.unexpectedSymbol();
         }
-        Identifier i = new Identifier(symbol.ident, new Position(symbol.line, symbol.column));
-        nextSymbol();
+        Identifier i = new Identifier(this.symbol.ident, new Position(this.symbol.line, this.symbol.column));
+        this.nextSymbol();
         return i;
     }
 
@@ -103,11 +105,11 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private ResolvableIdentifier expectResolvableIdent() throws CompileException, IOException {
-        if (symbol.id != Symbol.Id.IDENT) {
-            unexpectedSymbol();
+        if (this.symbol.id != Symbol.Id.IDENT) {
+            this.unexpectedSymbol();
         }
-        ResolvableIdentifier r = new ResolvableIdentifier(symbol.ident, new Position(symbol.line, symbol.column));
-        nextSymbol();
+        ResolvableIdentifier r = new ResolvableIdentifier(this.symbol.ident, new Position(this.symbol.line, this.symbol.column));
+        this.nextSymbol();
         return r;
     }
 
@@ -119,14 +121,14 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private ClassDeclaration classdecl() throws CompileException, IOException {
-        expectSymbol(Symbol.Id.CLASS);
-        ClassDeclaration c = new ClassDeclaration(expectIdent());
-        expectSymbol(Symbol.Id.IS);
-        while (symbol.id != Symbol.Id.END) {
-            memberdecl(c.attributes, c.methods);
+        this.expectSymbol(Symbol.Id.CLASS);
+        ClassDeclaration c = new ClassDeclaration(this.expectIdent());
+        this.expectSymbol(Symbol.Id.IS);
+        while (this.symbol.id != Symbol.Id.END) {
+            this.memberdecl(c.attributes, c.methods);
         }
-        nextSymbol();
-        expectSymbol(Symbol.Id.CLASS);
+        this.nextSymbol();
+        this.expectSymbol(Symbol.Id.CLASS);
         return c;
     }
 
@@ -142,15 +144,15 @@ class SyntaxAnalysis extends LexicalAnalysis {
     private void memberdecl(LinkedList<VarDeclaration> attributes,
             LinkedList<MethodDeclaration> methods)
             throws CompileException, IOException {
-        if (symbol.id == Symbol.Id.METHOD) {
-            nextSymbol();
-            MethodDeclaration m = new MethodDeclaration(expectIdent());
-            expectSymbol(Symbol.Id.IS);
-            methodbody(m.vars, m.statements);
+        if (this.symbol.id == Symbol.Id.METHOD) {
+            this.nextSymbol();
+            MethodDeclaration m = new MethodDeclaration(this.expectIdent());
+            this.expectSymbol(Symbol.Id.IS);
+            this.methodbody(m.vars, m.statements);
             methods.add(m);
         } else {
-            vardecl(attributes, true);
-            expectSymbol(Symbol.Id.SEMICOLON);
+            this.vardecl(attributes, true);
+            this.expectSymbol(Symbol.Id.SEMICOLON);
         }
     }
 
@@ -165,13 +167,13 @@ class SyntaxAnalysis extends LexicalAnalysis {
      */
     private void vardecl(LinkedList<VarDeclaration> vars, boolean isAttribute) throws CompileException, IOException {
         LinkedList<VarDeclaration> temp = new LinkedList<VarDeclaration>();
-        temp.add(new VarDeclaration(expectIdent(), isAttribute));
-        while (symbol.id == Symbol.Id.COMMA) {
-            nextSymbol();
-            temp.add(new VarDeclaration(expectIdent(), isAttribute));
+        temp.add(new VarDeclaration(this.expectIdent(), isAttribute));
+        while (this.symbol.id == Symbol.Id.COMMA) {
+            this.nextSymbol();
+            temp.add(new VarDeclaration(this.expectIdent(), isAttribute));
         }
-        expectSymbol(Symbol.Id.COLON);
-        ResolvableIdentifier ident = expectResolvableIdent();
+        this.expectSymbol(Symbol.Id.COLON);
+        ResolvableIdentifier ident = this.expectResolvableIdent();
         for (VarDeclaration v : temp) {
             v.type = ident;
             vars.add(v);
@@ -188,14 +190,14 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private void methodbody(LinkedList<VarDeclaration> vars, LinkedList<Statement> statements) throws CompileException, IOException {
-        while (symbol.id != Symbol.Id.BEGIN) {
-            vardecl(vars, false);
-            expectSymbol(Symbol.Id.SEMICOLON);
+        while (this.symbol.id != Symbol.Id.BEGIN) {
+            this.vardecl(vars, false);
+            this.expectSymbol(Symbol.Id.SEMICOLON);
         }
-        nextSymbol();
-        statements(statements);
-        expectSymbol(Symbol.Id.END);
-        expectSymbol(Symbol.Id.METHOD);
+        this.nextSymbol();
+        this.statements(statements);
+        this.expectSymbol(Symbol.Id.END);
+        this.expectSymbol(Symbol.Id.METHOD);
     }
 
     /**
@@ -206,8 +208,8 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private void statements(LinkedList<Statement> statements) throws CompileException, IOException {
-        while (symbol.id != Symbol.Id.END) {
-            statement(statements);
+        while (this.symbol.id != Symbol.Id.END) {
+            this.statement(statements);
         }
     }
 
@@ -219,44 +221,44 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private void statement(LinkedList<Statement> statements) throws CompileException, IOException {
-        switch (symbol.id) {
+        switch (this.symbol.id) {
         case READ:
-            nextSymbol();
-            statements.add(new ReadStatement(memberAccess()));
-            expectSymbol(Symbol.Id.SEMICOLON);
+            this.nextSymbol();
+            statements.add(new ReadStatement(this.memberAccess()));
+            this.expectSymbol(Symbol.Id.SEMICOLON);
             break;
         case WRITE:
-            nextSymbol();
-            statements.add(new WriteStatement(expression()));
-            expectSymbol(Symbol.Id.SEMICOLON);
+            this.nextSymbol();
+            statements.add(new WriteStatement(this.expression()));
+            this.expectSymbol(Symbol.Id.SEMICOLON);
             break;
         case IF:
-            nextSymbol();
-            IfStatement s = new IfStatement(relation());
+            this.nextSymbol();
+            IfStatement s = new IfStatement(this.relation());
             statements.add(s);
-            expectSymbol(Symbol.Id.THEN);
-            statements(s.thenStatements);
-            expectSymbol(Symbol.Id.END);
-            expectSymbol(Symbol.Id.IF);
+            this.expectSymbol(Symbol.Id.THEN);
+            this.statements(s.thenStatements);
+            this.expectSymbol(Symbol.Id.END);
+            this.expectSymbol(Symbol.Id.IF);
             break;
         case WHILE:
-            nextSymbol();
-            WhileStatement w = new WhileStatement(relation());
+            this.nextSymbol();
+            WhileStatement w = new WhileStatement(this.relation());
             statements.add(w);
-            expectSymbol(Symbol.Id.DO);
-            statements(w.statements);
-            expectSymbol(Symbol.Id.END);
-            expectSymbol(Symbol.Id.WHILE);
+            this.expectSymbol(Symbol.Id.DO);
+            this.statements(w.statements);
+            this.expectSymbol(Symbol.Id.END);
+            this.expectSymbol(Symbol.Id.WHILE);
             break;
         default:
-            Expression e = memberAccess();
-            if (symbol.id == Symbol.Id.BECOMES) {
-                nextSymbol();
-                statements.add(new Assignment(e, expression()));
+            Expression e = this.memberAccess();
+            if (this.symbol.id == Symbol.Id.BECOMES) {
+                this.nextSymbol();
+                statements.add(new Assignment(e, this.expression()));
             } else {
                 statements.add(new CallStatement(e));
             }
-            expectSymbol(Symbol.Id.SEMICOLON);
+            this.expectSymbol(Symbol.Id.SEMICOLON);
         }
     }
 
@@ -268,17 +270,17 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private Expression relation() throws CompileException, IOException {
-        Expression e = expression();
-        switch (symbol.id) {
+        Expression e = this.expression();
+        switch (this.symbol.id) {
         case EQ:
         case NEQ:
         case GT:
         case GTEQ:
         case LT:
         case LTEQ:
-            Symbol.Id operator = symbol.id;
-            nextSymbol();
-            e = new BinaryExpression(e, operator, expression());
+            Symbol.Id operator = this.symbol.id;
+            this.nextSymbol();
+            e = new BinaryExpression(e, operator, this.expression());
         }
         return e;
     }
@@ -291,11 +293,11 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private Expression expression() throws CompileException, IOException {
-        Expression e = term();
-        while (symbol.id == Symbol.Id.PLUS || symbol.id == Symbol.Id.MINUS) {
-            Symbol.Id operator = symbol.id;
-            nextSymbol();
-            e = new BinaryExpression(e, operator, term());
+        Expression e = this.term();
+        while (this.symbol.id == Symbol.Id.PLUS || this.symbol.id == Symbol.Id.MINUS) {
+            Symbol.Id operator = this.symbol.id;
+            this.nextSymbol();
+            e = new BinaryExpression(e, operator, this.term());
         }
         return e;
     }
@@ -308,12 +310,12 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private Expression term() throws CompileException, IOException {
-        Expression e = factor();
-        while (symbol.id == Symbol.Id.TIMES || symbol.id == Symbol.Id.DIV ||
-                symbol.id == Symbol.Id.MOD) {
-            Symbol.Id operator = symbol.id;
-            nextSymbol();
-            e = new BinaryExpression(e, operator, factor());
+        Expression e = this.factor();
+        while (this.symbol.id == Symbol.Id.TIMES || this.symbol.id == Symbol.Id.DIV ||
+                this.symbol.id == Symbol.Id.MOD) {
+            Symbol.Id operator = this.symbol.id;
+            this.nextSymbol();
+            e = new BinaryExpression(e, operator, this.factor());
         }
         return e;
     }
@@ -326,14 +328,14 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private Expression factor() throws CompileException, IOException {
-        switch (symbol.id) {
+        switch (this.symbol.id) {
         case MINUS:
-            Symbol.Id operator = symbol.id;
-            Position position = new Position(symbol.line, symbol.column);
-            nextSymbol();
-            return new UnaryExpression(operator, factor(), position);
+            Symbol.Id operator = this.symbol.id;
+            Position position = new Position(this.symbol.line, this.symbol.column);
+            this.nextSymbol();
+            return new UnaryExpression(operator, this.factor(), position);
         default:
-            return memberAccess();
+            return this.memberAccess();
         }
     }
 
@@ -346,10 +348,10 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private Expression memberAccess() throws CompileException, IOException {
-        Expression e = literal();
-        while (symbol.id == Symbol.Id.PERIOD) {
-            nextSymbol();
-            e = new AccessExpression(e, new VarOrCall(expectResolvableIdent()));
+        Expression e = this.literal();
+        while (this.symbol.id == Symbol.Id.PERIOD) {
+            this.nextSymbol();
+            e = new AccessExpression(e, new VarOrCall(this.expectResolvableIdent()));
         }
         return e;
     }
@@ -365,34 +367,42 @@ class SyntaxAnalysis extends LexicalAnalysis {
      */
     private Expression literal() throws CompileException, IOException {
         Expression e = null;
-        switch (symbol.id) {
+        switch (this.symbol.id) {
         case NUMBER:
-            e = new LiteralExpression(symbol.number, ClassDeclaration.intType, new Position(symbol.line, symbol.column));
-            nextSymbol();
+            e = new LiteralExpression(this.symbol.number, ClassDeclaration.intType, new Position(this.symbol.line, this.symbol.column));
+            this.nextSymbol();
+            break;
+        case TRUE:
+            e = new LiteralExpression(1, ClassDeclaration.boolType, new Position(this.symbol.line, this.symbol.column));
+            this.nextSymbol();
+            break;
+        case FALSE:
+            e = new LiteralExpression(0, ClassDeclaration.boolType, new Position(this.symbol.line, this.symbol.column));
+            this.nextSymbol();
             break;
         case NULL:
-            e = new LiteralExpression(0, ClassDeclaration.nullType, new Position(symbol.line, symbol.column));
-            nextSymbol();
+            e = new LiteralExpression(0, ClassDeclaration.nullType, new Position(this.symbol.line, this.symbol.column));
+            this.nextSymbol();
             break;
         case SELF:
-            e = new VarOrCall(new ResolvableIdentifier("_self", new Position(symbol.line, symbol.column)));
-            nextSymbol();
+            e = new VarOrCall(new ResolvableIdentifier("_self", new Position(this.symbol.line, this.symbol.column)));
+            this.nextSymbol();
             break;
         case NEW:
-            Position position = new Position(symbol.line, symbol.column);
-            nextSymbol();
-            e = new NewExpression(expectResolvableIdent(), position);
+            Position position = new Position(this.symbol.line, this.symbol.column);
+            this.nextSymbol();
+            e = new NewExpression(this.expectResolvableIdent(), position);
             break;
         case LPAREN:
-            nextSymbol();
-            e = expression();
-            expectSymbol(Symbol.Id.RPAREN);
+            this.nextSymbol();
+            e = this.expression();
+            this.expectSymbol(Symbol.Id.RPAREN);
             break;
         case IDENT:
-            e = new VarOrCall(expectResolvableIdent());
+            e = new VarOrCall(this.expectResolvableIdent());
             break;
         default:
-            unexpectedSymbol();
+            this.unexpectedSymbol();
         }
         return e;
     }
@@ -419,9 +429,9 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     Program parse() throws CompileException, IOException {
-        nextSymbol();
-        Program p = new Program(classdecl());
-        expectSymbol(Symbol.Id.EOF);
+        this.nextSymbol();
+        Program p = new Program(this.classdecl());
+        this.expectSymbol(Symbol.Id.EOF);
         return p;
     }
 }
