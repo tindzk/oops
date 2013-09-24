@@ -91,6 +91,7 @@ class OOPSC {
             }
         } catch (CompileException e) {
             System.out.println(e.getMessage());
+            System.exit(1);
         }
     }
 
