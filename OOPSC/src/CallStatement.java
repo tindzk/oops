@@ -4,7 +4,7 @@
 class CallStatement extends Statement {
     /** Der Ausdruck, der den Methodenaufruf repräsentiert. */
     Expression call;
-    
+
     /**
      * Konstruktor.
      * @param call Der Ausdruck, der den Methodenaufruf repräsentiert.
@@ -36,7 +36,7 @@ class CallStatement extends Statement {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht 
+     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

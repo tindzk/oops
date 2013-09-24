@@ -1,15 +1,15 @@
 /**
- * Diese Klasse stellt die Hauptmethode der virtuellen Maschine 
+ * Diese Klasse stellt die Hauptmethode der virtuellen Maschine
  * für OOPS bereit. Sie wertet die Kommandozeilen-Optionen aus
  * und bietet eine Hilfe an, falls diese falsch sind.
  */
 class OOPSVM {
     /**
-     * Die Hauptmethode der virtuellen Maschine. 
+     * Die Hauptmethode der virtuellen Maschine.
      * Sie wertet die Kommandozeilen-Optionen aus und bietet eine Hilfe an, falls diese falsch sind.
      * Sind sie gültig, wird der Assembler benutzt, um den übergebenen Quelltext in ein
      * Maschinenprogramm zu übersetzen. Dieses wird dann von der virtuellen Maschine ausgeführt.
-     * @param args Die Kommandozeilenargumente. Diese sind im Quelltext der Methode 
+     * @param args Die Kommandozeilenargumente. Diese sind im Quelltext der Methode
      * {@link #usage usage} nachzulesen.
      */
     public static void main(String[] args) {
@@ -61,13 +61,13 @@ class OOPSVM {
                 fileName = arg;
             }
         }
-            
+
         if (fileName == null) {
             System.out.println("Kein Dateiname angegeben");
             usage();
             return;
         }
-        
+
         try {
             VirtualMachine vm = new VirtualMachine(
                     new Assembler(showFirst, showSecond).assemble(fileName), new int[8],
@@ -79,7 +79,7 @@ class OOPSVM {
             System.out.println(e.getMessage());
         }
     }
-    
+
     /**
      * Die Methode gibt eine Hilfe auf der Konsole aus.
      */

@@ -4,10 +4,10 @@
 class UnaryExpression extends Expression {
     /** Der Operator. */
     Symbol.Id operator;
-    
+
     /** Der Operand, auf den der Operator angewendet wird. */
     Expression operand;
-    
+
     /**
      * Konstruktor.
      * @param operator Der Operator.
@@ -54,7 +54,7 @@ class UnaryExpression extends Expression {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

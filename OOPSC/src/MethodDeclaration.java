@@ -6,13 +6,13 @@ import java.util.LinkedList;
 class MethodDeclaration extends Declaration {
     /** Die lokale Variable SELF. */
     VarDeclaration self = new VarDeclaration(new Identifier("_self", null), false);
-    
+
     /** Die lokalen Variablen der Methode. */
     LinkedList<VarDeclaration> vars = new LinkedList<VarDeclaration>();
-    
+
     /** Die Anweisungen der Methode, d.h. der Methodenrumpf. */
     LinkedList<Statement> statements = new LinkedList<Statement>();
-    
+
     /**
      * Konstruktor.
      * @param name Der Name der deklarierten Methode.
@@ -31,39 +31,39 @@ class MethodDeclaration extends Declaration {
         // SELF ist Variable vom Typ dieser Klasse
         self.type = new ResolvableIdentifier(declarations.currentClass.identifier.name, null);
         self.type.declaration = declarations.currentClass;
-        
+
         // Löse Typen aller Variablen auf
         for (VarDeclaration v : vars) {
             v.contextAnalysis(declarations);
         }
-        
+
         // Neuen Deklarationsraum schaffen
         declarations.enter();
-        
+
         // SELF eintragen
         declarations.add(self);
- 
+
         // SELF liegt vor der Rücksprungadresse auf dem Stapel
         self.offset = -2;
-        
+
         // Rücksprungadresse und alten Rahmenzeiger überspringen
         int offset = 1;
-        
+
         // Lokale Variablen eintragen
         for (VarDeclaration v : vars) {
             declarations.add(v);
             v.offset = offset++;
         }
-        
+
         // Kontextanalyse aller Anweisungen durchführen
         for (Statement s : statements) {
             s.contextAnalysis(declarations);
         }
-        
+
         // Alten Deklarationsraum wiederherstellen
         declarations.leave();
     }
-    
+
     /**
      * Die Methode gibt diese Deklaration in einer Baumstruktur aus.
      * @param tree Der Strom, in den die Ausgabe erfolgt.

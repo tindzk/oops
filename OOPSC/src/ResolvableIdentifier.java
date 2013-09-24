@@ -29,7 +29,7 @@ class ResolvableIdentifier extends Identifier {
     static void init() {
        identifiers = new LinkedList<ResolvableIdentifier>();
     }
-    
+
     /**
      * Die Klassenmethode gibt alle zuordenbaren Bezeichner mit ihrer
      * Quelltextstelle und die Stelle ihrer Vereinbarung aus. Sollte
@@ -39,14 +39,14 @@ class ResolvableIdentifier extends Identifier {
     static void print() {
         for (ResolvableIdentifier r : identifiers) {
             if (r.position != null) { // Ignoriere vom Übersetzer nachträglich erzeugte Bezeichner
-                System.out.print("Zeile " + r.position.line + ", Spalte " + 
+                System.out.print("Zeile " + r.position.line + ", Spalte " +
                         r.position.column + ": " + r.name + " ist ");
                 if (r.declaration == null) {
                     System.out.println("unbekannt");
                 } else if (r.declaration.identifier.position == null) {
                     System.out.println("vordefiniert");
                 } else {
-                    System.out.println("definiert in Zeile " + 
+                    System.out.println("definiert in Zeile " +
                             r.declaration.identifier.position.line + ", Spalte " +
                             r.declaration.identifier.position.column);
                 }

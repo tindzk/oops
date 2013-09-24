@@ -39,31 +39,31 @@ import java.util.TreeMap;
 class Assembler {
     /** Alle gültigen Instruktionen. Die Position im Feld entspricht ihrer Kodierung. */
     private static final String[] instructions = {
-        "MRI", "MRR", "MRM", "MMR", 
-        "ADD", "SUB", "MUL", "DIV", "MOD", 
+        "MRI", "MRR", "MRM", "MMR",
+        "ADD", "SUB", "MUL", "DIV", "MOD",
         "AND", "OR", "XOR",
-        "ISZ", "ISP", "ISN", 
+        "ISZ", "ISP", "ISN",
         "JPC", "SYS"
     };
-    
+
     /** Die Zuordnung von textuellen Marken zu Speicheradressen. */
     private TreeMap<String, Integer> labels;
-  
+
     /** Der Datenstrom, aus dem der Quelltext gelesen wird. */
     private InputStreamReader reader;
-    
+
     /** Das zuletzt gelesenen Zeichen. Wird durch Aufruf von {@link #nextChar() nextChar} aktualisiert. */
     private int c;
 
     /** Die aktuell gelesene Zeile wird in diesem Puffer für eine mögliche Ausgabe zwischengespeichert. */
     private String line;
-  
+
     /** In dieses Feld wird im zweiten Durchgang das Programm generiert. Im ersten Durchgang ist es null. */
     private int[] output;
 
     /** Die Adresse der nächsten zu beschreibenden Speicherzelle. */
     private int writePos;
-    
+
     /** Soll eine Bildschirmausgabe während des ersten Durchgangs erfolgen? */
     private boolean showFirst;
 
@@ -72,7 +72,7 @@ class Assembler {
 
     /** Soll eine Bildschirmausgabe während des aktuellen Durchgangs erfolgen? */
     private boolean showCode;
-  
+
     /**
      * Die Methode erlaubt, zwischen dem ersten und dem zweiten Assemblierungslauf
      * zu unterscheiden.
@@ -81,14 +81,14 @@ class Assembler {
     private boolean isFirstPass() {
         return output == null;
     }
-    
+
     /**
      * Die Methode liest das nächste Zeichen aus der Eingabedatei.
      * Es wird im Attribut {@link #c c} bereitgestellt.
      * Wenn während der Assemblierung eine Ausgabe erfolgen soll, werden
      * zusätzlich die eingelesenen Zeichen im Attribut {@link #line line}
      * gesammelt und jeweils beim Lesen eines Zeilenendes ausgegeben.
-     * Das ermöglicht es, an anderer Stelle der Ausgabe noch den erzeugten 
+     * Das ermöglicht es, an anderer Stelle der Ausgabe noch den erzeugten
      * Code voranzustellen.
      * @throws IOException Die Ausnahme wird bei Leseproblemen der Datei erzeugt.
      */
@@ -104,7 +104,7 @@ class Assembler {
             }
         }
     }
-  
+
     /**
      * Die Methode liest ein Token ein. Dies sind ",", ":", "(", ")"
      * sowie Zeichenketten, die den nicht-Terminalen <i>ident</i> und <i>number</i>
@@ -119,7 +119,7 @@ class Assembler {
             while (c != -1 && Character.isWhitespace((char) c)) {
                 nextChar();
             }
-        
+
             switch (c) {
             case -1: // Dateiende
                 break;
@@ -130,7 +130,7 @@ class Assembler {
                 String token = "" + (char) c;
                 nextChar();
                 return token;
-                
+
             case ';': // Kommentar: ignorieren bis Zeilenende
                 while (c != -1 && c != '\n') {
                      nextChar();
@@ -163,7 +163,7 @@ class Assembler {
         }
         return ""; // Dateiende
     }
-   
+
     /**
      * Die Methode wandelt einen Parameter in eine Zahl um.
      * Dabei gibt es drei Fälle: Wenn der Parameter ein Register sein soll,
@@ -220,7 +220,7 @@ class Assembler {
             output[writePos] = code;
         ++writePos;
     }
-  
+
     /**
      * Die Methode parsiert ein Zeile aus dem Quelltext und generiert den
      * entsprechenden Code. Die Syntax ist oben angegeben.
@@ -244,7 +244,7 @@ class Assembler {
                 } else {
                     throw new Exception("Marke " + label + " wurde mehrfach definiert");
                 }
-            } 
+            }
         } else { // Instruktion oder DAT
             int i;
             for (i = 0; i < instructions.length; ++i) {
@@ -295,7 +295,7 @@ class Assembler {
                     int param1 = parseParam(word1, false);
                     int param2 = parseParam(word2, false);
                     if (showCode) {
-                        System.out.format("%08x  %08x %3s                ", 
+                        System.out.format("%08x  %08x %3s                ",
                                 writePos, param2, param1 == 1 ? "" : "...");
                     }
                     if (Character.isLetter(word1.charAt(0))) {
@@ -327,7 +327,7 @@ class Assembler {
      * @throws IOException Die Ausnahme wird bei Leseproblemen der Datei erzeugt.
      * @throws Exception Beim Assemblieren ist ein Fehler aufgetreten.
      */
-    private void pass(String fileName) 
+    private void pass(String fileName)
             throws FileNotFoundException, IOException, Exception {
         FileInputStream stream = new FileInputStream(fileName);
         reader = new InputStreamReader(stream);
@@ -351,7 +351,7 @@ class Assembler {
         this.showFirst = showFirst;
         this.showSecond = showSecond;
     }
-  
+
     /**
      * Die Methode wandelt einen Quelltext in Code um aus.
      * @param fileName Der Name des Quelltexts.
@@ -360,7 +360,7 @@ class Assembler {
      * @throws IOException Die Ausnahme wird bei Leseproblemen der Datei erzeugt.
      * @throws Exception Beim Assemblieren ist ein Fehler aufgetreten.
      */
-    int[] assemble(String fileName) 
+    int[] assemble(String fileName)
             throws FileNotFoundException, IOException, Exception {
         labels = new TreeMap<String, Integer>();
         output = null;
@@ -370,5 +370,5 @@ class Assembler {
         showCode = showSecond;
         pass(fileName);
         return output;
-    }   
+    }
 }

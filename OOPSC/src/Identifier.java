@@ -4,10 +4,10 @@
 class Identifier {
     /** Der Name des Bezeichners. */
     String name;
-    
+
     /** Die Quelltextstelle, an der der Bezeichner gelesen wurde. */
     Position position;
-    
+
     /**
      * Konstruktor.
      * @param name Der Name des Bezeichners.

@@ -1,11 +1,11 @@
 /**
- * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der dem Zugriff auf eine 
+ * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der dem Zugriff auf eine
  * Variable oder ein Attribut bzw. einem Methodenaufruf entspricht.
  */
 class VarOrCall extends Expression {
     /** Der Name des Attributs, der Variablen oder der Methode. */
     ResolvableIdentifier identifier;
-    
+
     /**
      * Konstruktor.
      * @param identifier Der Name des Attributs, der Variablen oder der Methode.
@@ -22,14 +22,14 @@ class VarOrCall extends Expression {
      * Diese Methode wird niemals für Ausdrücke aufgerufen, die rechts
      * vom Objekt-Zugriffsoperator stehen.
      * @param declarations Die an dieser Stelle gültigen Deklarationen.
-     * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing 
+     * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing
      *         oder der Zugriff über SELF eingefügt wurde.
      * @throws CompileException Während der Kontextanylyse wurde ein Fehler
      *         gefunden.
      */
     Expression contextAnalysis(Declarations declarations) throws CompileException {
         contextAnalysisForMember(declarations);
-        if (identifier.declaration instanceof MethodDeclaration || 
+        if (identifier.declaration instanceof MethodDeclaration ||
                 identifier.declaration instanceof VarDeclaration && ((VarDeclaration) identifier.declaration).isAttribute) {
             AccessExpression a = new AccessExpression(new VarOrCall(new ResolvableIdentifier("_self", position)), this);
             a.leftOperand = a.leftOperand.contextAnalysis(declarations);
@@ -41,7 +41,7 @@ class VarOrCall extends Expression {
             return this;
         }
     }
-    
+
     /**
      * Die Methode führt die Kontextanalyse für diesen Ausdruck durch.
      * Diese Methode wird auch für Ausdrücke aufgerufen, die rechts
@@ -61,19 +61,19 @@ class VarOrCall extends Expression {
             assert false;
         }
     }
-    
+
     /**
      * Die Methode gibt diesen Ausdruck in einer Baumstruktur aus.
      * Wenn der Typ des Ausdrucks bereits ermittelt wurde, wird er auch ausgegeben.
      * @param tree Der Strom, in den die Ausgabe erfolgt.
      */
     void print(TreeStream tree) {
-        tree.println(identifier.name + (type == null ? "" : " : " + 
+        tree.println(identifier.name + (type == null ? "" : " : " +
                 (lValue ? "REF " : "") + type.identifier.name));
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

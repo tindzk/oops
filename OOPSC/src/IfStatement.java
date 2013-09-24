@@ -6,7 +6,7 @@ import java.util.LinkedList;
 class IfStatement extends Statement {
     /** Die Bedingung der IF-Anweisung. */
     Expression condition;
-    
+
     /** Die Anweisungen im THEN-Teil. */
     LinkedList<Statement> thenStatements = new LinkedList<Statement>();
 
@@ -32,7 +32,7 @@ class IfStatement extends Statement {
             s.contextAnalysis(declarations);
         }
     }
-    
+
     /**
      * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
      * @param tree Der Strom, in den die Ausgabe erfolgt.
@@ -53,7 +53,7 @@ class IfStatement extends Statement {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht 
+     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

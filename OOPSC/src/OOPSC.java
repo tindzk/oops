@@ -1,16 +1,16 @@
 /**
- * Diese Klasse stellt die Hauptmethode des Übersetzers für OOPS 
- * dar. Sie wertet die Kommandozeilen-Optionen aus und bietet 
+ * Diese Klasse stellt die Hauptmethode des Übersetzers für OOPS
+ * dar. Sie wertet die Kommandozeilen-Optionen aus und bietet
  * eine Hilfe an, falls diese falsch sind.
  */
 class OOPSC {
     /**
-     * Die Hauptmethode des Übersetzers. 
+     * Die Hauptmethode des Übersetzers.
      * Sie wertet die Kommandozeilen-Optionen aus und bietet eine Hilfe an, falls diese falsch sind.
      * Sind sie gültig, wird zuerst die Syntaxanalyse durchgeführt. Diese erzeugt den
      * Syntaxbaum des Programms, in dem dann die Kontextanalyse durchgeführt wird. Zum
      * Schluss wird dann der Code generiert.
-     * @param args Die Kommandozeilenargumente. Diese sind im Quelltext der Methode 
+     * @param args Die Kommandozeilenargumente. Diese sind im Quelltext der Methode
      * {@link #usage usage} nachzulesen.
      */
     public static void main(String[] args) throws Exception {
@@ -64,13 +64,13 @@ class OOPSC {
                 inFile = arg;
             }
         }
-            
+
         if (inFile == null) {
             System.out.println("Keine Quelldatei angegeben");
             usage();
             return;
         }
-        
+
         try {
             Program p = new SyntaxAnalysis(inFile, showSymbols).parse();
             if (showSyntax) {
@@ -83,7 +83,7 @@ class OOPSC {
             if (showContext) {
                 p.printTree();
             }
-            
+
             CodeStream stream = outFile == null ? new CodeStream() : new CodeStream(outFile);
             p.generateCode(stream, stackSize, heapSize);
             if (outFile != null) {
@@ -93,7 +93,7 @@ class OOPSC {
             System.out.println(e.getMessage());
         }
     }
-    
+
     /**
      * Die Methode gibt eine Hilfe auf der Konsole aus.
      */

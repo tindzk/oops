@@ -4,10 +4,10 @@
 class Position {
     /** Die Quelltextzeile. */
     int line;
-    
+
     /** Die Quelltextspalte. */
     int column;
-    
+
     /**
      * Konstruktor.
      * @param line Die Quelltextzeile.

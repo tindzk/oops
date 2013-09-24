@@ -6,10 +6,10 @@ import java.util.LinkedList;
 class WhileStatement extends Statement {
     /** Die Bedingung der WHILE-Anweisung. */
     Expression condition;
-    
+
     /** Die Anweisungen im Schleifenrumpf. */
     LinkedList<Statement> statements = new LinkedList<Statement>();
-    
+
     /**
      * Konstruktor.
      * @param condition Die Bedingung der WHILE-Anweisung.
@@ -53,7 +53,7 @@ class WhileStatement extends Statement {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht 
+     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

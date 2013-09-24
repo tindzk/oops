@@ -4,7 +4,7 @@
 public class WriteStatement extends Statement {
     /** Der Ausdruck, der als ein Zeichen ausgegeben wird. */
     Expression operand;
-    
+
     /**
      * Konstruktor.
      * @param operand Der Ausdruck, der als ein Zeichen ausgegeben wird.
@@ -37,7 +37,7 @@ public class WriteStatement extends Statement {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht 
+     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

@@ -8,7 +8,7 @@ factorial:
   JPC R3, label1 ; Wenn Eingabe ungleich 0, dann weiter
   MRI R3, 1 ; Ansonsten ist das Ergebnis 1
   MRI R0, label3 ; Weiter beim Funktionsende
- 
+
 label1:
   MMR (R2), R3 ; Eingabe auf dem Stapel zwischenspeichern
   ADD R2, R1 ; Stapelzeiger einen weiter

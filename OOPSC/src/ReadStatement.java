@@ -4,10 +4,10 @@
 class ReadStatement extends Statement {
     /** Die Variable, in der das eingelesene Zeichen gespeichert wird. */
     Expression operand;
-    
+
     /** Ein Ausdruck, der ein neues Objekt vom Typ Integer erzeugen kann. */
     Expression newInt = new NewExpression(new ResolvableIdentifier("Integer", null), null);
-    
+
     /**
      * Konstruktor.
      * @param operand Die Variable, in der das eingelesene Zeichen gespeichert wird.
@@ -43,7 +43,7 @@ class ReadStatement extends Statement {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht 
+     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */
@@ -54,7 +54,7 @@ class ReadStatement extends Statement {
         newInt.generateCode(code);
         code.println("; READ");
         code.println("MRM R5, (R2)"); // R2 zeigt auf ein boxed Integer
-        // code.println("MRI R6, " + ClassDeclaration.HEADERSIZE); 
+        // code.println("MRI R6, " + ClassDeclaration.HEADERSIZE);
         // code.println("ADD R5, R6");
         code.println("SYS 0, 6 ; Gelesenen Wert in R6 ablegen");
         code.println("MMR (R5), R6 ; Zeichen in neuen Integer schreiben");

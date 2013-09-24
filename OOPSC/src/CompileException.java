@@ -15,7 +15,7 @@ class CompileException extends Exception {
      *         zugeordnet werden kann.
      */
     CompileException(String message, Position position) {
-        super("Fehler" + (position == null ? "" : " in Zeile " + position.line + 
+        super("Fehler" + (position == null ? "" : " in Zeile " + position.line +
                 ", Spalte " + position.column) + ": " + message);
     }
 }

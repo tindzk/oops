@@ -17,7 +17,7 @@ class BoxExpression extends Expression {
      * verpackende Ausdruck ist und erzeugt dann ein passendes Rahmenobjekt.
      * @param operand Der Ausdruck, der den zu verpackenden Wert liefert.
      * @param declarations Die an dieser Stelle gültigen Deklarationen.
-     * @throws CompileException Während der Kontextanylyse des neuen Objekts 
+     * @throws CompileException Während der Kontextanylyse des neuen Objekts
      *         wurde ein Fehler gefunden.
      */
     BoxExpression(Expression operand, Declarations declarations) throws CompileException {
@@ -45,7 +45,7 @@ class BoxExpression extends Expression {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

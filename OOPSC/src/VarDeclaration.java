@@ -1,16 +1,16 @@
 class VarDeclaration extends Declaration {
     /** Der Typ der Variablen bzw. des Attributs. */
     ResolvableIdentifier type;
-    
+
     /** Wird hier ein Attribut deklariert (statt einer lokalen Variablen)? */
     boolean isAttribute;
-    
+
     /**
      * Die Position der Variablen im Stapelrahmen bzw. des Attributs im Objekt.
      * Dies wird während der Kontextanalyse eingetragen.
-     */ 
+     */
     int offset;
-    
+
     /**
      * Konstruktor.
      * @param name Der Name der deklarierten Variablen bzw. des Attributs.
@@ -37,7 +37,7 @@ class VarDeclaration extends Declaration {
      * @param tree Der Strom, in den die Ausgabe erfolgt.
      */
     void print(TreeStream tree) {
-        tree.println(identifier.name + 
+        tree.println(identifier.name +
                 (type.declaration == null ? "" : " (" + offset + ")") +
                 " : " + type.name);
     }

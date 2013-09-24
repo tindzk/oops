@@ -4,10 +4,10 @@
 class Assignment extends Statement {
     /** Der L-Wert, dem ein neuer Wert zugewiesen wird. */
     Expression leftOperand;
-    
+
     /** Der Ausdruck, dessen Ergebnis zugewiesen wird. */
     Expression rightOperand;
-    
+
     /**
      * Konstruktor.
      * @param leftOperand Der L-Wert, dem ein neuer Wert zugewiesen wird.
@@ -17,7 +17,7 @@ class Assignment extends Statement {
         this.leftOperand = leftOperand;
         this.rightOperand = rightOperand;
     }
-    
+
     /**
      * Die Methode führt die Kontextanalyse für diese Anweisung durch.
      * @param declarations Die an dieser Stelle gültigen Deklarationen.
@@ -47,7 +47,7 @@ class Assignment extends Statement {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht 
+     * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

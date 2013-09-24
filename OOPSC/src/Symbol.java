@@ -20,16 +20,16 @@ class Symbol extends Position {
         NULL,
         EOF
     };
-    
+
     /** Das Symbol. */
     Id id;
-    
+
     /** Wenn das Symbol NUMBER ist, steht die gelesene Zahl in diesem Attribut. */
     int number;
 
     /** Wenn das Symbol IDENT ist, steht der gelesene Bezeichner in diesem Attribut. */
     String ident;
-    
+
     /**
      * Konstruktor.
      * @param id Das erkannte Symbol.
@@ -39,7 +39,7 @@ class Symbol extends Position {
         super(position.line, position.column);
         this.id = id;
     }
-    
+
     /**
      * Die Methode erzeugt aus diesem Objekt eine darstellbare Zeichenkette.
      * @return Die Zeichenkette.

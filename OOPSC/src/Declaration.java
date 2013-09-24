@@ -4,7 +4,7 @@
 abstract class Declaration {
     /** Der Name der deklarierten Klasse, Methode oder Variablen. */
     Identifier identifier;
-    
+
     /**
      * Konstruktor.
      * @param identifier Der Name der deklarierten Klasse, Methode oder Variablen.

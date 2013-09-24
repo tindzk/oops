@@ -8,7 +8,7 @@
 class DeRefExpression extends Expression {
     /** Der Ausdruck, der die Adresse berechnet. */
     Expression operand;
-    
+
     /**
      * Konstruktor.
      * @param operand Der Ausdruck, der die Adresse berechnet.
@@ -32,7 +32,7 @@ class DeRefExpression extends Expression {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

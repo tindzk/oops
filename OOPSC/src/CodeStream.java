@@ -4,7 +4,7 @@ import java.io.PrintStream;
 
 /**
  * Die Klasse repräsentiert einen Datenstrom, in der Assemblercode des
- * auszugebenen Programms geschrieben wird. Da die Klasse von 
+ * auszugebenen Programms geschrieben wird. Da die Klasse von
  * {@link java.io.PrintStream PrintStream} erbt, können alle Methoden
  * verwendet werden, mit denen man auch auf die Konsole schreiben kann.
  * Zusätzlich kann die Klasse eindeutige Marken für den Assemblerquelltext
@@ -13,7 +13,7 @@ import java.io.PrintStream;
 class CodeStream extends PrintStream {
     /** Das Attribut enthält den gerade gültigen Namensraum (Klasse + Methode). */
     private String namespace;
-    
+
     /** Das Attribut ist ein Zähler zur Generierung eindeutiger Bezeichner. */
     private int counter;
 
@@ -23,7 +23,7 @@ class CodeStream extends PrintStream {
     CodeStream() {
         super(System.out);
     }
-    
+
     /**
      * Konstruktor zur Ausgabe in eine Datei.
      * @param fileName Der Name der Ausgabedatei.
@@ -32,11 +32,11 @@ class CodeStream extends PrintStream {
     CodeStream(String fileName) throws FileNotFoundException {
         super(new File(fileName));
     }
-    
+
     /**
      * Die Methode setzt den aktuell gültigen Namensraum.
      * Dieser wird verwendet, um eindeutige Marken zu generieren.
-     * Derselbe Namensraum darf nur einmal während der Code-Erzeugung 
+     * Derselbe Namensraum darf nur einmal während der Code-Erzeugung
      * gesetzt werden.
      * @param namespace Den ab jetzt gültigen Namensraum (Klasse + Methode).
      */

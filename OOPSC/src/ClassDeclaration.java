@@ -5,12 +5,12 @@ import java.util.LinkedList;
  * Zudem stellt sie Methoden zum Typvergleich zur Verfügung.
  */
 class ClassDeclaration extends Declaration {
-    /** 
+    /**
      * Konstante für die Größe der Verwaltungsinformation am Anfang eines jeden Objekts.
      * Bisher ist die Größe 0.
      */
     static final int HEADERSIZE = 0;
-    
+
     /** Ein interner Typ für das Ergebnis von Methoden. */
     static final ClassDeclaration voidType = new ClassDeclaration(new Identifier("_Void", null));
 
@@ -28,15 +28,15 @@ class ClassDeclaration extends Declaration {
 
     /** Die Attribute dieser Klasse. */
     LinkedList<VarDeclaration> attributes = new LinkedList<VarDeclaration>();
-    
+
     /** Die Methoden dieser Klasse. */
     LinkedList<MethodDeclaration> methods = new LinkedList<MethodDeclaration>();
 
     /** Die innerhalb dieser Klasse sichtbaren Deklarationen. */
     Declarations declarations;
-    
-    /** 
-     * Die Größe eines Objekts dieser Klasse. Die Größe wird innerhalb von 
+
+    /**
+     * Die Größe eines Objekts dieser Klasse. Die Größe wird innerhalb von
      * {@link #contextAnalysis(Declarations) contextAnalysis} bestimmt.
      */
     int objectSize;
@@ -58,27 +58,27 @@ class ClassDeclaration extends Declaration {
     void contextAnalysis(Declarations declarations) throws CompileException {
         // Standardgröße für Objekte festlegen
         objectSize = HEADERSIZE;
-        
+
         // Attributtypen auflösen und Indizes innerhalb des Objekts vergeben
         for (VarDeclaration a : attributes) {
             a.contextAnalysis(declarations);
             a.offset = objectSize++;
         }
-        
+
         // Neuen Deklarationsraum schaffen
         declarations.enter();
         declarations.currentClass = this;
-        
+
         // Attribute eintragen
         for (VarDeclaration a : attributes) {
             declarations.add(a);
         }
-        
+
         // Methoden eintragen
         for (MethodDeclaration m : methods) {
             declarations.add(m);
         }
-        
+
         // Wird auf ein Objekt dieser Klasse zugegriffen, werden die Deklarationen
         // in diesem Zustand benötigt. Deshalb werden sie in der Klasse gespeichert.
         this.declarations = (Declarations) declarations.clone();
@@ -87,11 +87,11 @@ class ClassDeclaration extends Declaration {
         for (MethodDeclaration m : methods) {
             m.contextAnalysis(declarations);
         }
-        
+
         // Deklarationsraum verlassen
         declarations.leave();
     }
-    
+
     /**
      * Die Methode prüft, ob dieser Typ kompatibel mit einem anderen Typ ist.
      * @param expected Der Typ, mit dem verglichen wird.
@@ -107,7 +107,7 @@ class ClassDeclaration extends Declaration {
             return this == expected;
         }
     }
-    
+
     /**
      * Die Methode erzeugt eine Ausnahme für einen Typfehler. Sie wandelt dabei intern verwendete
      * Typnamen in die auch außen sichtbaren Namen um.
@@ -131,7 +131,7 @@ class ClassDeclaration extends Declaration {
      * Die Methode prüft, ob dieser Typ kompatibel mit einem anderen Typ ist.
      * Sollte das nicht der Fall sein, wird eine Ausnahme mit einer Fehlermeldung generiert.
      * @param expected Der Typ, mit dem verglichen wird.
-     * @param position Die Position im Quelltext, an der diese Überprüfung 
+     * @param position Die Position im Quelltext, an der diese Überprüfung
      *         relevant ist. Die Position wird in der Fehlermeldung verwendet.
      * @throws CompileException Die Typen sind nicht kompatibel.
      */
@@ -140,7 +140,7 @@ class ClassDeclaration extends Declaration {
             typeError(expected, position);
         }
     }
-    
+
     /**
      * Die Methode gibt diese Deklaration in einer Baumstruktur aus.
      * @param tree Der Strom, in den die Ausgabe erfolgt.
@@ -174,7 +174,7 @@ class ClassDeclaration extends Declaration {
      */
     void generateCode(CodeStream code) {
         code.println("; CLASS " + identifier.name);
-        
+
         // Synthese für alle Methoden
         for (MethodDeclaration m : methods) {
             m.generateCode(code);

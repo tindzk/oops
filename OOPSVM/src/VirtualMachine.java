@@ -8,78 +8,78 @@
  */
 class VirtualMachine
 {
-    /** 
-     * MRI reg, num. 
+    /**
+     * MRI reg, num.
      * Diese Instruktion speichert die Zahl num im Register reg.
      */
     private final int MRI = 0;
 
     /**
      * MRR reg1, reg2.
-     * Diese Instruktion speichert den Inhalt von Register <i>reg1</i> im Register <i>reg2</i>. 
+     * Diese Instruktion speichert den Inhalt von Register <i>reg1</i> im Register <i>reg2</i>.
      */
     private final int MRR = 1;
 
-    /** 
-     * MRM reg1, (reg2). 
+    /**
+     * MRM reg1, (reg2).
      * Diese Instruktion speichert den Inhalt der Speicherstelle, auf die Register <i>reg2</i>
      * zeigt, im Register <i>reg1</i>.
      */
     private final int MRM = 2;
 
-    /** 
-     * MMR (reg1), reg2. 
-     * Diese Instruktion speichert den Inhalt von Register <i>reg2</i> in der Speicherstelle, 
+    /**
+     * MMR (reg1), reg2.
+     * Diese Instruktion speichert den Inhalt von Register <i>reg2</i> in der Speicherstelle,
      * auf die Register <i>reg1</i> zeigt.
      */
     private final int MMR = 3;
-    
+
     /**
      * ADD reg1, reg2.
-     * Diese Instruktion addiert den Inhalt von Register <i>reg2</i> zum Register <i>reg1</i>. 
+     * Diese Instruktion addiert den Inhalt von Register <i>reg2</i> zum Register <i>reg1</i>.
      */
     private final int ADD = 4;
-    
+
     /**
      * SUB reg1, reg2.
-     * Diese Instruktion subtrahiert den Inhalt von Register <i>reg2</i> vom Register <i>reg1</i>. 
+     * Diese Instruktion subtrahiert den Inhalt von Register <i>reg2</i> vom Register <i>reg1</i>.
      */
     private final int SUB = 5;
-    
+
     /**
      * MUL reg1, reg2.
-     * Diese Instruktion multipliziert den Inhalt von Register <i>reg2</i> zum Register <i>reg1</i>. 
+     * Diese Instruktion multipliziert den Inhalt von Register <i>reg2</i> zum Register <i>reg1</i>.
      */
     private final int MUL = 6;
-    
+
     /**
      * DIV reg1, reg2.
-     * Diese Instruktion dividiert das Register <i>reg1</i> durch den Inhalt von Register <i>reg2</i>. 
+     * Diese Instruktion dividiert das Register <i>reg1</i> durch den Inhalt von Register <i>reg2</i>.
      */
     private final int DIV = 7;
 
     /**
      * MOD reg1, reg2.
      * Diese Instruktion speichert den Divisionsrest von Register <i>reg1</i> durch Register <i>reg2</i>
-     * in Register <i>reg1</i>. 
+     * in Register <i>reg1</i>.
      */
     private final int MOD = 8;
 
     /**
      * AND reg1, reg2.
-     * Diese Instruktion und-verknüpft den Inhalt von Register <i>reg2</i> in das Register <i>reg1</i>. 
+     * Diese Instruktion und-verknüpft den Inhalt von Register <i>reg2</i> in das Register <i>reg1</i>.
      */
     private final int AND = 9;
 
     /**
      * OR reg1, reg2.
-     * Diese Instruktion oder-verknüpft den Inhalt von Register <i>reg2</i> in das Register <i>reg1</i>. 
+     * Diese Instruktion oder-verknüpft den Inhalt von Register <i>reg2</i> in das Register <i>reg1</i>.
      */
     private final int OR = 10;
 
     /**
      * XOR reg1, reg2.
-     * Diese Instruktion exklusiv-oder-verknüpft den Inhalt von Register <i>reg2</i> in das Register <i>reg1</i>. 
+     * Diese Instruktion exklusiv-oder-verknüpft den Inhalt von Register <i>reg2</i> in das Register <i>reg1</i>.
      */
     private final int XOR = 11;
 
@@ -106,7 +106,7 @@ class VirtualMachine
 
     /**
      * JPC reg1, addr.
-     * Diese Instruktion schreibt <i>addr</i> in den Instruktionszeiger (Register R0), wenn der Inhalt des 
+     * Diese Instruktion schreibt <i>addr</i> in den Instruktionszeiger (Register R0), wenn der Inhalt des
      * Registers <i>reg1</i> ungleich null ist.
      */
     private final int JPC = 15;
@@ -116,10 +116,10 @@ class VirtualMachine
      * Diese Instruktion ruft eine Systemfunktion auf. <i>num1</i> ist dabei die Nummer der Funktion,
      * <i>num2</i> ein funktionsabhängiger Parameter. Momentan sind nur zwei Funktionen definiert:
      * <ul>
-     *   <li> 0: Es wird ein Zeichen von der Konsole eingelesen. Das Zeichen wird in dem Register 
+     *   <li> 0: Es wird ein Zeichen von der Konsole eingelesen. Das Zeichen wird in dem Register
      *        mit der Nummer <i>num2</i> abgelegt. Das Ende des Eingabestroms wird durch das
      *        Zeichen -1 symbolisiert.</li>
-     *   <li> 1: Es wird ein Zeichen auf der Konsole ausgegeben. Das Zeichen wird aus dem Register 
+     *   <li> 1: Es wird ein Zeichen auf der Konsole ausgegeben. Das Zeichen wird aus dem Register
      *        mit der Nummer <i>num2</i> gelesen.</li>
      * </ul>
      */
@@ -127,34 +127,34 @@ class VirtualMachine
 
     /** Der Hauptspeicher. Er enthält das Programm und alle Daten. */
     private int[] memory;
-    
+
     /** Der Registersatz. */
     private int[] registers;
-    
+
     /** Sollen die ausgeführten Instruktionen angezeigt werden? */
     private boolean showInstructions;
-    
+
     /** Soll der Speicherinhalt nach jeder ausgeführten Instruktion angezeigt werden? */
     private boolean showMemory;
-    
+
     /** Soll der Registersatz nach jeder ausgeführten Instruktion angezeigt werden? */
     private boolean showRegisters;
-    
+
     /** Zeige R2 Speicherauszug vorwärts */
     private boolean showR2f;
-    
+
     /** Zeige R2 Speicherauszug rückwärts */
     private boolean showR2b;
-    
+
     /** Zeige R4 Speicherauszug vorwärts */
     private boolean showR4f;
-    
+
     /** Zeige R4 Speicherauszug rückwärts */
     private boolean showR4b;
-    
-    
-    
-    
+
+
+
+
     /**
      * Die Methode gibt die aktuelle Instruktion aus, wenn {@link #showInstrutions showInstrutions}
      * aktiviert ist.
@@ -165,7 +165,7 @@ class VirtualMachine
             System.out.format("%08x  %s%n", registers[0] - 3, text);
         }
     }
-  
+
     /**
      * Die Methode gibt den Hauptspeicher aus, wenn {@link #showMemory showMemory}
      * aktiviert ist.
@@ -178,7 +178,7 @@ class VirtualMachine
             System.out.println(text);
         }
     }
-  
+
     /**
      * Die Methode gibt den Registersatz aus, wenn {@link #showRegisters showRegisters}
      * aktiviert ist.
@@ -191,12 +191,12 @@ class VirtualMachine
             System.out.println(text);
         }
     }
-    
-    /** Hilfsfunktion für {@link VirtualMachine#printStacks() printStacks}. 
-     * @param register Nummer des Registers, das die Basisadresse enthält 
-     * @param upDown ist -1 oder 1 für Abwärts/Aufwärts. 
+
+    /** Hilfsfunktion für {@link VirtualMachine#printStacks() printStacks}.
+     * @param register Nummer des Registers, das die Basisadresse enthält
+     * @param upDown ist -1 oder 1 für Abwärts/Aufwärts.
      * @return Einen Text, der einen Ausschnitt des Stacks in lesbarer Form
-     *         enthält, die Adresse 'register' zusätzlich mit '*' markiert. 
+     *         enthält, die Adresse 'register' zusätzlich mit '*' markiert.
      */
     private String mem(int register, int upDown) {
     	int limit = 20;
@@ -210,16 +210,16 @@ class VirtualMachine
     	}
     	return t;
     }
-    
+
     /** Ausgabe von Speicherauszügen ausgehend von den in Registern R2 bzw.
      * R4 gespeicherten Adressen. Dies kann man zur Anzeige von Stack-Inhalten
-     * benutzen. 
+     * benutzen.
      */
     private void printStacks() {
     	if (showR2f) System.out.println("R2 forward: "  + mem(2,  1));
-    	if (showR2b) System.out.println("R2 backward: " + mem(2, -1)); 
+    	if (showR2b) System.out.println("R2 backward: " + mem(2, -1));
     	if (showR4f) System.out.println("R4 forward: "  + mem(4,  1));
-    	if (showR4b) System.out.println("R4 backward: " + mem(4, -1)); 
+    	if (showR4b) System.out.println("R4 backward: " + mem(4, -1));
     }
 
     /**
@@ -243,7 +243,7 @@ class VirtualMachine
         case MRM:
             printInstruction("MRM R" + param1 + ", (R" + param2 + ")");
             if (registers[param2] < 0 || registers[param2] >= memory.length) {
-                throw new Exception("Zugriff auf nicht existierende Speicherstelle " 
+                throw new Exception("Zugriff auf nicht existierende Speicherstelle "
                         + registers[param2] + " an Adresse " + (registers[0] - 3));
             }
             registers[param1] = memory[registers[param2]];
@@ -251,7 +251,7 @@ class VirtualMachine
         case MMR:
             printInstruction("MMR (R" + param1 + "), R" + param2);
             if (registers[param1] < 0 || registers[param1] >= memory.length) {
-                throw new Exception("Zugriff auf nicht existierende Speicherstelle " 
+                throw new Exception("Zugriff auf nicht existierende Speicherstelle "
                         + registers[param1] + " an Adresse " + (registers[0] - 3));
             }
             memory[registers[param1]] = registers[param2];
@@ -332,7 +332,7 @@ class VirtualMachine
      * @param showMemory Soll der Speicherinhalt nach jeder ausgeführten Instruktion angezeigt werden?
      * @param showRegisters Soll der Registersatz nach jeder ausgeführten Instruktion angezeigt werden?
 	 */
-    VirtualMachine(int[] memory, int[] registers, 
+    VirtualMachine(int[] memory, int[] registers,
             boolean showInstructions, boolean showMemory, boolean showRegisters,
             boolean showR2f, boolean showR2b, boolean showR4f, boolean showR4b) {
         this.memory = memory;

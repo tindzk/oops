@@ -10,7 +10,7 @@ class BinaryExpression extends Expression {
 
     /** Der rechte Operand. */
     Expression rightOperand;
-    
+
     /**
      * Konstruktor.
      * @param operator Der Operator.
@@ -70,7 +70,7 @@ class BinaryExpression extends Expression {
                 leftOperand = leftOperand.unBox();
                 rightOperand = rightOperand.unBox();
             }
-            
+
             // Nun muss der Typ mindestens eines Operanden gleich oder eine
             // Ableitung des Typs des anderen Operanden sein.
             if (!leftOperand.type.isA(rightOperand.type) &&
@@ -99,7 +99,7 @@ class BinaryExpression extends Expression {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

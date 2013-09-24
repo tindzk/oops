@@ -10,15 +10,15 @@ import java.util.HashMap;
  * Grammaktik erkannt. Bezeichner und Zahlen folgen dieser Syntax:
  * <pre>
  * identifier   ::= letter { letter | digit }
- * 
+ *
  * number       ::= digit { digit }
- * 
+ *
  * letter       ::= 'A' .. 'Z' | 'a' .. 'z'
- * 
+ *
  * digit        ::= '0' .. '9'
  *
- * character    ::= ''' ( Sichtbares-US-ASCII-Zeichen-kein-backslash 
- *                      |  '\' 'n' | '\' '\' ) ''' 
+ * character    ::= ''' ( Sichtbares-US-ASCII-Zeichen-kein-backslash
+ *                      |  '\' 'n' | '\' '\' ) '''
  * </pre>
  * Kommentare zwischen geschweiften Klammern ('{' ... '}') bzw. hinter
  * senkrechten Strichen ('|') werden ignoriert.
@@ -32,17 +32,17 @@ class LexicalAnalysis {
 
     /** Sollen die erkannten Symbole auf der Konsole ausgegeben werden? */
     private boolean printSymbols;
-    
+
     /** Die aktuelle Position im Quelltext. */
     private Position position;
-    
+
     /** Das zuletzt gelesene Zeichen. */
     private int c;
-    
+
     /** Das zuletzt erkannte Symbol. */
     Symbol symbol;
 
-    /** 
+    /**
      * Die Methode liest das nächste Zeichen aus dem Quelltext.
      * Dieses wird im Attribut {@link #c c} bereitgestellt.
      * @throws IOException Ein Lesefehler ist aufgetreten.
@@ -51,16 +51,16 @@ class LexicalAnalysis {
         position.next((char) c);
         c = reader.read();
     }
-    
+
     /**
      * Konstruktor.
      * @param fileName Der Name des Quelltexts.
-     * @param printSymbols Sollen die erkannten Symbole auf der Konsole 
+     * @param printSymbols Sollen die erkannten Symbole auf der Konsole
      *         ausgegeben werden?
      * @throws FileNotFoundException Der Quelltext wurde nicht gefunden.
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
-    LexicalAnalysis(String fileName, boolean printSymbols) 
+    LexicalAnalysis(String fileName, boolean printSymbols)
             throws FileNotFoundException, IOException {
         FileInputStream stream = new FileInputStream(fileName);
         reader = new InputStreamReader(stream);
@@ -86,7 +86,7 @@ class LexicalAnalysis {
         position = new Position(1, 0);
         nextChar();
     }
-    
+
     /**
      * Die Methode liest das nächste Symbol. Dieses wird im Attribut
      * {@link #symbol symbol} bereitgestellt.
@@ -118,7 +118,7 @@ class LexicalAnalysis {
                 break;
             }
         }
-        
+
         switch (c) {
         case -1:
             symbol = new Symbol(Symbol.Id.EOF, position);;
@@ -227,7 +227,7 @@ class LexicalAnalysis {
             	    		+ "'\\" + (char) c + " (Code " + c + ")", position);
             	    }
             	} else if (c<' ' || c>'~')
-        		    throw new CompileException("Unbekanntes Zeichen im Zeichenliteral (Code " + c + ").", position); 
+        		    throw new CompileException("Unbekanntes Zeichen im Zeichenliteral (Code " + c + ").", position);
             	else
             		ch=c;
             	nextChar();

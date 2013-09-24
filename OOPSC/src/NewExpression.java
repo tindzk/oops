@@ -4,7 +4,7 @@
 class NewExpression extends Expression {
     /** Der Typ des neuen Objekts. */
     ResolvableIdentifier newType;
-    
+
     /**
      * Konstruktor.
      * @param newType Der Typ des neuen Objekts.
@@ -38,7 +38,7 @@ class NewExpression extends Expression {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

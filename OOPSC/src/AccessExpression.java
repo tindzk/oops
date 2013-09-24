@@ -8,7 +8,7 @@ class AccessExpression extends Expression {
 
     /** Der rechte Operand. */
     VarOrCall rightOperand;
-    
+
     /**
      * Konstruktor.
      * @param leftOperand Der linke Operand.
@@ -34,7 +34,7 @@ class AccessExpression extends Expression {
         // schreiben, wenn Integer Methoden hätte.
         leftOperand = leftOperand.box(declarations);
 
-        // Der rechte Operand hat einen Deklarationsraum, der sich aus dem 
+        // Der rechte Operand hat einen Deklarationsraum, der sich aus dem
         // Ergebnistyp des linken Operanden ergibt.
         rightOperand.contextAnalysisForMember(leftOperand.type.declarations);
 
@@ -51,7 +51,7 @@ class AccessExpression extends Expression {
      * @param tree Der Strom, in den die Ausgabe erfolgt.
      */
     void print(TreeStream tree) {
-        tree.println("PERIOD" + (type == null ? "" : " : " + 
+        tree.println("PERIOD" + (type == null ? "" : " : " +
                 (lValue ? "REF " : "") + type.identifier.name));
         tree.indent();
         leftOperand.print(tree);
@@ -60,7 +60,7 @@ class AccessExpression extends Expression {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */

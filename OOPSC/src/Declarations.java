@@ -13,14 +13,14 @@ class Declarations {
      * realisiert.
      */
     LinkedList<HashMap<String, Declaration>> levels = new LinkedList<HashMap<String, Declaration>>();
-    
+
     /** Die aktuelle Klasse. */
     ClassDeclaration currentClass;
-    
+
     /**
      * Die Method erstellt eine Kopie dieses Objekts. Dabei werden die Ebenen nicht kopiert,
      * sondern auch von der Kopie weiter benutzt. Die umgebende Liste wird aber kopiert,
-     * so dass sie in beiden Instanzen unabhängig voneinander verändert werden kann. 
+     * so dass sie in beiden Instanzen unabhängig voneinander verändert werden kann.
      * @return Die Kopie dieses Objekts.
      */
     public Object clone() {
@@ -31,21 +31,21 @@ class Declarations {
         d.currentClass = currentClass;
         return d;
     }
-    
+
     /**
      * Erzeugt eine neue Deklarationsebene.
      */
     void enter() {
         levels.addFirst(new HashMap<String, Declaration>());
     }
-    
+
     /**
      * Verwirft die zuletzt erzeugte Deklarationsebene.
      */
     void leave() {
         levels.removeFirst();
     }
-    
+
     /**
      * Die Methode fügt eine neue Deklaration in die oberste Ebene ein.
      * Wenn dort bereits die Deklaration eines gleichlautenden Bezeichners
@@ -55,7 +55,7 @@ class Declarations {
      */
     void add(Declaration declaration) throws CompileException {
         if (levels.getFirst().get(declaration.identifier.name) != null) {
-            throw new CompileException("Doppelte Deklaration von " + declaration.identifier.name, 
+            throw new CompileException("Doppelte Deklaration von " + declaration.identifier.name,
                     declaration.identifier.position);
         } else {
             levels.getFirst().put(declaration.identifier.name, declaration);
@@ -75,7 +75,7 @@ class Declarations {
                     return;
                 }
             }
-            throw new CompileException("Fehlende Deklaration von " + identifier.name, 
+            throw new CompileException("Fehlende Deklaration von " + identifier.name,
                     identifier.position);
         }
     }
@@ -93,10 +93,10 @@ class Declarations {
     }
 
     /**
-     * Die Methode ordnet eine Variable, ein Attribut oder einen Methodenaufruf 
+     * Die Methode ordnet eine Variable, ein Attribut oder einen Methodenaufruf
      * der zugehörigen Deklaration im Programm zu.
      * @param varOrMethod Die Variable, das Attribut oder der Methodenaufruf.
-     * @throws CompileException Die Deklaration der Variable, des Attributs oder 
+     * @throws CompileException Die Deklaration der Variable, des Attributs oder
      *         des Methodenaufruf wurde nicht gefunden.
      */
     void resolveVarOrMethod(ResolvableIdentifier varOrMethod) throws CompileException {

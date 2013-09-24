@@ -2,7 +2,7 @@
 ; Sie steht nach der Ausführung in R2.
   MRI R1, 5 ; Eingabe
   MRI R2, 1 ; Variable zum Ergebnisaufbau
-  
+
 loop:
   ISZ R3, R1 ; Wenn Eingabe 0,
   JPC R3, end ; dann fertig

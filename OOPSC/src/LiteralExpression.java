@@ -4,7 +4,7 @@
 class LiteralExpression extends Expression {
     /** Der Wert des Literals. */
     int value;
-    
+
     /**
      * Konstruktor.
      * @param value Der Wert des Literals.

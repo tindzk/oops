@@ -7,7 +7,7 @@
 class UnBoxExpression extends Expression {
     /** Der Ausdruck, der das auszupackende Objekt berechnet. */
     Expression operand;
-    
+
     /**
      * Konstruktor.
      * Der Konstruktor stellt fest, von welcher Klasse der auszupackende
@@ -37,7 +37,7 @@ class UnBoxExpression extends Expression {
     }
 
     /**
-     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht 
+     * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */
