@@ -27,6 +27,8 @@ import java.util.LinkedList;
  *                | WRITE expression ';'
  *                | IF relation
  *                  THEN statements
+ *                  { ELSEIF relation THEN statements }
+ *                  [ ELSE statements ]
  *                  END IF
  *                | WHILE relation
  *                  DO statements
@@ -64,7 +66,11 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * Die Methode erzeugt einen "Unerwartetes Symbol"-Fehler.
      * @throws CompileException Die entsprechende Fehlermeldung.
      */
-    private void unexpectedSymbol() throws CompileException {
+    private void unexpectedSymbol(Symbol.Id id) throws CompileException {
+    	if (id != null) {
+    		throw new CompileException("Unerwartetes Symbol " + this.symbol.id.toString() + " (statt " + id.toString() + ")", this.symbol);
+    	}
+
         throw new CompileException("Unerwartetes Symbol " + this.symbol.id.toString(), this.symbol);
     }
 
@@ -77,7 +83,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
      */
     private void expectSymbol(Symbol.Id id) throws CompileException, IOException {
         if (id != this.symbol.id) {
-            this.unexpectedSymbol();
+            this.unexpectedSymbol(id);
         }
         this.nextSymbol();
     }
@@ -90,7 +96,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
      */
     private Identifier expectIdent() throws CompileException, IOException {
         if (this.symbol.id != Symbol.Id.IDENT) {
-            this.unexpectedSymbol();
+            this.unexpectedSymbol(Symbol.Id.IDENT);
         }
         Identifier i = new Identifier(this.symbol.ident, new Position(this.symbol.line, this.symbol.column));
         this.nextSymbol();
@@ -106,7 +112,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
      */
     private ResolvableIdentifier expectResolvableIdent() throws CompileException, IOException {
         if (this.symbol.id != Symbol.Id.IDENT) {
-            this.unexpectedSymbol();
+            this.unexpectedSymbol(Symbol.Id.IDENT);
         }
         ResolvableIdentifier r = new ResolvableIdentifier(this.symbol.ident, new Position(this.symbol.line, this.symbol.column));
         this.nextSymbol();
@@ -208,7 +214,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private void statements(LinkedList<Statement> statements) throws CompileException, IOException {
-        while (this.symbol.id != Symbol.Id.END) {
+        while (this.symbol.id != Symbol.Id.END && this.symbol.id != Symbol.Id.ELSEIF && this.symbol.id != Symbol.Id.ELSE) {
             this.statement(statements);
         }
     }
@@ -238,6 +244,26 @@ class SyntaxAnalysis extends LexicalAnalysis {
             statements.add(s);
             this.expectSymbol(Symbol.Id.THEN);
             this.statements(s.thenStatements);
+
+            while (this.symbol.id == Symbol.Id.ELSEIF) {
+	            this.nextSymbol();
+
+                LinkedList<Statement> stmts = new LinkedList<>();
+	            s.addIfElse(this.relation(), stmts);
+
+	            this.expectSymbol(Symbol.Id.THEN);
+	            this.statements(stmts);
+            }
+
+            if (this.symbol.id == Symbol.Id.ELSE) {
+	            this.nextSymbol();
+
+                LinkedList<Statement> stmts = new LinkedList<>();
+	            s.setElse(stmts);
+
+	            this.statements(stmts);
+            }
+
             this.expectSymbol(Symbol.Id.END);
             this.expectSymbol(Symbol.Id.IF);
             break;
@@ -402,7 +428,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
             e = new VarOrCall(this.expectResolvableIdent());
             break;
         default:
-            this.unexpectedSymbol();
+            this.unexpectedSymbol(null);
         }
         return e;
     }

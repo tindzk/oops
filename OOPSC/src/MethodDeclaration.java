@@ -117,5 +117,6 @@ class MethodDeclaration extends Declaration {
         code.println("ADD R3, R1");
         code.println("MRM R3, (R3) ; Alten Stapelrahmen holen");
         code.println("MRR R0, R5 ; Rücksprung");
+        code.println("");
     }
 }

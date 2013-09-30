@@ -84,6 +84,8 @@ class LexicalAnalysis {
         this.keywords.put("NULL", Symbol.Id.NULL);
         this.keywords.put("TRUE", Symbol.Id.TRUE);
         this.keywords.put("FALSE", Symbol.Id.FALSE);
+        this.keywords.put("ELSE", Symbol.Id.ELSE);
+        this.keywords.put("ELSEIF", Symbol.Id.ELSEIF);
 
         this.position = new Position(1, 0);
         this.nextChar();

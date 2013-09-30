@@ -1,5 +1,5 @@
 #!/bin/sh
-COMP="java -jar oopsc.jar"
+COMP="java -jar oopsc.jar -hs 1000 -ss 1000"
 VM="java -jar oopsvm.jar"
 
 function test_file() {
@@ -18,6 +18,9 @@ function test_file() {
 			rm "/tmp/oops_test/$file"*;
 		else
 			echo -e "\e[49;31mRun: Failed\e[0m"
+			cat "/tmp/oops_test/$file.out" && echo
+			echo "-----------"
+			cat "$dir/$file.out" && echo
 		fi;
 	else
 		diff "/tmp/oops_test/$file.out" "$dir/$file.out" > /dev/null;
@@ -25,7 +28,8 @@ function test_file() {
 			echo -e "\e[49;32mCompilation: Success\t(SE Test)\e[0m"
 			rm "/tmp/oops_test/$file"*;
 		else
-			echo -e "\e[49;31mCompilation: Failed\e[0m"
+			echo -e "\e[49;31mCompilation: Failed\e[0m";
+			$COMP -d "$dir/$file.oops";
 		fi;
 	fi;
 }

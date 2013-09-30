@@ -20,6 +20,7 @@ class OOPSC {
         boolean showSymbols = false;
         boolean showIdentifiers = false;
         boolean showSyntax = false;
+        boolean debug = false;
         int heapSize = 100;
         int stackSize = 100;
 
@@ -37,6 +38,8 @@ class OOPSC {
                     System.out.println("Fehlendes Argument fuer " + arg);
                     usage();
                 }
+            } else if (arg.equals("-d")) {
+                debug = true;
             } else if (arg.equals("-i")) {
                 showIdentifiers = true;
             } else if (arg.equals("-l")) {
@@ -91,6 +94,11 @@ class OOPSC {
             }
         } catch (CompileException e) {
             System.out.println(e.getMessage());
+
+            if (debug) {
+            	e.printStackTrace();
+            }
+
             System.exit(1);
         }
     }

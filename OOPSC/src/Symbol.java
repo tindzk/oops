@@ -19,6 +19,7 @@ class Symbol extends Position {
         SELF,
         NULL,
         TRUE, FALSE,
+        ELSE, ELSEIF,
         EOF
     };
 

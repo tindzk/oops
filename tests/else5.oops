@@ -1,0 +1,16 @@
+CLASS Main IS
+    METHOD main IS
+        a : Integer;
+    BEGIN
+        a := 65;
+        IF a = 65 THEN
+            WRITE a;
+            IF a > 100 THEN
+                WRITE a;
+            ELSE
+                WRITE a + 1;
+            END IF
+        END IF
+        WRITE 73;
+    END METHOD
+END CLASS
