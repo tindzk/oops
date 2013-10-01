@@ -31,53 +31,62 @@ class BinaryExpression extends Expression {
      * @throws CompileException Während der Kontextanylyse wurde ein Fehler
      *         gefunden.
      */
-    Expression contextAnalysis(Declarations declarations) throws CompileException {
-        leftOperand = leftOperand.contextAnalysis(declarations);
-        rightOperand = rightOperand.contextAnalysis(declarations);
-        switch (operator) {
+    @Override
+	Expression contextAnalysis(Declarations declarations) throws CompileException {
+        this.leftOperand = this.leftOperand.contextAnalysis(declarations);
+        this.rightOperand = this.rightOperand.contextAnalysis(declarations);
+        switch (this.operator) {
+       	case AND:
+       	case OR:
+            this.leftOperand = this.leftOperand.unBox();
+            this.rightOperand = this.rightOperand.unBox();
+            this.leftOperand.type.check(ClassDeclaration.boolType, this.leftOperand.position);
+            this.rightOperand.type.check(ClassDeclaration.boolType, this.rightOperand.position);
+            this.type = ClassDeclaration.boolType;
+            break;
         case PLUS:
         case MINUS:
         case TIMES:
         case DIV:
         case MOD:
-            leftOperand = leftOperand.unBox();
-            rightOperand = rightOperand.unBox();
-            leftOperand.type.check(ClassDeclaration.intType, leftOperand.position);
-            rightOperand.type.check(ClassDeclaration.intType, rightOperand.position);
-            type = ClassDeclaration.intType;
+            this.leftOperand = this.leftOperand.unBox();
+            this.rightOperand = this.rightOperand.unBox();
+            this.leftOperand.type.check(ClassDeclaration.intType, this.leftOperand.position);
+            this.rightOperand.type.check(ClassDeclaration.intType, this.rightOperand.position);
+            this.type = ClassDeclaration.intType;
             break;
         case GT:
         case GTEQ:
         case LT:
         case LTEQ:
-            leftOperand = leftOperand.unBox();
-            rightOperand = rightOperand.unBox();
-            leftOperand.type.check(ClassDeclaration.intType, leftOperand.position);
-            rightOperand.type.check(ClassDeclaration.intType, rightOperand.position);
-            type = ClassDeclaration.boolType;
+            this.leftOperand = this.leftOperand.unBox();
+            this.rightOperand = this.rightOperand.unBox();
+            this.leftOperand.type.check(ClassDeclaration.intType, this.leftOperand.position);
+            this.rightOperand.type.check(ClassDeclaration.intType, this.rightOperand.position);
+            this.type = ClassDeclaration.boolType;
             break;
         case EQ:
         case NEQ:
             // Wenn einer der beiden Operanden NULL ist, muss der andere
             // ein Objekt sein (oder auch NULL)
-            if (leftOperand.type == ClassDeclaration.nullType) {
-                rightOperand = rightOperand.box(declarations);
-            } else if (rightOperand.type == ClassDeclaration.nullType) {
-                leftOperand = leftOperand.box(declarations);
+            if (this.leftOperand.type == ClassDeclaration.nullType) {
+                this.rightOperand = this.rightOperand.box(declarations);
+            } else if (this.rightOperand.type == ClassDeclaration.nullType) {
+                this.leftOperand = this.leftOperand.box(declarations);
             } else {
                 // ansonsten wird versucht, die beiden Operanden in
                 // Basisdatentypen zu wandeln
-                leftOperand = leftOperand.unBox();
-                rightOperand = rightOperand.unBox();
+                this.leftOperand = this.leftOperand.unBox();
+                this.rightOperand = this.rightOperand.unBox();
             }
 
             // Nun muss der Typ mindestens eines Operanden gleich oder eine
             // Ableitung des Typs des anderen Operanden sein.
-            if (!leftOperand.type.isA(rightOperand.type) &&
-                    !rightOperand.type.isA(leftOperand.type)) {
-                ClassDeclaration.typeError(leftOperand.type, rightOperand.position);
+            if (!this.leftOperand.type.isA(this.rightOperand.type) &&
+                    !this.rightOperand.type.isA(this.leftOperand.type)) {
+                ClassDeclaration.typeError(this.leftOperand.type, this.rightOperand.position);
             }
-            type = ClassDeclaration.boolType;
+            this.type = ClassDeclaration.boolType;
             break;
         default:
             assert false;
@@ -90,11 +99,12 @@ class BinaryExpression extends Expression {
      * Wenn der Typ des Ausdrucks bereits ermittelt wurde, wird er auch ausgegeben.
      * @param tree Der Strom, in den die Ausgabe erfolgt.
      */
-    void print(TreeStream tree) {
-        tree.println(operator + (type == null ? "" : " : " + type.identifier.name));
+    @Override
+	void print(TreeStream tree) {
+        tree.println(this.operator + (this.type == null ? "" : " : " + this.type.identifier.name));
         tree.indent();
-        leftOperand.print(tree);
-        rightOperand.print(tree);
+        this.leftOperand.print(tree);
+        this.rightOperand.print(tree);
         tree.unindent();
     }
 
@@ -103,14 +113,19 @@ class BinaryExpression extends Expression {
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */
-    void generateCode(CodeStream code) {
-        leftOperand.generateCode(code);
-        rightOperand.generateCode(code);
-        code.println("; " + operator);
+    @Override
+	void generateCode(CodeStream code) {
+        this.leftOperand.generateCode(code);
+        this.rightOperand.generateCode(code);
+        code.println("; " + this.operator);
         code.println("MRM R5, (R2)");
         code.println("SUB R2, R1");
         code.println("MRM R6, (R2)");
-        switch (operator) {
+        switch (this.operator) {
+       	case AND:
+            code.println("AND R6, R5");
+       	case OR:
+            code.println("OR R6, R5");
         case PLUS:
             code.println("ADD R6, R5");
             break;

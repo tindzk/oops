@@ -1,0 +1,13 @@
+CLASS Main IS
+    METHOD main IS
+        a, b, c : Integer;
+    BEGIN
+        READ a;
+        READ b;
+        READ c;
+        IF NOT(a < b) THEN END IF
+        IF a < b AND b < c THEN END IF
+        IF NOT(a < b AND b < c) THEN END IF
+        IF NOT(a < b) AND (a < b) THEN END IF
+    END METHOD
+END CLASS

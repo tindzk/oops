@@ -35,7 +35,8 @@ import java.util.LinkedList;
  *                  END WHILE
  *                | memberaccess [ ':=' expression ] ';'
  *
- * relation     ::= expression [ ( '=' | '#' | '<' | '>' | '<=' | '>=' ) expression ]
+ * relation     ::= expression [ ( 'AND' | 'OR' | '=' | '#' | '<' | '>' | '<=' | '>=' ) expression ]
+ *                | NOT (relation)
  *
  * expression   ::= term { ( '+' | '-' ) term }
  *
@@ -53,7 +54,7 @@ import java.util.LinkedList;
  *                | FALSE
  *                | SELF
  *                | NEW identifier
- *                | '(' expression ')'
+ *                | '(' relation ')'
  *                | varorcall
  *
  * varorcall    ::= identifier
@@ -296,18 +297,39 @@ class SyntaxAnalysis extends LexicalAnalysis {
      * @throws IOException Ein Lesefehler ist aufgetreten.
      */
     private Expression relation() throws CompileException, IOException {
-        Expression e = this.expression();
-        switch (this.symbol.id) {
-        case EQ:
-        case NEQ:
-        case GT:
-        case GTEQ:
-        case LT:
-        case LTEQ:
-            Symbol.Id operator = this.symbol.id;
+    	Expression e = null;
+
+        if (this.symbol.id == Symbol.Id.NOT) {
             this.nextSymbol();
-            e = new BinaryExpression(e, operator, this.expression());
+            this.expectSymbol(Symbol.Id.LPAREN);
+
+            Position position = new Position(this.symbol.line, this.symbol.column);
+            e = new UnaryExpression(Symbol.Id.NOT, this.relation(), position);
+
+            this.expectSymbol(Symbol.Id.RPAREN);
+        } else {
+	        e = this.expression();
+
+	        switch (this.symbol.id) {
+	        case EQ:
+	        case NEQ:
+	        case GT:
+	        case GTEQ:
+	        case LT:
+	        case LTEQ:
+	            Symbol.Id operator = this.symbol.id;
+	            this.nextSymbol();
+	            e = new BinaryExpression(e, operator, this.expression());
+	        }
         }
+
+    	/* TODO Take into account operator precedence. */
+        if (this.symbol.id == Symbol.Id.AND || this.symbol.id == Symbol.Id.OR) {
+        	Symbol.Id op = this.symbol.id;
+        	this.nextSymbol();
+		    return new BinaryExpression(e, op, this.relation());
+        }
+        
         return e;
     }
 
@@ -421,7 +443,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
             break;
         case LPAREN:
             this.nextSymbol();
-            e = this.expression();
+            e = this.relation();
             this.expectSymbol(Symbol.Id.RPAREN);
             break;
         case IDENT:
