@@ -8,7 +8,7 @@ class Program {
     ClassDeclaration theClass;
 
     /**
-     * Eine Ausdruck, der ein Objekt der Klasse Main erzeugt und dann darin die
+     * Ein Ausdruck, der ein Objekt der Klasse Main erzeugt und dann darin die
      * Methode main aufruft. Entspricht NEW Main.main.
      */
     private Expression main = new AccessExpression(
@@ -39,15 +39,16 @@ class Program {
 
         // Vordefinierte Klasse hinzufügen
         declarations.add(ClassDeclaration.intClass);
+        declarations.add(ClassDeclaration.boolClass);
 
         // Benutzerdefinierte Klasse hinzufügen
-        declarations.add(theClass);
+        declarations.add(this.theClass);
 
         // Kontextanalyse für die Methoden der Klasse durchführen
-        theClass.contextAnalysis(declarations);
+        this.theClass.contextAnalysis(declarations);
 
         // Abhängigkeiten für Startup-Code auflösen
-        main = main.contextAnalysis(declarations);
+        this.main = this.main.contextAnalysis(declarations);
 
         // Deklarationsraum verlassen
         declarations.leave();
@@ -58,7 +59,7 @@ class Program {
      */
     void printTree() {
         TreeStream tree = new TreeStream(System.out, 4);
-        theClass.print(tree);
+        this.theClass.print(tree);
     }
 
     /**
@@ -75,11 +76,11 @@ class Program {
         code.println("MRI R4, _heap ; R4 zeigt auf die nächste freie Stelle auf dem Heap");
 
         // Ein Objekt der Klasse Main konstruieren und die Methode main aufrufen.
-        main.generateCode(code);
+        this.main.generateCode(code);
         code.println("MRI R0, _end ; Programm beenden");
 
         // Generiere Code für benutzerdefinierte Klasse
-        theClass.generateCode(code);
+        this.theClass.generateCode(code);
 
         // Speicher für Stapel und Heap reservieren
         code.println("_stack: ; Hier fängt der Stapel an");

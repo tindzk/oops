@@ -26,6 +26,9 @@ class ClassDeclaration extends Declaration {
     /** Die Klasse Integer. */
     static final ClassDeclaration intClass = new ClassDeclaration(new Identifier("Integer", null));
 
+    /** Die Klasse Boolean. */
+    static final ClassDeclaration boolClass = new ClassDeclaration(new Identifier("Boolean", null));
+
     /** Die Attribute dieser Klasse. */
     LinkedList<VarDeclaration> attributes = new LinkedList<VarDeclaration>();
 
@@ -55,14 +58,15 @@ class ClassDeclaration extends Declaration {
      * @throws CompileException Während der Kontextanylyse wurde ein Fehler
      *         gefunden.
      */
-    void contextAnalysis(Declarations declarations) throws CompileException {
+    @Override
+	void contextAnalysis(Declarations declarations) throws CompileException {
         // Standardgröße für Objekte festlegen
-        objectSize = HEADERSIZE;
+        this.objectSize = HEADERSIZE;
 
         // Attributtypen auflösen und Indizes innerhalb des Objekts vergeben
-        for (VarDeclaration a : attributes) {
+        for (VarDeclaration a : this.attributes) {
             a.contextAnalysis(declarations);
-            a.offset = objectSize++;
+            a.offset = this.objectSize++;
         }
 
         // Neuen Deklarationsraum schaffen
@@ -70,12 +74,12 @@ class ClassDeclaration extends Declaration {
         declarations.currentClass = this;
 
         // Attribute eintragen
-        for (VarDeclaration a : attributes) {
+        for (VarDeclaration a : this.attributes) {
             declarations.add(a);
         }
 
         // Methoden eintragen
-        for (MethodDeclaration m : methods) {
+        for (MethodDeclaration m : this.methods) {
             declarations.add(m);
         }
 
@@ -84,7 +88,7 @@ class ClassDeclaration extends Declaration {
         this.declarations = (Declarations) declarations.clone();
 
         // Kontextanalyse für Methoden durchführen
-        for (MethodDeclaration m : methods) {
+        for (MethodDeclaration m : this.methods) {
             m.contextAnalysis(declarations);
         }
 
@@ -136,7 +140,7 @@ class ClassDeclaration extends Declaration {
      * @throws CompileException Die Typen sind nicht kompatibel.
      */
     void check(ClassDeclaration expected, Position position) throws CompileException {
-        if (!isA(expected)) {
+        if (!this.isA(expected)) {
             typeError(expected, position);
         }
     }
@@ -145,21 +149,22 @@ class ClassDeclaration extends Declaration {
      * Die Methode gibt diese Deklaration in einer Baumstruktur aus.
      * @param tree Der Strom, in den die Ausgabe erfolgt.
      */
-    void print(TreeStream tree) {
-        tree.println("CLASS " + identifier.name);
+    @Override
+	void print(TreeStream tree) {
+        tree.println("CLASS " + this.identifier.name);
         tree.indent();
-        if (!attributes.isEmpty()) {
+        if (!this.attributes.isEmpty()) {
             tree.println("ATTRIBUTES");
             tree.indent();
-            for (VarDeclaration a : attributes) {
+            for (VarDeclaration a : this.attributes) {
                 a.print(tree);
             }
             tree.unindent();
         }
-        if (!methods.isEmpty()) {
+        if (!this.methods.isEmpty()) {
             tree.println("METHODS");
             tree.indent();
-            for (MethodDeclaration m : methods) {
+            for (MethodDeclaration m : this.methods) {
                 m.print(tree);
             }
             tree.unindent();
@@ -173,12 +178,12 @@ class ClassDeclaration extends Declaration {
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */
     void generateCode(CodeStream code) {
-        code.println("; CLASS " + identifier.name);
+        code.println("; CLASS " + this.identifier.name);
 
         // Synthese für alle Methoden
-        for (MethodDeclaration m : methods) {
+        for (MethodDeclaration m : this.methods) {
             m.generateCode(code);
         }
-        code.println("; END CLASS " + identifier.name);
+        code.println("; END CLASS " + this.identifier.name);
     }
 }

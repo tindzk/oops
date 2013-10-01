@@ -24,12 +24,15 @@ class BoxExpression extends Expression {
         super(operand.position);
         this.operand = operand;
         if (operand.type.isA(ClassDeclaration.intType)) {
-            type = ClassDeclaration.intClass;
-            newType = new NewExpression(new ResolvableIdentifier("Integer", null), null);
+            this.type = ClassDeclaration.intClass;
+            this.newType = new NewExpression(new ResolvableIdentifier("Integer", null), null);
+        } else if (operand.type.isA(ClassDeclaration.boolType)) {
+            this.type = ClassDeclaration.boolClass;
+            this.newType = new NewExpression(new ResolvableIdentifier("Boolean", null), null);
         } else {
             assert false;
         }
-        newType = newType.contextAnalysis(declarations);
+        this.newType = this.newType.contextAnalysis(declarations);
     }
 
     /**
@@ -37,10 +40,11 @@ class BoxExpression extends Expression {
      * Wenn der Typ des Ausdrucks bereits ermittelt wurde, wird er auch ausgegeben.
      * @param tree Der Strom, in den die Ausgabe erfolgt.
      */
-    void print(TreeStream tree) {
-        tree.println("BOX" + (type == null ? "" : " : " + type.identifier.name));
+    @Override
+	void print(TreeStream tree) {
+        tree.println("BOX" + (this.type == null ? "" : " : " + this.type.identifier.name));
         tree.indent();
-        operand.print(tree);
+        this.operand.print(tree);
         tree.unindent();
     }
 
@@ -49,9 +53,10 @@ class BoxExpression extends Expression {
      * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
      * @param code Der Strom, in den die Ausgabe erfolgt.
      */
-    void generateCode(CodeStream code) {
-        newType.generateCode(code);
-        operand.generateCode(code);
+    @Override
+	void generateCode(CodeStream code) {
+        this.newType.generateCode(code);
+        this.operand.generateCode(code);
         code.println("; BOX");
         code.println("MRM R5, (R2) ; Wert vom Stapel nehmen");
         code.println("SUB R2, R1");

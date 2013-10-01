@@ -33,7 +33,7 @@ import java.util.LinkedList;
  *                | WHILE relation
  *                  DO statements
  *                  END WHILE
- *                | memberaccess [ ':=' expression ] ';'
+ *                | memberaccess [ ':=' relation ] ';'
  *
  * relation     ::= expression [ ( 'AND' | 'OR' | '=' | '#' | '<' | '>' | '<=' | '>=' ) expression ]
  *                | NOT (relation)
@@ -281,7 +281,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
             Expression e = this.memberAccess();
             if (this.symbol.id == Symbol.Id.BECOMES) {
                 this.nextSymbol();
-                statements.add(new Assignment(e, this.expression()));
+                statements.add(new Assignment(e, this.relation()));
             } else {
                 statements.add(new CallStatement(e));
             }

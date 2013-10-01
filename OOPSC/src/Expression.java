@@ -71,9 +71,11 @@ abstract class Expression {
      *         gefunden.
      */
     Expression box(Declarations declarations) throws CompileException {
-        if (type.isA(ClassDeclaration.intType)) {
+        if (this.type.isA(ClassDeclaration.intType)) {
             return new BoxExpression(this, declarations);
-        } else if (lValue) {
+        } else if (this.type.isA(ClassDeclaration.boolType)) {
+            return new BoxExpression(this, declarations);
+        } else if (this.lValue) {
             return new DeRefExpression(this);
         } else {
             return this;
@@ -92,9 +94,13 @@ abstract class Expression {
      *         Dereferenzierung eingefügt wurde(n).
      */
     Expression unBox() {
-        if (lValue) {
+        if (this.type != ClassDeclaration.nullType && this.type.isA(ClassDeclaration.boolClass)) {
+            return new UnBoxExpression(this);
+        }
+
+        if (this.lValue) {
             return new DeRefExpression(this).unBox();
-        } else if (type != ClassDeclaration.nullType && type.isA(ClassDeclaration.intClass)) {
+        } else if (this.type != ClassDeclaration.nullType && this.type.isA(ClassDeclaration.intClass)) {
             return new UnBoxExpression(this);
         } else {
             return this;

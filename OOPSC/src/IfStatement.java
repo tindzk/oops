@@ -32,6 +32,8 @@ class IfStatement extends Statement {
     @Override
 	void contextAnalysis(Declarations declarations) throws CompileException {
         this.condition = this.condition.contextAnalysis(declarations);
+
+        /* this.condition.type is either boolType or boolClass. Enforce boolType via unboxing. */
         this.condition = this.condition.unBox();
         this.condition.type.check(ClassDeclaration.boolType, this.condition.position);
 
