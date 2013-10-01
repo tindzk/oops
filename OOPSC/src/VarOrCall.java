@@ -35,6 +35,7 @@ class VarOrCall extends Expression {
 	@Override
 	Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
+		// TODO refactor
 		this.contextAnalysisForMember(declarations);
 
 		if (this.identifier.declaration instanceof MethodDeclaration
@@ -65,6 +66,7 @@ class VarOrCall extends Expression {
 	 */
 	void contextAnalysisForMember(Declarations declarations)
 			throws CompileException {
+		// TODO refactor
 		declarations.resolveVarOrMethod(this.identifier);
 
 		if (this.identifier.declaration instanceof VarDeclaration) {

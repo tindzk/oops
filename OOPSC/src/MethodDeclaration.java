@@ -82,22 +82,29 @@ class MethodDeclaration extends Declaration {
 	void print(TreeStream tree) {
 		tree.println("METHOD " + this.identifier.name);
 		tree.indent();
+
 		if (!this.vars.isEmpty()) {
 			tree.println("VARIABLES");
 			tree.indent();
+
 			for (VarDeclaration v : this.vars) {
 				v.print(tree);
 			}
+
 			tree.unindent();
 		}
+
 		if (!this.statements.isEmpty()) {
 			tree.println("BEGIN");
 			tree.indent();
+
 			for (Statement s : this.statements) {
 				s.print(tree);
 			}
+
 			tree.unindent();
 		}
+
 		tree.unindent();
 	}
 
@@ -115,6 +122,7 @@ class MethodDeclaration extends Declaration {
 		code.println("ADD R2, R1");
 		code.println("MMR (R2), R3 ; Alten Stapelrahmen sichern");
 		code.println("MRR R3, R2 ; Aktuelle Stapelposition ist neuer Rahmen");
+
 		if (!this.vars.isEmpty()) {
 			code.println("MRI R5, " + this.vars.size());
 			code.println("ADD R2, R5 ; Platz für lokale Variablen schaffen");
@@ -122,6 +130,7 @@ class MethodDeclaration extends Declaration {
 		for (Statement s : this.statements) {
 			s.generateCode(code);
 		}
+
 		code.println("; END METHOD " + this.identifier.name);
 		code.println("MRI R5, " + (this.vars.size() + 3));
 		code.println("SUB R2, R5 ; Stack korrigieren");

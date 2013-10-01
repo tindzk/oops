@@ -61,6 +61,7 @@ class ReadStatement extends Statement {
 	 */
 	@Override
 	void generateCode(CodeStream code) {
+		// TODO refactor
 		code.println("; READ lvalue ablegen");
 		this.operand.generateCode(code);
 		code.println("; READ Speicher allokieren");

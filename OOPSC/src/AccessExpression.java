@@ -36,6 +36,7 @@ class AccessExpression extends Expression {
 	@Override
 	Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
+		// TODO refactor
 		this.leftOperand = this.leftOperand.contextAnalysis(declarations);
 
 		// Dereferenzieren. Außerdem könnte man einen Ausdruck wie z.B. 5.print

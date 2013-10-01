@@ -42,6 +42,7 @@ class BinaryExpression extends Expression {
 	@Override
 	Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
+		// TODO refactor
 		this.leftOperand = this.leftOperand.contextAnalysis(declarations);
 		this.rightOperand = this.rightOperand.contextAnalysis(declarations);
 		switch (this.operator) {
