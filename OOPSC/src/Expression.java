@@ -1,3 +1,6 @@
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+
 /**
  * Die abstrakte Basisklasse für alle Ausdrücke im Syntaxbaum.
  * Zusätzlich zur Standardschnittstelle für Ausdrücke definiert sie auch
@@ -120,6 +123,19 @@ abstract class Expression {
 			return new UnBoxExpression(this);
 		} else {
 			return this;
+		}
+	}
+
+	@Override
+	public String toString() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		TreeStream tree = new TreeStream(stream, 4);
+		this.print(tree);
+
+		try {
+			return stream.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return null;
 		}
 	}
 }
