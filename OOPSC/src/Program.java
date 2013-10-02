@@ -1,11 +1,14 @@
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Die Klasse repräsentiert den Syntaxbaum des gesamten Programms.
  * Sie ist der Einstiegspunkt für die Kontextanalyse und die
  * Synthese.
  */
 class Program {
-	/** Die benutzerdefinierte Klasse. */
-	ClassDeclaration theClass;
+	/** Die benutzerdefinierten Klassen. */
+	List<ClassDeclaration> classes = new LinkedList<>();
 
 	/**
 	 * Ein Ausdruck, der ein Objekt der Klasse Main erzeugt und dann darin die
@@ -17,12 +20,30 @@ class Program {
 
 	/**
 	 * Konstruktor.
+	 */
+	public Program() {
+		// Integer und Boolean enthalten jeweils ein Element
+
+		// TODO
+		// Statt ClassDeclaration.(int|bool)Class.objectSize manuell zu
+		// setzen, fügt man z.B. manuell ein Attribut _value : _Integer oder
+		// _value : _Boolean hinzu
+		ClassDeclaration.intClass.objectSize = ClassDeclaration.HEADERSIZE + 1;
+		ClassDeclaration.boolClass.objectSize = ClassDeclaration.HEADERSIZE + 1;
+
+		// Vordefinierte Klassen hinzufügen
+		this.classes.add(ClassDeclaration.intClass);
+		this.classes.add(ClassDeclaration.boolClass);
+	}
+
+	/**
+	 * Definiere Klasse.
 	 *
-	 * @param theClass
+	 * @param clazz
 	 *        Die benutzerdefinierte Klasse.
 	 */
-	Program(ClassDeclaration theClass) {
-		this.theClass = theClass;
+	public void addClass(ClassDeclaration clazz) {
+		this.classes.add(clazz);
 	}
 
 	/**
@@ -35,21 +56,18 @@ class Program {
 	void contextAnalysis() throws CompileException {
 		Declarations declarations = new Declarations();
 
-		// Integer enthält ein Element
-		ClassDeclaration.intClass.objectSize = ClassDeclaration.HEADERSIZE + 1;
-
 		// Neuen Deklarationsraum schaffen
 		declarations.enter();
 
-		// Vordefinierte Klasse hinzufügen
-		declarations.add(ClassDeclaration.intClass);
-		declarations.add(ClassDeclaration.boolClass);
+		// Benutzerdefinierten Klassen hinzufügen
+		for (ClassDeclaration c : this.classes) {
+			declarations.add(c);
+		}
 
-		// Benutzerdefinierte Klasse hinzufügen
-		declarations.add(this.theClass);
-
-		// Kontextanalyse für die Methoden der Klasse durchführen
-		this.theClass.contextAnalysis(declarations);
+		// Kontextanalyse für die Methoden aller Klassen durchführen
+		for (ClassDeclaration c : this.classes) {
+			c.contextAnalysis(declarations);
+		}
 
 		// Abhängigkeiten für Startup-Code auflösen
 		this.main = this.main.contextAnalysis(declarations);
@@ -63,7 +81,10 @@ class Program {
 	 */
 	void printTree() {
 		TreeStream tree = new TreeStream(System.out, 4);
-		this.theClass.print(tree);
+
+		for (ClassDeclaration c : this.classes) {
+			c.print(tree);
+		}
 	}
 
 	/**
@@ -85,8 +106,10 @@ class Program {
 		this.main.generateCode(code);
 		code.println("MRI R0, _end ; Programm beenden");
 
-		// Generiere Code für benutzerdefinierte Klasse
-		this.theClass.generateCode(code);
+		// Generiere Code für benutzerdefinierte Klassen
+		for (ClassDeclaration c : this.classes) {
+			c.generateCode(code);
+		}
 
 		// Speicher für Stapel und Heap reservieren
 		code.println("_stack: ; Hier fängt der Stapel an");

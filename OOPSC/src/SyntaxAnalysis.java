@@ -6,7 +6,7 @@ import java.util.LinkedList;
  * Die Klasse realisiert die syntaktische Analyse für die folgende Grammatik.
  * Terminale stehen dabei in Hochkommata oder sind groß geschrieben:
  * <pre>
- * program      ::= classdecl
+ * program      ::= { classdecl }
  *
  * classdecl    ::= CLASS identifier IS
  *                  { memberdecl }
@@ -569,8 +569,12 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 */
 	Program parse() throws CompileException, IOException {
 		this.nextSymbol();
-		Program p = new Program(this.classdecl());
-		this.expectSymbol(Symbol.Id.EOF);
+		Program p = new Program();
+
+		while (this.symbol.id != Symbol.Id.EOF) {
+			p.addClass(this.classdecl());
+		}
+
 		return p;
 	}
 }
