@@ -64,9 +64,14 @@ class Program {
 			declarations.add(c);
 		}
 
+		// Alle Klassendeklarationen initialisieren
+		for (ClassDeclaration c : this.classes) {
+			c.contextAnalysis(declarations, true);
+		}
+
 		// Kontextanalyse für die Methoden aller Klassen durchführen
 		for (ClassDeclaration c : this.classes) {
-			c.contextAnalysis(declarations);
+			c.contextAnalysis(declarations, false);
 		}
 
 		// Abhängigkeiten für Startup-Code auflösen

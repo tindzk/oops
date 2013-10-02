@@ -65,15 +65,13 @@ class ClassDeclaration extends Declaration {
 	 *
 	 * @param declarations
 	 *        Die an dieser Stelle gültigen Deklarationen.
+	 * @param initialPass
+	 *        Eigenschaften der Klasse initialisieren.
 	 * @throws CompileException
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
-		// Standardgröße für Objekte festlegen
-		this.objectSize = HEADERSIZE;
-
+	void contextAnalysis(Declarations declarations, boolean initialPass) throws CompileException {
 		// Attributtypen auflösen und Indizes innerhalb des Objekts vergeben
 		for (VarDeclaration a : this.attributes) {
 			a.contextAnalysis(declarations);
@@ -94,17 +92,30 @@ class ClassDeclaration extends Declaration {
 			declarations.add(m);
 		}
 
-		// Wird auf ein Objekt dieser Klasse zugegriffen, werden die Deklarationen
-		// in diesem Zustand benötigt. Deshalb werden sie in der Klasse gespeichert.
-		this.declarations = (Declarations) declarations.clone();
+		if (initialPass) {
+			// Standardgröße für Objekte festlegen
+			this.objectSize = HEADERSIZE;
 
-		// Kontextanalyse für Methoden durchführen
-		for (MethodDeclaration m : this.methods) {
-			m.contextAnalysis(declarations);
+			// Wird auf ein Objekt dieser Klasse zugegriffen, werden die Deklarationen
+			// in diesem Zustand benötigt. Deshalb werden sie in der Klasse gespeichert.
+			this.declarations = (Declarations) declarations.clone();
+		} else {
+			// Kontextanalyse für Methoden durchführen
+			for (MethodDeclaration m : this.methods) {
+				m.contextAnalysis(declarations);
+			}
+
+			// Deklarationsraum verlassen
+			declarations.leave();
 		}
+	}
 
-		// Deklarationsraum verlassen
-		declarations.leave();
+	/**
+	 * @note Methode sollte nicht aufgerufen werden.
+	 */
+	@Override
+	void contextAnalysis(Declarations declarations) throws CompileException {
+		throw new CompileException(null, null);
 	}
 
 	/**
