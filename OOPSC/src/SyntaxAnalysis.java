@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Die Klasse realisiert die syntaktische Analyse für die folgende Grammatik.
@@ -13,7 +14,8 @@ import java.util.LinkedList;
  *                  END CLASS
  *
  * memberdecl   ::= vardecl ';'
- *                | METHOD identifier IS methodbody
+ *                | METHOD identifier ['(' vardecl { ';' vardecl } ')']
+ *                  IS methodbody
  *
  * vardecl      ::= identifier { ',' identifier } ':' identifier
  *
@@ -57,7 +59,7 @@ import java.util.LinkedList;
  *                | '(' relation ')'
  *                | varorcall
  *
- * varorcall    ::= identifier
+ * varorcall    ::= identifier ['(' relation { ',' relation } ')']
  * </pre>
  * Daraus wird der Syntaxbaum aufgebaut, dessen Wurzel die Klasse
  * {@link Program Program} ist.
@@ -175,12 +177,26 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	private void memberdecl(LinkedList<VarDeclaration> attributes,
-			LinkedList<MethodDeclaration> methods) throws CompileException,
+	private void memberdecl(List<VarDeclaration> attributes,
+			List<MethodDeclaration> methods) throws CompileException,
 			IOException {
 		if (this.symbol.id == Symbol.Id.METHOD) {
 			this.nextSymbol();
 			MethodDeclaration m = new MethodDeclaration(this.expectIdent());
+
+			if (this.symbol.id == Symbol.Id.LPAREN) {
+				List<VarDeclaration> vars = new LinkedList<>();
+
+				do {
+					this.nextSymbol();
+					this.vardecl(vars, false);
+				} while (this.symbol.id == Symbol.Id.SEMICOLON);
+
+				this.expectSymbol(Symbol.Id.RPAREN);
+
+				m.setParameters(vars);
+			}
+
 			this.expectSymbol(Symbol.Id.IS);
 			this.methodbody(m.vars, m.statements);
 			methods.add(m);
@@ -204,9 +220,9 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	private void vardecl(LinkedList<VarDeclaration> vars, boolean isAttribute)
+	private void vardecl(List<VarDeclaration> vars, boolean isAttribute)
 			throws CompileException, IOException {
-		LinkedList<VarDeclaration> temp = new LinkedList<VarDeclaration>();
+		List<VarDeclaration> temp = new LinkedList<>();
 		temp.add(new VarDeclaration(this.expectIdent(), isAttribute));
 		while (this.symbol.id == Symbol.Id.COMMA) {
 			this.nextSymbol();
@@ -234,8 +250,8 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	private void methodbody(LinkedList<VarDeclaration> vars,
-			LinkedList<Statement> statements) throws CompileException,
+	private void methodbody(List<VarDeclaration> vars,
+			List<Statement> statements) throws CompileException,
 			IOException {
 		while (this.symbol.id != Symbol.Id.BEGIN) {
 			this.vardecl(vars, false);
@@ -258,7 +274,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	private void statements(LinkedList<Statement> statements)
+	private void statements(List<Statement> statements)
 			throws CompileException, IOException {
 		while (this.symbol.id != Symbol.Id.END
 				&& this.symbol.id != Symbol.Id.ELSEIF
@@ -278,7 +294,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	private void statement(LinkedList<Statement> statements)
+	private void statement(List<Statement> statements)
 			throws CompileException, IOException {
 		switch (this.symbol.id) {
 			case READ:
@@ -301,7 +317,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 				while (this.symbol.id == Symbol.Id.ELSEIF) {
 					this.nextSymbol();
 
-					LinkedList<Statement> stmts = new LinkedList<>();
+					List<Statement> stmts = new LinkedList<>();
 					s.addIfElse(this.relation(), stmts);
 
 					this.expectSymbol(Symbol.Id.THEN);
@@ -311,7 +327,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 				if (this.symbol.id == Symbol.Id.ELSE) {
 					this.nextSymbol();
 
-					LinkedList<Statement> stmts = new LinkedList<>();
+					List<Statement> stmts = new LinkedList<>();
 					s.setElse(stmts);
 
 					this.statements(stmts);
@@ -529,11 +545,35 @@ class SyntaxAnalysis extends LexicalAnalysis {
 				this.expectSymbol(Symbol.Id.RPAREN);
 				break;
 			case IDENT:
-				e = new VarOrCall(this.expectResolvableIdent());
+				e = this.varOrCall();
 				break;
 			default:
 				this.unexpectedSymbol(null);
 		}
+		return e;
+	}
+
+	/**
+	 * Parsiere Variablenzugriff oder Methodenaufruf.
+	 *
+	 * @return Der Ausdruck.
+	 * @throws CompileException
+	 *         Der Quelltext entspricht nicht der Syntax.
+	 * @throws IOException
+	 *         Ein Lesefehler ist aufgetreten.
+	 */
+	private Expression varOrCall() throws CompileException, IOException {
+		VarOrCall e = new VarOrCall(this.expectResolvableIdent());
+
+		if (this.symbol.id == Symbol.Id.LPAREN) {
+			do {
+				this.nextSymbol();
+				e.addParameter(this.relation());
+			} while (this.symbol.id == Symbol.Id.COMMA);
+
+			this.expectSymbol(Symbol.Id.RPAREN);
+		}
+
 		return e;
 	}
 

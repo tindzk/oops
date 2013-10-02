@@ -1,3 +1,6 @@
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der dem Zugriff auf eine
  * Variable oder ein Attribut bzw. einem Methodenaufruf entspricht.
@@ -5,6 +8,8 @@
 class VarOrCall extends Expression {
 	/** Der Name des Attributs, der Variablen oder der Methode. */
 	ResolvableIdentifier identifier;
+
+	List<Expression> parameters = new LinkedList<>();
 
 	/**
 	 * Konstruktor.
@@ -15,6 +20,10 @@ class VarOrCall extends Expression {
 	VarOrCall(ResolvableIdentifier identifier) {
 		super(identifier.position);
 		this.identifier = identifier;
+	}
+
+	public void addParameter(Expression e) {
+		this.parameters.add(e);
 	}
 
 	/**

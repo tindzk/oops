@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Die Klasse repräsentiert eine Methode im Syntaxbaum.
@@ -8,11 +9,14 @@ class MethodDeclaration extends Declaration {
 	VarDeclaration self = new VarDeclaration(new Identifier("_self", null),
 			false);
 
+	/** Die Parameter der Methode. */
+	List<VarDeclaration> params = new LinkedList<>();
+
 	/** Die lokalen Variablen der Methode. */
-	LinkedList<VarDeclaration> vars = new LinkedList<VarDeclaration>();
+	List<VarDeclaration> vars = new LinkedList<>();
 
 	/** Die Anweisungen der Methode, d.h. der Methodenrumpf. */
-	LinkedList<Statement> statements = new LinkedList<Statement>();
+	List<Statement> statements = new LinkedList<>();
 
 	/**
 	 * Konstruktor.
@@ -22,6 +26,15 @@ class MethodDeclaration extends Declaration {
 	 */
 	MethodDeclaration(Identifier name) {
 		super(name);
+	}
+
+	/**
+	 * Setzt die Parameter der Methode.
+	 *
+	 * @param params Liste mit den Parametern.
+	 */
+	public void setParameters(List<VarDeclaration> params) {
+		this.params = params;
 	}
 
 	/**

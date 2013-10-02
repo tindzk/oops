@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 
 /**
@@ -10,10 +11,10 @@ class IfStatement extends Statement {
 	Expression condition;
 
 	/** Die Anweisungen im THEN-Teil. */
-	LinkedList<Statement> thenStatements = new LinkedList<Statement>();
+	List<Statement> thenStatements = new LinkedList<>();
 
 	/** Die ELSE-IF-Anweisungen und der ELSE-Block. */
-	public HashMap<Expression, LinkedList<Statement>> elseStatements = new HashMap<>();
+	public HashMap<Expression, List<Statement>> elseStatements = new HashMap<>();
 
 	/**
 	 * Konstruktor.
@@ -47,7 +48,7 @@ class IfStatement extends Statement {
 			s.contextAnalysis(declarations);
 		}
 
-		for (Entry<Expression, LinkedList<Statement>> entry : this.elseStatements
+		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
 			for (Statement s : entry.getValue()) {
 				s.contextAnalysis(declarations);
@@ -55,16 +56,23 @@ class IfStatement extends Statement {
 		}
 	}
 
-	public void addIfElse(Expression condition, LinkedList<Statement> stmts) {
+	/**
+	 * @param condition
+	 * @param stmts
+	 */
+	public void addIfElse(Expression condition, List<Statement> stmts) {
 		this.elseStatements.put(condition, stmts);
 	}
 
-	public void setElse(LinkedList<Statement> stmts) {
+	/**
+	 * @param stmts
+	 */
+	public void setElse(List<Statement> stmts) {
 		this.elseStatements.put(null, stmts);
 	}
 
 	private void print(TreeStream tree, Expression condition,
-			LinkedList<Statement> stmts) {
+			List<Statement> stmts) {
 		tree.indent();
 
 		if (condition != null) {
@@ -97,7 +105,7 @@ class IfStatement extends Statement {
 		tree.println("IF");
 		this.print(tree, this.condition, this.thenStatements);
 
-		for (Entry<Expression, LinkedList<Statement>> entry : this.elseStatements
+		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
 			if (entry.getKey() == null) {
 				continue;
@@ -138,7 +146,7 @@ class IfStatement extends Statement {
 			s.generateCode(code);
 		}
 
-		for (Entry<Expression, LinkedList<Statement>> entry : this.elseStatements
+		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
 			if (entry.getKey() == null) {
 				continue;
