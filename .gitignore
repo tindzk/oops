@@ -1,3 +1,4 @@
-*.jar
+oopsc.jar
+oopsvm.jar
 *.class
 build/

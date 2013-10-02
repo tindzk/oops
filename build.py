@@ -23,12 +23,14 @@ def matchFiles(path, pattern):
 			paths.append(os.path.join(root, filename))
 	return paths
 
+jarFiles = matchFiles('libs/', '*.jar')
+
 for app in ["OOPSC", "OOPSVM"]:
 	if not os.path.exists("build/" + app):
 		os.makedirs("build/" + app)
 
 	srcFiles = matchFiles(app + '/src/', '*.java')
-	cmdCompile = ["/usr/bin/javac", "-d", "build/" + app] + srcFiles
+	cmdCompile = ["/usr/bin/javac", "-cp", ":".join(jarFiles), "-d", "build/" + app] + srcFiles
 	print(" ".join(cmdCompile))
 	run(cmdCompile)
 
