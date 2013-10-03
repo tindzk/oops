@@ -30,6 +30,12 @@ for app in ["OOPSC", "OOPSVM"]:
 		os.makedirs("build/" + app)
 
 	srcFiles = matchFiles(app + '/src/', '*.java')
+
+	for file in srcFiles:
+		if "TestSuite.java" in file:
+			srcFiles.remove(file)
+			break
+
 	cmdCompile = ["/usr/bin/javac", "-cp", ":".join(jarFiles), "-d", "build/" + app] + srcFiles
 	print(" ".join(cmdCompile))
 	run(cmdCompile)
