@@ -75,6 +75,12 @@ class MethodDeclaration extends Declaration {
 		// Rücksprungadresse und alten Rahmenzeiger überspringen
 		int offset = 1;
 
+		// Parameter eintragen
+		for (VarDeclaration v : this.parameters) {
+			declarations.add(v);
+			v.offset = offset++;
+		}
+
 		// Lokale Variablen eintragen
 		for (VarDeclaration v : this.locals) {
 			declarations.add(v);
