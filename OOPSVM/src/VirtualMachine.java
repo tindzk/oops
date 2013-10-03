@@ -257,6 +257,7 @@ class VirtualMachine {
 
 	/**
 	 * Die Methode liest eine Instruktion aus dem Hauptspeicher und führt sie aus.
+	 *
 	 * @throws IOException
 	 * @throws Exception
 	 *         Ein Fehler ist aufgetreten (Instruktion, Speicherstelle
@@ -354,10 +355,13 @@ class VirtualMachine {
 						this.registers[param2] = this.input.read();
 						break;
 					case 1:
-						this.output.write((char) this.registers[param2]);
+						this.output.write(new byte[] {
+							(byte) this.registers[param2]
+						});
 						break;
 					default:
-						throw new VMException("Illegaler Systemaufruf: " + param1);
+						throw new VMException("Illegaler Systemaufruf: "
+								+ param1);
 				}
 				break;
 			default:
