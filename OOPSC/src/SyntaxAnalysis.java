@@ -251,8 +251,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
 	private void methodbody(List<VarDeclaration> vars,
-			List<Statement> statements) throws CompileException,
-			IOException {
+			List<Statement> statements) throws CompileException, IOException {
 		while (this.symbol.id != Symbol.Id.BEGIN) {
 			this.vardecl(vars, false);
 			this.expectSymbol(Symbol.Id.SEMICOLON);
@@ -294,8 +293,8 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	private void statement(List<Statement> statements)
-			throws CompileException, IOException {
+	private void statement(List<Statement> statements) throws CompileException,
+			IOException {
 		switch (this.symbol.id) {
 			case READ:
 				this.nextSymbol();
@@ -486,8 +485,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 		Expression e = this.literal();
 		while (this.symbol.id == Symbol.Id.PERIOD) {
 			this.nextSymbol();
-			e = new AccessExpression(e, new VarOrCall(
-					this.expectResolvableIdent()));
+			e = new AccessExpression(e, this.varOrCall());
 		}
 		return e;
 	}
@@ -562,7 +560,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	private Expression varOrCall() throws CompileException, IOException {
+	private VarOrCall varOrCall() throws CompileException, IOException {
 		VarOrCall e = new VarOrCall(this.expectResolvableIdent());
 
 		if (this.symbol.id == Symbol.Id.LPAREN) {
