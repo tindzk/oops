@@ -72,7 +72,8 @@ class ClassDeclaration extends Declaration {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations, boolean initialPass) throws CompileException {
+	void contextAnalysis(Declarations declarations, boolean initialPass)
+			throws CompileException {
 		// Attributtypen auflösen und Indizes innerhalb des Objekts vergeben
 		for (VarDeclaration a : this.attributes) {
 			a.contextAnalysis(declarations, initialPass);
@@ -143,21 +144,11 @@ class ClassDeclaration extends Declaration {
 	 * @throws CompileException
 	 *         Die Meldung über den Typfehler.
 	 */
-	static void typeError(ClassDeclaration expected, Position position)
-			throws CompileException {
-		if (expected == intType) {
-			throw new CompileException("Ausdruck vom Typ Integer erwartet",
-					position);
-		} else if (expected == boolType) {
-			throw new CompileException("Ausdruck vom Typ Boolean erwartet",
-					position);
-		} else if (expected == ClassDeclaration.voidType) {
-			throw new CompileException(
-					"Hier darf keinen Wert zurückgeliefert werden", position);
-		} else {
-			throw new CompileException("Ausdruck vom Typ "
-					+ expected.identifier.name + " erwartet", position);
-		}
+	static void typeError(ClassDeclaration expected, ClassDeclaration given,
+			Position position) throws CompileException {
+		throw new CompileException(String.format(
+				"Ausdruck vom Typ %s erwartet, %s gegeben.",
+				expected.identifier.name, given.identifier.name), position);
 	}
 
 	/**
@@ -175,7 +166,7 @@ class ClassDeclaration extends Declaration {
 	void check(ClassDeclaration expected, Position position)
 			throws CompileException {
 		if (!this.isA(expected)) {
-			typeError(expected, position);
+			typeError(expected, this, position);
 		}
 	}
 

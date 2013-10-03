@@ -101,7 +101,7 @@ class BinaryExpression extends Expression {
 				if (!this.leftOperand.type.isA(this.rightOperand.type)
 						&& !this.rightOperand.type.isA(this.leftOperand.type)) {
 					ClassDeclaration.typeError(this.leftOperand.type,
-							this.rightOperand.position);
+							this.rightOperand.type, this.rightOperand.position);
 				}
 				this.type = ClassDeclaration.boolType;
 				break;
