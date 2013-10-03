@@ -99,12 +99,14 @@ class ClassDeclaration extends Declaration {
 			// Wird auf ein Objekt dieser Klasse zugegriffen, werden die Deklarationen
 			// in diesem Zustand benötigt. Deshalb werden sie in der Klasse gespeichert.
 			this.declarations = (Declarations) declarations.clone();
-		} else {
-			// Kontextanalyse für Methoden durchführen
-			for (MethodDeclaration m : this.methods) {
-				m.contextAnalysis(declarations);
-			}
+		}
 
+		// Kontextanalyse für Methoden durchführen
+		for (MethodDeclaration m : this.methods) {
+			m.contextAnalysis(declarations, initialPass);
+		}
+
+		if (!initialPass) {
 			// Deklarationsraum verlassen
 			declarations.leave();
 		}
