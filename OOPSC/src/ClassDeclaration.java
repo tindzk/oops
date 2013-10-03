@@ -35,6 +35,23 @@ class ClassDeclaration extends Declaration {
 	static final ClassDeclaration boolClass = new ClassDeclaration(
 			new Identifier("Boolean", null));
 
+	static {
+		/* Do not set ClassDeclaration.(int|bool)Class.objectSize manually as this
+		 * value is going to be overwritten during the contextual analysis. The
+		 * attribute is required for boxing as it holds the actual value. */
+		VarDeclaration dummyIntegerValue = new VarDeclaration(new Identifier(
+				"_value", null), true);
+		dummyIntegerValue.type = new ResolvableIdentifier("_Integer", null);
+		dummyIntegerValue.type.declaration = ClassDeclaration.intType;
+		ClassDeclaration.intClass.attributes.add(dummyIntegerValue);
+
+		VarDeclaration dummyBooleanValue = new VarDeclaration(new Identifier(
+				"_value", null), true);
+		dummyBooleanValue.type = new ResolvableIdentifier("_Boolean", null);
+		dummyBooleanValue.type.declaration = ClassDeclaration.boolType;
+		ClassDeclaration.boolClass.attributes.add(dummyBooleanValue);
+	}
+
 	/** Die Attribute dieser Klasse. */
 	LinkedList<VarDeclaration> attributes = new LinkedList<VarDeclaration>();
 
@@ -74,6 +91,9 @@ class ClassDeclaration extends Declaration {
 	@Override
 	void contextAnalysis(Declarations declarations, boolean initialPass)
 			throws CompileException {
+		// Standardgröße für Objekte festlegen
+		this.objectSize = HEADERSIZE;
+
 		// Attributtypen auflösen und Indizes innerhalb des Objekts vergeben
 		for (VarDeclaration a : this.attributes) {
 			a.contextAnalysis(declarations, initialPass);
@@ -95,9 +115,6 @@ class ClassDeclaration extends Declaration {
 		}
 
 		if (initialPass) {
-			// Standardgröße für Objekte festlegen
-			this.objectSize = HEADERSIZE;
-
 			// Wird auf ein Objekt dieser Klasse zugegriffen, werden die Deklarationen
 			// in diesem Zustand benötigt. Deshalb werden sie in der Klasse gespeichert.
 			this.declarations = (Declarations) declarations.clone();

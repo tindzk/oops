@@ -22,15 +22,6 @@ class Program {
 	 * Konstruktor.
 	 */
 	public Program() {
-		// Integer und Boolean enthalten jeweils ein Element
-
-		// TODO
-		// Statt ClassDeclaration.(int|bool)Class.objectSize manuell zu
-		// setzen, fügt man z.B. manuell ein Attribut _value : _Integer oder
-		// _value : _Boolean hinzu
-		ClassDeclaration.intClass.objectSize = ClassDeclaration.HEADERSIZE + 1;
-		ClassDeclaration.boolClass.objectSize = ClassDeclaration.HEADERSIZE + 1;
-
 		// Vordefinierte Klassen hinzufügen
 		this.classes.add(ClassDeclaration.intClass);
 		this.classes.add(ClassDeclaration.boolClass);
