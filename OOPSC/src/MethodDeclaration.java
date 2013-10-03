@@ -31,7 +31,8 @@ class MethodDeclaration extends Declaration {
 	/**
 	 * Setzt die Parameter der Methode.
 	 *
-	 * @param params Liste mit den Parametern.
+	 * @param params
+	 *        Liste mit den Parametern.
 	 */
 	public void setParameters(List<VarDeclaration> params) {
 		this.parameters = params;
@@ -47,7 +48,16 @@ class MethodDeclaration extends Declaration {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations, boolean initialPass) throws CompileException {
+	void contextAnalysis(Declarations declarations, boolean initialPass)
+			throws CompileException {
+		if (declarations.currentClass.identifier.name.equals("Main")
+				&& this.identifier.name.equals("main")
+				&& this.parameters.size() != 0) {
+			throw new CompileException(
+					"Main.main() must not have any parameters.",
+					this.identifier.position);
+		}
+
 		// SELF ist Variable vom Typ dieser Klasse
 		this.self.type = new ResolvableIdentifier(
 				declarations.currentClass.identifier.name, null);
