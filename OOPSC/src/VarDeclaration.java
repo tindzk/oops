@@ -35,7 +35,7 @@ class VarDeclaration extends Declaration {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	void contextAnalysis(Declarations declarations, boolean initialPass) throws CompileException {
 		declarations.resolveType(this.type);
 	}
 

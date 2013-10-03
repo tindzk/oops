@@ -24,7 +24,7 @@ abstract class Declaration {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	abstract void contextAnalysis(Declarations declarations)
+	abstract void contextAnalysis(Declarations declarations, boolean initialPass)
 			throws CompileException;
 
 	/**

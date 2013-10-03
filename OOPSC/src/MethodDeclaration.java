@@ -46,6 +46,7 @@ class MethodDeclaration extends Declaration {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
+	@Override
 	void contextAnalysis(Declarations declarations, boolean initialPass) throws CompileException {
 		// SELF ist Variable vom Typ dieser Klasse
 		this.self.type = new ResolvableIdentifier(
@@ -54,12 +55,12 @@ class MethodDeclaration extends Declaration {
 
 		// Löse Typen aller Parameter auf
 		for (VarDeclaration v : this.parameters) {
-			v.contextAnalysis(declarations);
+			v.contextAnalysis(declarations, initialPass);
 		}
 
 		// Löse Typen aller Variablen auf
 		for (VarDeclaration v : this.locals) {
-			v.contextAnalysis(declarations);
+			v.contextAnalysis(declarations, initialPass);
 		}
 
 		// Neuen Deklarationsraum schaffen
@@ -89,14 +90,6 @@ class MethodDeclaration extends Declaration {
 
 		// Alten Deklarationsraum wiederherstellen
 		declarations.leave();
-	}
-
-	/**
-	 * @note Methode sollte nicht aufgerufen werden.
-	 */
-	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
-		throw new CompileException(null, null);
 	}
 
 	/**

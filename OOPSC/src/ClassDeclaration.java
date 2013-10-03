@@ -71,10 +71,11 @@ class ClassDeclaration extends Declaration {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
+	@Override
 	void contextAnalysis(Declarations declarations, boolean initialPass) throws CompileException {
 		// Attributtypen auflösen und Indizes innerhalb des Objekts vergeben
 		for (VarDeclaration a : this.attributes) {
-			a.contextAnalysis(declarations);
+			a.contextAnalysis(declarations, initialPass);
 			a.offset = this.objectSize++;
 		}
 
@@ -110,14 +111,6 @@ class ClassDeclaration extends Declaration {
 			// Deklarationsraum verlassen
 			declarations.leave();
 		}
-	}
-
-	/**
-	 * @note Methode sollte nicht aufgerufen werden.
-	 */
-	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
-		throw new CompileException(null, null);
 	}
 
 	/**
