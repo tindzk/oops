@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
@@ -22,6 +23,13 @@ class CodeStream extends PrintStream {
 	 */
 	CodeStream() {
 		super(System.out);
+	}
+
+	/**
+	 * Konstruktor für beliebige Streams.
+	 */
+	CodeStream(OutputStream stream) {
+		super(stream);
 	}
 
 	/**

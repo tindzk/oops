@@ -1,6 +1,14 @@
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,8 +36,28 @@ public class TestSuite {
 		this.path = file;
 	}
 
+	static String readFile(String path, Charset encoding) throws IOException {
+		byte[] encoded = Files.readAllBytes(Paths.get(path));
+		return encoding.decode(ByteBuffer.wrap(encoded)).toString();
+	}
+
+	public String runVM(String asm, String input) throws Exception {
+		InputStream asmStream = new ByteArrayInputStream(asm.getBytes("UTF-8"));
+
+		VirtualMachine vm = new VirtualMachine(
+				new Assembler(false, false).assemble(asmStream), new int[8],
+				false, false, false, false, false, false, false);
+
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+		vm.setStreams(new ByteArrayInputStream(input.getBytes()), output);
+		vm.run();
+
+		return output.toString("UTF-8");
+	}
+
 	/**
-	 * Performs syntax and context analysis.
+	 * Performs syntax and context analysis. Also tests the code generation.
 	 *
 	 * @throws Exception
 	 */
@@ -37,11 +65,26 @@ public class TestSuite {
 	public void testFile() throws Exception {
 		boolean supposedToFail = this.path.contains("_se");
 
+		String pathExpected = this.path.substring(0, this.path.length() - 5)
+				+ ".out";
+		String expected = readFile(pathExpected, StandardCharsets.UTF_8);
+		System.err.println(expected);
+
 		try {
 			this.p = new SyntaxAnalysis(this.path, false).parse();
 			this.p.contextAnalysis();
 
-			/* TODO Test code generation. */
+			/* Test code generation. */
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			CodeStream code = new CodeStream(stream);
+			this.p.generateCode(code, 100, 100);
+			String asm = stream.toString("UTF-8");
+
+			/* Run the VM twice with different inputs. */
+			String output = this.runVM(asm, "abc") + this.runVM(asm, "xyz");
+			assertEquals(expected, output);
+		} catch (UnsupportedEncodingException e) {
+			fail();
 		} catch (CompileException e) {
 			if (supposedToFail) {
 				return;
