@@ -130,7 +130,7 @@ class Assembler {
 	 * @throws Exception
 	 *         Ein ungültiges Zeichen wurde gelesen.
 	 */
-	private String readToken() throws IOException, Exception {
+	private String readToken() throws IOException, AsmException {
 		while (this.c != -1) {
 			while (this.c != -1 && Character.isWhitespace((char) this.c)) {
 				this.nextChar();
@@ -161,7 +161,7 @@ class Assembler {
 							this.nextChar();
 						}
 						if (number.equals("-")) {
-							throw new Exception(
+							throw new AsmException(
 									"Zahl muss mindestens eine Ziffer haben: -");
 						}
 						return number;
@@ -177,7 +177,7 @@ class Assembler {
 						}
 						return identifier;
 					} else {
-						throw new Exception("Unerwartetes Zeichen: "
+						throw new AsmException("Unerwartetes Zeichen: "
 								+ (char) this.c + " (" + this.c + ")");
 					}
 			}
@@ -200,21 +200,21 @@ class Assembler {
 	 * @param register
 	 *        Soll der Parameter ein Register sein?
 	 * @return Die dem Parameter entsprechende Zahl.
-	 * @throws Exception
+	 * @throws AsmException
 	 *         Die Zeichenkette ist ungültig.
 	 */
-	private int parseParam(String word, boolean register) throws Exception {
+	private int parseParam(String word, boolean register) throws AsmException {
 		if (word.equals("")) {
-			throw new Exception("Parameter fehlt");
+			throw new AsmException("Parameter fehlt");
 		} else if (register) {
 			if (word.charAt(0) == 'R') {
 				int num = Integer.parseInt(word.substring(1));
 				if (!word.equals("R" + num)) {
-					throw new Exception("Falsches Register: " + word);
+					throw new AsmException("Falsches Register: " + word);
 				}
 				return num;
 			} else {
-				throw new Exception("Register erwartet: " + word);
+				throw new AsmException("Register erwartet: " + word);
 			}
 		} else if (Character.isLetter(word.charAt(0)) || word.charAt(0) == '_') {
 			if (this.isFirstPass()) {
@@ -222,7 +222,7 @@ class Assembler {
 			} else {
 				Integer address = this.labels.get(word);
 				if (address == null) {
-					throw new Exception("Marke " + word + " nicht gefunden");
+					throw new AsmException("Marke " + word + " nicht gefunden");
 				} else {
 					return address;
 				}
@@ -255,10 +255,10 @@ class Assembler {
 	 *
 	 * @throws IOException
 	 *         Die Ausnahme wird bei Leseproblemen der Datei erzeugt.
-	 * @throws Exception
+	 * @throws AsmException
 	 *         Beim Parsieren ist ein Fehler aufgetreten.
 	 */
-	private void parseLine() throws IOException, Exception {
+	private void parseLine() throws IOException, AsmException {
 		String instruction = this.readToken();
 		String word1 = this.readToken();
 		String word2;
@@ -270,13 +270,13 @@ class Assembler {
 				String label = instruction;
 				if (label.charAt(0) != '_'
 						&& !Character.isLetter(label.charAt(0))) {
-					throw new Exception(
+					throw new AsmException(
 							"Marke beginnt nicht mit einem Buchstaben: "
 									+ label + ":");
 				} else if (this.labels.get(label) == null) {
 					this.labels.put(label, this.writePos);
 				} else {
-					throw new Exception("Marke " + label
+					throw new AsmException("Marke " + label
 							+ " wurde mehrfach definiert");
 				}
 			}
@@ -286,30 +286,30 @@ class Assembler {
 				if (instruction.equals(instructions[i])) { // gültige Instruktion
 					if (i == 3) {
 						if (!word1.equals("(")) {
-							throw new Exception(
+							throw new AsmException(
 									"Erster Parameter von MMR muss geklammert werden");
 						}
 						word1 = this.readToken();
 						word2 = this.readToken();
 						if (!word2.equals(")")) {
-							throw new Exception(
+							throw new AsmException(
 									"Erster Parameter von MMR muss geklammert werden");
 						}
 					}
 					word2 = this.readToken();
 					if (!word2.equals(",")) {
-						throw new Exception("Komma erwartet");
+						throw new AsmException("Komma erwartet");
 					}
 					word2 = this.readToken();
 					if (i == 2) {
 						if (!word2.equals("(")) {
-							throw new Exception(
+							throw new AsmException(
 									"Zweiter Parameter von MRM muss geklammert werden");
 						}
 						word2 = this.readToken();
 						String word3 = this.readToken();
 						if (!word3.equals(")")) {
-							throw new Exception(
+							throw new AsmException(
 									"Zweiter Parameter von MRM muss geklammert werden");
 						}
 					}
@@ -329,7 +329,7 @@ class Assembler {
 				if (instruction.equals("DAT")) { // DAT?
 					word2 = this.readToken();
 					if (!word2.equals(",")) {
-						throw new Exception("Komma erwartet");
+						throw new AsmException("Komma erwartet");
 					}
 					word2 = this.readToken();
 					int param1 = this.parseParam(word1, false);
@@ -341,10 +341,10 @@ class Assembler {
 										param1 == 1 ? "" : "...");
 					}
 					if (Character.isLetter(word1.charAt(0))) {
-						throw new Exception(
+						throw new AsmException(
 								"Erster Parameter von DAT kann keine Marke sein");
 					} else if (param1 <= 0) {
-						throw new Exception(
+						throw new AsmException(
 								"Erster Parameter von DAT muss groesser als 0 sein");
 					} else if (param2 == 0) {
 						this.writePos += param1;
@@ -354,7 +354,7 @@ class Assembler {
 						}
 					}
 				} else { // ansonsten Fehler
-					throw new Exception("Unbekannte Anweisung " + instruction);
+					throw new AsmException("Unbekannte Anweisung " + instruction);
 				}
 			}
 		}
@@ -372,10 +372,10 @@ class Assembler {
 	 *         Der Quelltext existiert nicht.
 	 * @throws IOException
 	 *         Die Ausnahme wird bei Leseproblemen der Datei erzeugt.
-	 * @throws Exception
+	 * @throws AsmException
 	 *         Beim Assemblieren ist ein Fehler aufgetreten.
 	 */
-	private void pass(InputStream stream) throws IOException, Exception {
+	private void pass(InputStream stream) throws IOException, AsmException {
 		this.reader = new InputStreamReader(stream);
 		this.line = "";
 		this.nextChar();
@@ -411,11 +411,11 @@ class Assembler {
 	 *         Der Quelltext existiert nicht.
 	 * @throws IOException
 	 *         Die Ausnahme wird bei Leseproblemen der Datei erzeugt.
-	 * @throws Exception
+	 * @throws AsmException
 	 *         Beim Assemblieren ist ein Fehler aufgetreten.
 	 */
 	int[] assemble(InputStream stream) throws FileNotFoundException,
-			IOException, Exception {
+			IOException, AsmException {
 		this.labels = new TreeMap<String, Integer>();
 		this.output = null;
 		this.showCode = this.showFirst;

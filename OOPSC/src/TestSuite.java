@@ -3,6 +3,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -41,7 +42,8 @@ public class TestSuite {
 		return encoding.decode(ByteBuffer.wrap(encoded)).toString();
 	}
 
-	public String runVM(String asm, String input) throws Exception {
+	public String runVM(String asm, String input) throws FileNotFoundException,
+			IOException, AsmException, VMException {
 		InputStream asmStream = new ByteArrayInputStream(asm.getBytes("UTF-8"));
 
 		VirtualMachine vm = new VirtualMachine(
@@ -68,7 +70,6 @@ public class TestSuite {
 		String pathExpected = this.path.substring(0, this.path.length() - 5)
 				+ ".out";
 		String expected = readFile(pathExpected, StandardCharsets.UTF_8);
-		System.err.println(expected);
 
 		try {
 			this.p = new SyntaxAnalysis(this.path, false).parse();

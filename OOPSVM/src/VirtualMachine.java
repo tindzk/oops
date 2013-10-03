@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -256,12 +257,12 @@ class VirtualMachine {
 
 	/**
 	 * Die Methode liest eine Instruktion aus dem Hauptspeicher und führt sie aus.
-	 *
+	 * @throws IOException
 	 * @throws Exception
 	 *         Ein Fehler ist aufgetreten (Instruktion, Speicherstelle
 	 *         oder Systemaufruf ungültig).
 	 */
-	private void executeInstruction() throws Exception {
+	private void executeInstruction() throws VMException, IOException {
 		int instruction = this.memory[this.registers[0]++];
 		int param1 = this.memory[this.registers[0]++];
 		int param2 = this.memory[this.registers[0]++];
@@ -278,7 +279,7 @@ class VirtualMachine {
 				this.printInstruction("MRM R" + param1 + ", (R" + param2 + ")");
 				if (this.registers[param2] < 0
 						|| this.registers[param2] >= this.memory.length) {
-					throw new Exception(
+					throw new VMException(
 							"Zugriff auf nicht existierende Speicherstelle "
 									+ this.registers[param2] + " an Adresse "
 									+ (this.registers[0] - 3));
@@ -289,7 +290,7 @@ class VirtualMachine {
 				this.printInstruction("MMR (R" + param1 + "), R" + param2);
 				if (this.registers[param1] < 0
 						|| this.registers[param1] >= this.memory.length) {
-					throw new Exception(
+					throw new VMException(
 							"Zugriff auf nicht existierende Speicherstelle "
 									+ this.registers[param1] + " an Adresse "
 									+ (this.registers[0] - 3));
@@ -356,11 +357,11 @@ class VirtualMachine {
 						this.output.write((char) this.registers[param2]);
 						break;
 					default:
-						throw new Exception("Illegaler Systemaufruf: " + param1);
+						throw new VMException("Illegaler Systemaufruf: " + param1);
 				}
 				break;
 			default:
-				throw new Exception("Illegale Instruktion: " + instruction
+				throw new VMException("Illegale Instruktion: " + instruction
 						+ " an Adresse " + (this.registers[0] - 3));
 		}
 	}
@@ -401,11 +402,12 @@ class VirtualMachine {
 	/**
 	 * Die Methode führt das Programm im Hauptspeicher aus.
 	 *
-	 * @throws Exception
+	 * @throws VMException
 	 *         Ein Fehler ist aufgetreten (Instruktion, Speicherstelle,
 	 *         Register oder Systemaufruf ungültig).
+	 * @throws IOException
 	 */
-	void run() throws Exception {
+	void run() throws VMException, IOException {
 		try {
 			while (this.registers[0] >= 0
 					&& this.registers[0] < this.memory.length) {
@@ -415,7 +417,7 @@ class VirtualMachine {
 				this.printStacks();
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new Exception("Zugriff auf nicht existierendes Register "
+			throw new VMException("Zugriff auf nicht existierendes Register "
 					+ e.getMessage() + " an Adresse " + (this.registers[0] - 3));
 		}
 	}
