@@ -1,3 +1,6 @@
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  * Die Klasse implementiert eine virtuelle Maschine für einen einfachen
  * Satz von Maschinenbefehlen. Alle Befehle haben zwei Parameter, so
@@ -160,6 +163,9 @@ class VirtualMachine {
 
 	/** Zeige R4 Speicherauszug rückwärts */
 	private final boolean showR4b;
+
+	private InputStream input = System.in;
+	private OutputStream output = System.out;
 
 	/**
 	 * Die Methode gibt die aktuelle Instruktion aus, wenn {@link #showInstrutions showInstrutions}
@@ -344,10 +350,10 @@ class VirtualMachine {
 				this.printInstruction("SYS " + param1 + ", " + param2);
 				switch (param1) {
 					case 0:
-						this.registers[param2] = System.in.read();
+						this.registers[param2] = this.input.read();
 						break;
 					case 1:
-						System.out.print((char) this.registers[param2]);
+						this.output.write((char) this.registers[param2]);
 						break;
 					default:
 						throw new Exception("Illegaler Systemaufruf: " + param1);
@@ -385,6 +391,11 @@ class VirtualMachine {
 		this.showR2b = showR2b;
 		this.showR4f = showR4f;
 		this.showR4b = showR4b;
+	}
+
+	public void setStreams(InputStream input, OutputStream output) {
+		this.input = input;
+		this.output = output;
 	}
 
 	/**

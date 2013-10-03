@@ -1,3 +1,6 @@
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+
 /**
  * Diese Klasse stellt die Hauptmethode der virtuellen Maschine
  * für OOPS bereit. Sie wertet die Kommandozeilen-Optionen aus
@@ -72,8 +75,10 @@ class OOPSVM {
 		}
 
 		try {
+			BufferedInputStream stream = new BufferedInputStream(new FileInputStream(fileName));
+
 			VirtualMachine vm = new VirtualMachine(new Assembler(showFirst,
-					showSecond).assemble(fileName), new int[8],
+					showSecond).assemble(stream), new int[8],
 					showInstructions, showMemory, showRegisters, showR2f,
 					showR2b, showR4f, showR4b);
 			if (execution) {

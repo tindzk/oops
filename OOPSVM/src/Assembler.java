@@ -1,6 +1,6 @@
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.TreeMap;
 
@@ -375,9 +375,7 @@ class Assembler {
 	 * @throws Exception
 	 *         Beim Assemblieren ist ein Fehler aufgetreten.
 	 */
-	private void pass(String fileName) throws FileNotFoundException,
-			IOException, Exception {
-		FileInputStream stream = new FileInputStream(fileName);
+	private void pass(InputStream stream) throws IOException, Exception {
 		this.reader = new InputStreamReader(stream);
 		this.line = "";
 		this.nextChar();
@@ -416,15 +414,17 @@ class Assembler {
 	 * @throws Exception
 	 *         Beim Assemblieren ist ein Fehler aufgetreten.
 	 */
-	int[] assemble(String fileName) throws FileNotFoundException, IOException,
-			Exception {
+	int[] assemble(InputStream stream) throws FileNotFoundException,
+			IOException, Exception {
 		this.labels = new TreeMap<String, Integer>();
 		this.output = null;
 		this.showCode = this.showFirst;
-		this.pass(fileName);
+		stream.mark(1024 * 1024);
+		this.pass(stream);
 		this.output = new int[this.writePos];
 		this.showCode = this.showSecond;
-		this.pass(fileName);
+		stream.reset();
+		this.pass(stream);
 		return this.output;
 	}
 }
