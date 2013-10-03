@@ -79,17 +79,20 @@ class MethodDeclaration extends Declaration {
 		// SELF eintragen
 		declarations.add(this.self);
 
-		// SELF liegt vor der Rücksprungadresse auf dem Stapel
-		this.self.offset = -2;
+		// Parameter eintragen; liegen vor der Rücksprungadresse (-1) auf dem Stapel
+		int offset = -2;
+		for (int i = this.parameters.size() - 1; i >= 0; i--) {
+			VarDeclaration v = this.parameters.get(i);
+			declarations.add(v);
+			v.offset = offset;
+			offset--;
+		}
+
+		// SELF liegt vor den Parametern auf dem Stapel
+		this.self.offset = offset;
 
 		// Rücksprungadresse und alten Rahmenzeiger überspringen
-		int offset = 1;
-
-		// Parameter eintragen
-		for (VarDeclaration v : this.parameters) {
-			declarations.add(v);
-			v.offset = offset++;
-		}
+		offset = 1;
 
 		// Lokale Variablen eintragen
 		for (VarDeclaration v : this.locals) {
@@ -152,29 +155,38 @@ class MethodDeclaration extends Declaration {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	void generateCode(CodeStream code) {
-		code.setNamespace(this.self.type.name + "_" + this.identifier.name);
+		String ns = this.self.type.name + "_" + this.identifier.name;
+		code.setNamespace(ns);
+
 		code.println("; METHOD " + this.identifier.name);
-		code.println(this.self.type.name + "_" + this.identifier.name + ":");
+		code.println(ns + ":");
 		code.println("ADD R2, R1");
-		code.println("MMR (R2), R3 ; Alten Stapelrahmen sichern");
-		code.println("MRR R3, R2 ; Aktuelle Stapelposition ist neuer Rahmen");
+		code.println("MMR (R2), R3 ; Save old stack frame in R3.");
+		code.println("MRR R3, R2 ; Save current stack position in the new stack frame.");
 
 		if (!this.locals.isEmpty()) {
 			code.println("MRI R5, " + this.locals.size());
-			code.println("ADD R2, R5 ; Platz für lokale Variablen schaffen");
+			code.println("ADD R2, R5 ; Allocate space for local variables.");
 		}
+
+		code.println("");
+		code.println("; Statements");
+		code.println("");
+
 		for (Statement s : this.statements) {
+			code.println("; Statement: " + s.getClass().getName());
 			s.generateCode(code);
+			code.println("");
 		}
 
 		code.println("; END METHOD " + this.identifier.name);
 		code.println("MRI R5, " + (this.locals.size() + 3));
-		code.println("SUB R2, R5 ; Stack korrigieren");
+		code.println("SUB R2, R5 ; Fix up stack.");
 		code.println("SUB R3, R1");
-		code.println("MRM R5, (R3) ; Rücksprungadresse holen");
+		code.println("MRM R5, (R3) ; Get old return address.");
 		code.println("ADD R3, R1");
-		code.println("MRM R3, (R3) ; Alten Stapelrahmen holen");
-		code.println("MRR R0, R5 ; Rücksprung");
+		code.println("MRM R3, (R3) ; Get old stack frame.");
+		code.println("MRR R0, R5 ; Jump back.");
 		code.println("");
 	}
 }

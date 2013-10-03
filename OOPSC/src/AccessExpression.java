@@ -48,6 +48,9 @@ class AccessExpression extends Expression {
 		this.rightOperand
 				.contextAnalysisForMember(this.leftOperand.type.declarations);
 
+		/* Contextual analysis for arguments, but with the original declaration context. */
+		this.rightOperand.contextAnalysisForArguments(declarations);
+
 		// Der Typ dieses Ausdrucks ist immer der des rechten Operanden.
 		this.type = this.rightOperand.type;
 		this.lValue = this.rightOperand.lValue;
