@@ -9,7 +9,7 @@ class VarOrCall extends Expression {
 	/** Der Name des Attributs, der Variablen oder der Methode. */
 	ResolvableIdentifier identifier;
 
-	List<Expression> parameters = new LinkedList<>();
+	List<Expression> arguments = new LinkedList<>();
 
 	/**
 	 * Konstruktor.
@@ -22,8 +22,8 @@ class VarOrCall extends Expression {
 		this.identifier = identifier;
 	}
 
-	public void addParameter(Expression e) {
-		this.parameters.add(e);
+	public void addArgument(Expression e) {
+		this.arguments.add(e);
 	}
 
 	/**
@@ -38,7 +38,7 @@ class VarOrCall extends Expression {
 	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing
 	 *         oder der Zugriff über SELF eingefügt wurde.
 	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
+	 *         Während der Kontextanalyse wurde ein Fehler
 	 *         gefunden.
 	 */
 	@Override

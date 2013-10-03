@@ -198,7 +198,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 			}
 
 			this.expectSymbol(Symbol.Id.IS);
-			this.methodbody(m.vars, m.statements);
+			this.methodbody(m.locals, m.statements);
 			methods.add(m);
 		} else {
 			this.vardecl(attributes, true);
@@ -568,7 +568,7 @@ class SyntaxAnalysis extends LexicalAnalysis {
 		if (this.symbol.id == Symbol.Id.LPAREN) {
 			do {
 				this.nextSymbol();
-				e.addParameter(this.relation());
+				e.addArgument(this.relation());
 			} while (this.symbol.id == Symbol.Id.COMMA);
 
 			this.expectSymbol(Symbol.Id.RPAREN);

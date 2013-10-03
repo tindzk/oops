@@ -10,10 +10,10 @@ class MethodDeclaration extends Declaration {
 			false);
 
 	/** Die Parameter der Methode. */
-	List<VarDeclaration> params = new LinkedList<>();
+	List<VarDeclaration> parameters = new LinkedList<>();
 
 	/** Die lokalen Variablen der Methode. */
-	List<VarDeclaration> vars = new LinkedList<>();
+	List<VarDeclaration> locals = new LinkedList<>();
 
 	/** Die Anweisungen der Methode, d.h. der Methodenrumpf. */
 	List<Statement> statements = new LinkedList<>();
@@ -34,7 +34,7 @@ class MethodDeclaration extends Declaration {
 	 * @param params Liste mit den Parametern.
 	 */
 	public void setParameters(List<VarDeclaration> params) {
-		this.params = params;
+		this.parameters = params;
 	}
 
 	/**
@@ -54,7 +54,7 @@ class MethodDeclaration extends Declaration {
 		this.self.type.declaration = declarations.currentClass;
 
 		// Löse Typen aller Variablen auf
-		for (VarDeclaration v : this.vars) {
+		for (VarDeclaration v : this.locals) {
 			v.contextAnalysis(declarations);
 		}
 
@@ -71,7 +71,7 @@ class MethodDeclaration extends Declaration {
 		int offset = 1;
 
 		// Lokale Variablen eintragen
-		for (VarDeclaration v : this.vars) {
+		for (VarDeclaration v : this.locals) {
 			declarations.add(v);
 			v.offset = offset++;
 		}
@@ -96,11 +96,11 @@ class MethodDeclaration extends Declaration {
 		tree.println("METHOD " + this.identifier.name);
 		tree.indent();
 
-		if (!this.vars.isEmpty()) {
+		if (!this.locals.isEmpty()) {
 			tree.println("VARIABLES");
 			tree.indent();
 
-			for (VarDeclaration v : this.vars) {
+			for (VarDeclaration v : this.locals) {
 				v.print(tree);
 			}
 
@@ -136,8 +136,8 @@ class MethodDeclaration extends Declaration {
 		code.println("MMR (R2), R3 ; Alten Stapelrahmen sichern");
 		code.println("MRR R3, R2 ; Aktuelle Stapelposition ist neuer Rahmen");
 
-		if (!this.vars.isEmpty()) {
-			code.println("MRI R5, " + this.vars.size());
+		if (!this.locals.isEmpty()) {
+			code.println("MRI R5, " + this.locals.size());
 			code.println("ADD R2, R5 ; Platz für lokale Variablen schaffen");
 		}
 		for (Statement s : this.statements) {
@@ -145,7 +145,7 @@ class MethodDeclaration extends Declaration {
 		}
 
 		code.println("; END METHOD " + this.identifier.name);
-		code.println("MRI R5, " + (this.vars.size() + 3));
+		code.println("MRI R5, " + (this.locals.size() + 3));
 		code.println("SUB R2, R5 ; Stack korrigieren");
 		code.println("SUB R3, R1");
 		code.println("MRM R5, (R3) ; Rücksprungadresse holen");
