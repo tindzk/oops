@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,6 +47,44 @@ class VarOrCall extends Expression {
 			throws CompileException {
 		// TODO refactor
 		this.contextAnalysisForMember(declarations);
+
+		if (!(this.identifier.declaration instanceof MethodDeclaration)) {
+			if (this.arguments.size() != 0) {
+				throw new CompileException(
+						"Arguments cannot be passed to a variable.",
+						this.identifier.position);
+			}
+		} else {
+			/* Verify that the passed arguments match the expected parameters. */
+			MethodDeclaration decl = (MethodDeclaration) this.identifier.declaration;
+
+			if (this.arguments.size() != decl.parameters.size()) {
+				throw new CompileException(String.format(
+						"Parameter count mismatch: %d expected, %d given.",
+						decl.parameters.size(), this.arguments.size()),
+						this.identifier.position);
+			}
+
+			Iterator<Expression> args = this.arguments.iterator();
+			Iterator<VarDeclaration> params = decl.parameters.iterator();
+
+			for (int num = 1; args.hasNext(); num++) {
+				Expression arg = args.next();
+				VarDeclaration param = params.next();
+
+				/* Parameters expect boxed values, i.e., Integer instead of _Integer. */
+				arg = arg.box(declarations);
+
+				assert (param.type.declaration instanceof ClassDeclaration);
+
+				if (!arg.type.isA((ClassDeclaration) param.type.declaration)) {
+					throw new CompileException(String.format(
+							"Argument %d mismatches: %s expected, %s given.",
+							num, param.type.declaration.identifier.name,
+							arg.type.identifier.name), this.identifier.position);
+				}
+			}
+		}
 
 		if (this.identifier.declaration instanceof MethodDeclaration
 				|| this.identifier.declaration instanceof VarDeclaration
