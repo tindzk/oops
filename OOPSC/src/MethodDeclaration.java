@@ -249,6 +249,16 @@ class MethodDeclaration extends Declaration {
 		}
 
 		code.println("; END METHOD " + this.identifier.name);
+
+		if (this.getResolvedReturnType() == ClassDeclaration.voidType) {
+			/* When at least one return statement is always executed, we do not need to generate the
+			 * epilogue twice.
+			 */
+			if (BranchEvaluator.terminates(this)) {
+				return;
+			}
+		}
+
 		this.generateMethodEpilogue(code, "");
 	}
 }
