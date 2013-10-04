@@ -1,0 +1,15 @@
+| Must return A.
+CLASS Main IS
+    METHOD main IS BEGIN
+        IF TRUE THEN
+            WRITE 'A';
+        ELSEIF FALSE THEN
+            WRITE 'B';
+        ELSEIF TRUE THEN
+            WRITE 'C';
+        ELSE
+            WRITE 'D';
+        END IF
+    END METHOD
+
+END CLASS

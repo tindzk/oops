@@ -153,6 +153,8 @@ class IfStatement extends Statement {
 			s.generateCode(code);
 		}
 
+		code.println("MRI R0, " + endLabel + " ; Sprung zu END IF");
+
 		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
 			if (entry.getKey() == null) {
