@@ -1,0 +1,18 @@
+| Must return A.
+CLASS Main IS
+    METHOD main IS BEGIN
+        IF false() THEN
+            WRITE 'A';
+        ELSEIF false() THEN
+            WRITE 'B';
+        ELSEIF true() THEN
+            WRITE 'C';
+        ELSE
+            WRITE 'D';
+        END IF
+    END METHOD
+
+    METHOD false : Boolean IS BEGIN RETURN FALSE; END METHOD
+    METHOD true : Boolean IS BEGIN RETURN TRUE; END METHOD
+
+END CLASS

@@ -590,6 +590,11 @@ class SyntaxAnalysis extends LexicalAnalysis {
 		if (this.symbol.id == Symbol.Id.LPAREN) {
 			do {
 				this.nextSymbol();
+
+				if (this.symbol.id == Symbol.Id.RPAREN) {
+					break;
+				}
+
 				e.addArgument(this.relation());
 			} while (this.symbol.id == Symbol.Id.COMMA);
 
