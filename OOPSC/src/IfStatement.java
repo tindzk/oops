@@ -49,12 +49,26 @@ class IfStatement extends Statement {
 			s.contextAnalysis(declarations);
 		}
 
+		HashMap<Expression, List<Statement>> newElseStatements = new HashMap<>();
+
 		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
+			Expression cond = entry.getKey();
+
+			if (cond != null) {
+				cond = cond.contextAnalysis(declarations);
+				cond = cond.unBox();
+				cond.type.check(ClassDeclaration.boolType, cond.position);
+			}
+
+			newElseStatements.put(cond, entry.getValue());
+
 			for (Statement s : entry.getValue()) {
 				s.contextAnalysis(declarations);
 			}
 		}
+
+		this.elseStatements = newElseStatements;
 	}
 
 	/**

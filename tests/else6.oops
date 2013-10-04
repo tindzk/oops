@@ -1,0 +1,19 @@
+| Must return ABCB.
+CLASS Main IS
+    METHOD main IS
+        a : Integer;
+    BEGIN
+        a := 65;
+        WHILE a < 69 DO
+            IF a < 66 THEN
+                WRITE 65; | A
+            ELSEIF a = 67 THEN
+                WRITE 67; | C
+            ELSE
+                WRITE 66; | B
+            END IF
+
+            a := a + 1;
+        END WHILE
+    END METHOD
+END CLASS
