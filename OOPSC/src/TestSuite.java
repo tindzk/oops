@@ -85,7 +85,7 @@ public class TestSuite {
 			/* Test code generation. */
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			CodeStream code = new CodeStream(stream);
-			this.p.generateCode(code, 100, 100);
+			this.p.generateCode(code, 1000, 1000);
 			String asm = stream.toString("UTF-8");
 
 			/* Run the VM twice with different inputs. */
