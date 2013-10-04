@@ -126,6 +126,24 @@ class IfStatement extends Statement {
 		}
 	}
 
+	private void generateCode(CodeStream code, Expression condition,
+			List<Statement> stmts, String nextLabel, String endLabel) {
+		condition.generateCode(code);
+
+		code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen");
+		code.println("SUB R2, R1");
+		code.println("ISZ R5, R5 ; Wenn 0, dann");
+		code.println("JPC R5, " + nextLabel
+				+ " ; Sprung zu END IF bzw. nächstem ELSEIF/ELSE");
+		code.println("; THEN");
+
+		for (Statement s : stmts) {
+			s.generateCode(code);
+		}
+
+		code.println("MRI R0, " + endLabel + " ; Sprung zu END IF");
+	}
+
 	/**
 	 * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
 	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
@@ -135,55 +153,33 @@ class IfStatement extends Statement {
 	 */
 	@Override
 	void generateCode(CodeStream code) {
-		String endLabel = code.nextLabel();
-		String lblNextIf = code.nextLabel();
-
 		code.println("; IF");
 
-		this.condition.generateCode(code);
+		String endLabel = code.nextLabel();
+		String nextLabel = code.nextLabel();
 
-		code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen");
-		code.println("SUB R2, R1");
-		code.println("ISZ R5, R5 ; Wenn 0, dann");
-		code.println("JPC R5, " + lblNextIf
-				+ " ; Sprung zu END IF bzw. nächstem ELSEIF/ELSE");
-		code.println("; THEN");
-
-		for (Statement s : this.thenStatements) {
-			s.generateCode(code);
-		}
-
-		code.println("MRI R0, " + endLabel + " ; Sprung zu END IF");
+		this.generateCode(code, this.condition, this.thenStatements, nextLabel,
+				endLabel);
 
 		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
 			if (entry.getKey() == null) {
+				/* Deal with ELSE block separately. */
 				continue;
 			}
 
-			code.println(lblNextIf + ":");
-			lblNextIf = code.nextLabel();
-
 			code.println("; ELSEIF");
-			entry.getKey().generateCode(code);
+			code.println(nextLabel + ":");
 
-			code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen");
-			code.println("SUB R2, R1");
-			code.println("ISZ R5, R5 ; Wenn 0, dann");
-			code.println("JPC R5, " + lblNextIf
-					+ " ; Sprung zu END IF bzw. nächstem ELSEIF/ELSE");
-			code.println("; THEN");
+			nextLabel = code.nextLabel();
 
-			for (Statement s : entry.getValue()) {
-				s.generateCode(code);
-			}
-
-			code.println("MRI R0, " + endLabel + " ; Sprung zu END IF");
+			this.generateCode(code, entry.getKey(), entry.getValue(),
+					nextLabel, endLabel);
 
 			code.println("; END ELSEIF");
 		}
 
-		code.println(lblNextIf + ":");
+		code.println(nextLabel + ":");
 
 		List<Statement> elseStmts = this.elseStatements.get(null);
 
