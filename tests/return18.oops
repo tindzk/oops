@@ -1,0 +1,11 @@
+CLASS Main IS
+    METHOD main IS BEGIN
+        print('A', 'B');
+    END METHOD
+
+    METHOD print(s1, s2: Integer) IS BEGIN
+        WRITE s1;
+        RETURN;
+        WRITE s2;
+    END METHOD
+END CLASS
