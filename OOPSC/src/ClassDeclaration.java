@@ -122,6 +122,7 @@ class ClassDeclaration extends Declaration {
 
 		// Kontextanalyse für Methoden durchführen
 		for (MethodDeclaration m : this.methods) {
+			declarations.currentMethod = m;
 			m.contextAnalysis(declarations, initialPass);
 		}
 
@@ -164,7 +165,7 @@ class ClassDeclaration extends Declaration {
 	static void typeError(ClassDeclaration expected, ClassDeclaration given,
 			Position position) throws CompileException {
 		throw new CompileException(String.format(
-				"Ausdruck vom Typ %s erwartet, %s gegeben.",
+				"Type mismatch: %s expected, %s given.",
 				expected.identifier.name, given.identifier.name), position);
 	}
 

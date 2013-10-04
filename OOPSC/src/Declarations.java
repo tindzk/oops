@@ -17,6 +17,9 @@ class Declarations {
 	/** Die aktuelle Klasse. */
 	ClassDeclaration currentClass;
 
+	/** Die aktuelle Methode. */
+	MethodDeclaration currentMethod;
+
 	/**
 	 * Die Method erstellt eine Kopie dieses Objekts. Dabei werden die Ebenen nicht kopiert,
 	 * sondern auch von der Kopie weiter benutzt. Die umgebende Liste wird aber kopiert,
@@ -31,6 +34,7 @@ class Declarations {
 			d.levels.add(l);
 		}
 		d.currentClass = this.currentClass;
+		d.currentMethod = this.currentMethod;
 		return d;
 	}
 
