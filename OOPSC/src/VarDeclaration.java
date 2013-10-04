@@ -26,6 +26,13 @@ class VarDeclaration extends Declaration {
 	}
 
 	/**
+	 * Returns the resolved type. Requires prior contextual analysis.
+	 */
+	public ClassDeclaration getResolvedType() {
+		return (ClassDeclaration) this.type.declaration;
+	}
+
+	/**
 	 * Führt die Kontextanalyse für diese Variablen-Deklaration durch.
 	 *
 	 * @param declarations
@@ -35,7 +42,8 @@ class VarDeclaration extends Declaration {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations, boolean initialPass) throws CompileException {
+	void contextAnalysis(Declarations declarations, boolean initialPass)
+			throws CompileException {
 		declarations.resolveType(this.type);
 	}
 

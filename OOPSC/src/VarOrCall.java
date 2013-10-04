@@ -81,10 +81,12 @@ class VarOrCall extends Expression {
 		declarations.resolveVarOrMethod(this.identifier);
 
 		if (this.identifier.declaration instanceof VarDeclaration) {
-			this.type = (ClassDeclaration) ((VarDeclaration) this.identifier.declaration).type.declaration;
+			VarDeclaration var = (VarDeclaration) this.identifier.declaration;
+			this.type = var.getResolvedType();
 			this.lValue = true;
 		} else if (this.identifier.declaration instanceof MethodDeclaration) {
-			this.type = ClassDeclaration.voidType;
+			MethodDeclaration method = (MethodDeclaration) this.identifier.declaration;
+			this.type = method.getResolvedReturnType();
 		} else {
 			assert false;
 		}

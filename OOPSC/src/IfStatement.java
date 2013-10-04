@@ -24,6 +24,7 @@ class IfStatement extends Statement {
 	 */
 	IfStatement(Expression condition) {
 		this.condition = condition;
+		this.elseStatements.put(null, new LinkedList<Statement>());
 	}
 
 	/**
@@ -85,12 +86,16 @@ class IfStatement extends Statement {
 			if (condition != null) {
 				tree.println("THEN");
 			}
+
 			tree.indent();
+
 			for (Statement s : stmts) {
 				s.print(tree);
 			}
+
 			tree.unindent();
 		}
+
 		tree.unindent();
 	}
 
@@ -114,8 +119,10 @@ class IfStatement extends Statement {
 			this.print(tree, entry.getKey(), entry.getValue());
 		}
 
-		if (this.elseStatements.containsKey(null)) {
-			this.print(tree, null, this.elseStatements.get(null));
+		List<Statement> elseStmts = this.elseStatements.get(null);
+
+		if (elseStmts.size() != 0) {
+			this.print(tree, null, elseStmts);
 		}
 	}
 
@@ -176,10 +183,12 @@ class IfStatement extends Statement {
 
 		code.println(lblNextIf + ":");
 
-		if (this.elseStatements.containsKey(null)) {
+		List<Statement> elseStmts = this.elseStatements.get(null);
+
+		if (elseStmts.size() != 0) {
 			code.println("; ELSE");
 
-			for (Statement s : this.elseStatements.get(null)) {
+			for (Statement s : elseStmts) {
 				s.generateCode(code);
 			}
 

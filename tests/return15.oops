@@ -1,0 +1,14 @@
+CLASS Main IS
+    METHOD main IS BEGIN
+        WRITE other('C');
+        WRITE other('Z');
+    END METHOD
+
+    METHOD other(value: Integer): Integer IS BEGIN
+        IF value = 'Z' THEN
+            RETURN 'A';
+        ELSE
+            RETURN value + 1;
+        END IF
+    END METHOD
+END CLASS

@@ -18,6 +18,9 @@ class MethodDeclaration extends Declaration {
 	/** Die Anweisungen der Methode, d.h. der Methodenrumpf. */
 	List<Statement> statements = new LinkedList<>();
 
+	/** Return type. Default type matches ClassDeclaration.voidType. */
+	ResolvableIdentifier retType = null;
+
 	/**
 	 * Konstruktor.
 	 *
@@ -26,6 +29,9 @@ class MethodDeclaration extends Declaration {
 	 */
 	MethodDeclaration(Identifier name) {
 		super(name);
+
+		this.retType = new ResolvableIdentifier("_Void", null);
+		this.retType.declaration = ClassDeclaration.voidType;
 	}
 
 	/**
@@ -36,6 +42,22 @@ class MethodDeclaration extends Declaration {
 	 */
 	public void setParameters(List<VarDeclaration> params) {
 		this.parameters = params;
+	}
+
+	/**
+	 * Setzt den Rückgabetypen.
+	 *
+	 * @param retType
+	 */
+	public void setReturnType(ResolvableIdentifier retType) {
+		this.retType = retType;
+	}
+
+	/**
+	 * Return type.
+	 */
+	public ClassDeclaration getResolvedReturnType() {
+		return (ClassDeclaration) this.retType.declaration;
 	}
 
 	/**
@@ -50,12 +72,20 @@ class MethodDeclaration extends Declaration {
 	@Override
 	void contextAnalysis(Declarations declarations, boolean initialPass)
 			throws CompileException {
+		/* Resolve return type. */
+		declarations.resolveType(this.retType);
+
 		if (declarations.currentClass.identifier.name.equals("Main")
-				&& this.identifier.name.equals("main")
-				&& this.parameters.size() != 0) {
-			throw new CompileException(
-					"Main.main() must not have any parameters.",
-					this.identifier.position);
+				&& this.identifier.name.equals("main")) {
+			if (this.parameters.size() != 0) {
+				throw new CompileException(
+						"Main.main() must not have any parameters.",
+						this.identifier.position);
+			} else if (this.getResolvedReturnType() != ClassDeclaration.voidType) {
+				throw new CompileException(
+						"Main.main() must not have a non-void return type.",
+						this.identifier.position);
+			}
 		}
 
 		// SELF ist Variable vom Typ dieser Klasse
@@ -101,6 +131,15 @@ class MethodDeclaration extends Declaration {
 		}
 
 		if (!initialPass) {
+			if (this.getResolvedReturnType() != ClassDeclaration.voidType) {
+				/* Determines whether at least one return statement is always executed. */
+				if (!BranchEvaluator.terminates(this)) {
+					throw new CompileException(
+							"Method needs a return statement that is always reachable.",
+							this.retType.position);
+				}
+			}
+
 			// Kontextanalyse aller Anweisungen durchführen
 			for (Statement s : this.statements) {
 				s.contextAnalysis(declarations);
@@ -119,6 +158,7 @@ class MethodDeclaration extends Declaration {
 	 */
 	@Override
 	void print(TreeStream tree) {
+		/* TODO Print parameters and return type. */
 		tree.println("METHOD " + this.identifier.name);
 		tree.indent();
 
@@ -147,18 +187,10 @@ class MethodDeclaration extends Declaration {
 		tree.unindent();
 	}
 
-	/**
-	 * Generiert den Assembler-Code für diese Methode. Dabei wird davon ausgegangen,
-	 * dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
-	void generateCode(CodeStream code) {
+	protected void generateMethodPrologue(CodeStream code) {
 		String ns = this.self.type.name + "_" + this.identifier.name;
 		code.setNamespace(ns);
 
-		code.println("; METHOD " + this.identifier.name);
 		code.println(ns + ":");
 		code.println("ADD R2, R1");
 		code.println("MMR (R2), R3 ; Save old stack frame in R3.");
@@ -168,6 +200,43 @@ class MethodDeclaration extends Declaration {
 			code.println("MRI R5, " + this.locals.size());
 			code.println("ADD R2, R5 ; Allocate space for local variables.");
 		}
+	}
+
+	/**
+	 * @param customInstruction
+	 *        Will be inserted after fixing up the stack.
+	 */
+	public void generateMethodEpilogue(CodeStream code, String customInstruction) {
+		/* Make R2 point to the same address as before the method call.
+		 * R2 -= this.locals.size() + 3 */
+		/* TODO Is it necessary to add this.parameters.size()? */
+		code.println("MRI R5, "
+				+ (this.locals.size() + this.parameters.size() + 3)
+				+ " ; Stack space.");
+		code.println("SUB R2, R5 ; Fix up stack.");
+
+		if (customInstruction.length() != 0) {
+			code.println(customInstruction);
+		}
+
+		code.println("SUB R3, R1");
+		code.println("MRM R5, (R3) ; Get old return address.");
+		code.println("ADD R3, R1");
+		code.println("MRM R3, (R3) ; Get old stack frame.");
+		code.println("MRR R0, R5 ; Jump back.");
+		code.println("");
+	}
+
+	/**
+	 * Generiert den Assembler-Code für diese Methode. Dabei wird davon ausgegangen,
+	 * dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
+	 *
+	 * @param code
+	 *        Der Strom, in den die Ausgabe erfolgt.
+	 */
+	void generateCode(CodeStream code) {
+		code.println("; METHOD " + this.identifier.name);
+		this.generateMethodPrologue(code);
 
 		code.println("");
 		code.println("; Statements");
@@ -180,13 +249,6 @@ class MethodDeclaration extends Declaration {
 		}
 
 		code.println("; END METHOD " + this.identifier.name);
-		code.println("MRI R5, " + (this.locals.size() + 3));
-		code.println("SUB R2, R5 ; Fix up stack.");
-		code.println("SUB R3, R1");
-		code.println("MRM R5, (R3) ; Get old return address.");
-		code.println("ADD R3, R1");
-		code.println("MRM R3, (R3) ; Get old stack frame.");
-		code.println("MRR R0, R5 ; Jump back.");
-		code.println("");
+		this.generateMethodEpilogue(code, "");
 	}
 }

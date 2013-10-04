@@ -45,4 +45,11 @@ class LiteralExpression extends Expression {
 		code.println("ADD R2, R1");
 		code.println("MMR (R2), R5");
 	}
+
+	@Override
+	public boolean isAlwaysTrue() {
+		return this.value == 1
+				&& (this.type.isA(ClassDeclaration.intType) || this.type
+						.isA(ClassDeclaration.boolType));
+	}
 }

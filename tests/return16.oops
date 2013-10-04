@@ -1,0 +1,14 @@
+CLASS Main IS
+    METHOD main IS BEGIN END METHOD
+
+    METHOD fib2(s1, s2: Integer; x: Integer): Integer IS BEGIN
+        IF x = 0 THEN
+            RETURN s1; 
+        ELSE
+            | The else branch always terminates.
+            WHILE TRUE DO
+                RETURN 0;
+            END WHILE
+        END IF
+    END METHOD
+END CLASS

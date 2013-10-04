@@ -98,6 +98,7 @@ class LexicalAnalysis {
 		this.keywords.put("OR", Symbol.Id.OR);
 		this.keywords.put("ELSE", Symbol.Id.ELSE);
 		this.keywords.put("ELSEIF", Symbol.Id.ELSEIF);
+		this.keywords.put("RETURN", Symbol.Id.RETURN);
 
 		this.position = new Position(1, 0);
 		this.nextChar();

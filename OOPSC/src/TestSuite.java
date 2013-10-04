@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -69,7 +70,13 @@ public class TestSuite {
 
 		String pathExpected = this.path.substring(0, this.path.length() - 5)
 				+ ".out";
-		String expected = readFile(pathExpected, StandardCharsets.UTF_8);
+		String expected = "";
+
+		try {
+			expected = readFile(pathExpected, StandardCharsets.UTF_8);
+		} catch (NoSuchFileException e) {
+
+		}
 
 		try {
 			this.p = new SyntaxAnalysis(this.path, false).parse();
@@ -88,6 +95,7 @@ public class TestSuite {
 			fail();
 		} catch (CompileException e) {
 			if (supposedToFail) {
+				System.err.println(e.getMessage());
 				return;
 			}
 

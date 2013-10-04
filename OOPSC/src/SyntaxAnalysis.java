@@ -15,6 +15,7 @@ import java.util.List;
  *
  * memberdecl   ::= vardecl ';'
  *                | METHOD identifier ['(' vardecl { ';' vardecl } ')']
+ *                  [':' identifier]
  *                  IS methodbody
  *
  * vardecl      ::= identifier { ',' identifier } ':' identifier
@@ -36,6 +37,7 @@ import java.util.List;
  *                  DO statements
  *                  END WHILE
  *                | memberaccess [ ':=' relation ] ';'
+ *                | RETURN [relation] ';'
  *
  * relation     ::= expression [ ( 'AND' | 'OR' | '=' | '#' | '<' | '>' | '<=' | '>=' ) expression ]
  *                | NOT (relation)
@@ -197,6 +199,13 @@ class SyntaxAnalysis extends LexicalAnalysis {
 				m.setParameters(vars);
 			}
 
+			if (this.symbol.id == Symbol.Id.COLON) {
+				this.nextSymbol();
+
+				ResolvableIdentifier retType = this.expectResolvableIdent();
+				m.setReturnType(retType);
+			}
+
 			this.expectSymbol(Symbol.Id.IS);
 			this.methodbody(m.locals, m.statements);
 			methods.add(m);
@@ -343,6 +352,21 @@ class SyntaxAnalysis extends LexicalAnalysis {
 				this.statements(w.statements);
 				this.expectSymbol(Symbol.Id.END);
 				this.expectSymbol(Symbol.Id.WHILE);
+				break;
+			case RETURN:
+				Position position = new Position(this.symbol.line,
+						this.symbol.column);
+
+				this.nextSymbol();
+
+				if (this.symbol.id == Symbol.Id.SEMICOLON) {
+					statements.add(new ReturnStatement(position));
+				} else {
+					statements.add(new ReturnStatement(this.relation(),
+							position));
+				}
+
+				this.expectSymbol(Symbol.Id.SEMICOLON);
 				break;
 			default:
 				Expression e = this.memberAccess();
