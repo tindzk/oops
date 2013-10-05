@@ -58,7 +58,7 @@ class BinaryExpression extends Expression {
 				break;
 			case PLUS:
 			case MINUS:
-			case TIMES:
+			case MUL:
 			case DIV:
 			case MOD:
 				this.leftOperand = this.leftOperand.unBox();
@@ -156,7 +156,7 @@ class BinaryExpression extends Expression {
 			case MINUS:
 				code.println("SUB R6, R5");
 				break;
-			case TIMES:
+			case MUL:
 				code.println("MUL R6, R5");
 				break;
 			case DIV:

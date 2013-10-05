@@ -22,8 +22,9 @@ class IfStatement extends Statement {
 	 * @param condition
 	 *        Die Bedingung der IF-Anweisung.
 	 */
-	IfStatement(Expression condition) {
+	IfStatement(Expression condition, List<Statement> thenStatements) {
 		this.condition = condition;
+		this.thenStatements = thenStatements;
 		this.elseStatements.put(null, new LinkedList<Statement>());
 	}
 

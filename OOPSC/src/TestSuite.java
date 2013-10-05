@@ -1,8 +1,10 @@
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +25,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -59,6 +64,46 @@ public class TestSuite {
 		return output.toString("UTF-8");
 	}
 
+	@Test
+	public void testGrammar() throws Exception {
+		FileInputStream stream = new FileInputStream(this.path);
+		ANTLRInputStream input = new ANTLRInputStream(stream);
+		GrammarLexer lexer = new GrammarLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		GrammarParser parser = new GrammarParser(tokens);
+
+		parser.program();
+
+		boolean supposedToFail = this.path.contains("_se");
+
+		if (supposedToFail) {
+			assertNotNull(parser.getNumberOfSyntaxErrors());
+		} else {
+			assertEquals(0, parser.getNumberOfSyntaxErrors());
+		}
+	}
+
+	@Test
+	public void testVisitor() throws Exception {
+		boolean supposedToFail = this.path.contains("_se");
+
+		if (supposedToFail) {
+			/* Skip as we cannot use the visitor on malformed code samples. */
+			return;
+		}
+
+		FileInputStream stream = new FileInputStream(this.path);
+		ANTLRInputStream input = new ANTLRInputStream(stream);
+		GrammarLexer lexer = new GrammarLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		GrammarParser parser = new GrammarParser(tokens);
+
+		ParseTree tree = parser.program();
+
+		ProgramVisitor visitor = new ProgramVisitor(new Program());
+		visitor.visit(tree);
+	}
+
 	/**
 	 * Performs syntax and context analysis. Also tests the code generation.
 	 *
@@ -80,6 +125,7 @@ public class TestSuite {
 
 		try {
 			this.p = new SyntaxAnalysis(this.path, false).parse();
+			this.p.printTree();
 			this.p.contextAnalysis();
 
 			/* Test code generation. */

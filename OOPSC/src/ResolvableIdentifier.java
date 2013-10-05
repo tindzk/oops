@@ -7,7 +7,7 @@ import java.util.LinkedList;
  */
 class ResolvableIdentifier extends Identifier {
 	/** Dieses Klassenattribut ist eine Liste, die alle zuordenbaren Bezeichner enthält. */
-	static LinkedList<ResolvableIdentifier> identifiers;
+	static LinkedList<ResolvableIdentifier> identifiers = new LinkedList<ResolvableIdentifier>();
 
 	/** Die Deklaration dieses Bezeichners. Solange sie unbekannt ist, ist dieses Attribut null. */
 	Declaration declaration;
@@ -29,6 +29,7 @@ class ResolvableIdentifier extends Identifier {
 	 * Die Klassenmethode initialisiert die Liste der zuordenbaren Bezeichner.
 	 * Sie wird benötigt, falls mehr als einmal übersetzt wird.
 	 */
+	// TODO refactor
 	static void init() {
 		identifiers = new LinkedList<ResolvableIdentifier>();
 	}

@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Die Klasse repräsentiert die Anweisung WHILE im Syntaxbaum.
@@ -8,7 +9,7 @@ class WhileStatement extends Statement {
 	Expression condition;
 
 	/** Die Anweisungen im Schleifenrumpf. */
-	LinkedList<Statement> statements = new LinkedList<Statement>();
+	List<Statement> statements = new LinkedList<>();
 
 	/**
 	 * Konstruktor.

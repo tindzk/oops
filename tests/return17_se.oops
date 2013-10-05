@@ -2,7 +2,7 @@ CLASS Main IS
     METHOD main IS BEGIN END METHOD
 
     METHOD fib2(s1, s2: Integer; x: Integer): Integer IS BEGIN
-        IF s1 == 1 THEN
+        IF s1 = 1 THEN
             RETURN s1; 
         ELSE
             IF s2 = 0 THEN

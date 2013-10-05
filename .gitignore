@@ -2,3 +2,4 @@ oopsc.jar
 oopsvm.jar
 *.class
 build/
+OOPSC/src/Grammar*
