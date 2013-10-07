@@ -192,6 +192,7 @@ class VarOrCall extends Expression {
 			code.println("; Arguments");
 			code.println("");
 
+			/* Push arguments on the stack. */
 			int i = 1;
 			for (Expression e : this.arguments) {
 				code.println("; Argument " + i);
@@ -200,12 +201,11 @@ class VarOrCall extends Expression {
 				i++;
 			}
 
+			/* Push return address on the stack. */
 			code.println("MRI R5, " + returnLabel + " ; Return address.");
 			code.println("ADD R2, R1");
-
-			code.println("");
-
 			code.println("MMR (R2), R5 ; Save return address on the stack.");
+
 			code.println("MRI R0, " + m.self.type.name + "_"
 					+ m.identifier.name + " ; Jump to method by overwriting PC.");
 			code.println(returnLabel + ":");

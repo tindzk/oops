@@ -193,7 +193,7 @@ class MethodDeclaration extends Declaration {
 
 		code.println(ns + ":");
 		code.println("ADD R2, R1");
-		code.println("MMR (R2), R3 ; Save old stack frame in R3.");
+		code.println("MMR (R2), R3 ; Save current stack frame in R2.");
 		code.println("MRR R3, R2 ; Save current stack position in the new stack frame.");
 
 		if (!this.locals.isEmpty()) {
@@ -207,22 +207,29 @@ class MethodDeclaration extends Declaration {
 	 *        Will be inserted after fixing up the stack.
 	 */
 	public void generateMethodEpilogue(CodeStream code, String customInstruction) {
-		/* Make R2 point to the same address as before the method call.
-		 * R2 -= this.locals.size() + 3 */
-		/* TODO Is it necessary to add this.parameters.size()? */
-		code.println("MRI R5, "
-				+ (this.locals.size() + this.parameters.size() + 3)
-				+ " ; Stack space.");
-		code.println("SUB R2, R5 ; Fix up stack.");
+		/* Calculate size of stack space occupied by this method and its call. */
+		int size = this.locals.size() +
+				+ 1 /* old stack frame */
+				+ 1 /* return address */
+				+ this.parameters.size();
+
+		/* Make R2 point to the same address as before the method was called. */
+		code.println("MRI R5, " + (size + 1));
+		code.println("SUB R2, R5 ; Free the stack space.");
 
 		if (customInstruction.length() != 0) {
 			code.println(customInstruction);
 		}
 
+		/* Load the return address (R3 - 1) into R5, so that we can later jump to it. */
 		code.println("SUB R3, R1");
 		code.println("MRM R5, (R3) ; Get old return address.");
 		code.println("ADD R3, R1");
-		code.println("MRM R3, (R3) ; Get old stack frame.");
+
+		/* Make R3 point to the previous stack frame. */
+		code.println("MRM R3, (R3)");
+
+		/* Jump to the return address (R5). */
 		code.println("MRR R0, R5 ; Jump back.");
 		code.println("");
 	}

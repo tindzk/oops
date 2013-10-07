@@ -35,14 +35,22 @@ class LiteralExpression extends Expression {
 	/**
 	 * Die Methode generiert den Assembler-Code für diesen Ausdruck.
 	 *
+	 * Pushes the value on the stack.
+	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
 	void generateCode(CodeStream code) {
 		code.println("; " + this.value + " : " + this.type.identifier.name);
+
+		/* Load value into R5. */
 		code.println("MRI R5, " + this.value);
+
+		/* Allocate space on the stack. */
 		code.println("ADD R2, R1");
+
+		/* Copy value from R5 to the newly allocated space on the stack. */
 		code.println("MMR (R2), R5");
 	}
 
