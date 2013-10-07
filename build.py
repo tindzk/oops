@@ -41,6 +41,6 @@ for app in ["OOPSC", "OOPSVM"]:
 	run(cmdCompile)
 
 	classFiles = matchFiles('build/' + app, '*.class')
-	cmdPackage = ["/usr/bin/jar", "cvfe", app.lower() + ".jar", app, "-C", "build/" + app, app + ".class"] + classFiles
+	cmdPackage = ["/usr/bin/jar", "cvmfe", "Manifest.txt", app.lower() + ".jar", app, "-C", "build/" + app, app + ".class"] + classFiles
 	print(" ".join(cmdPackage))
 	run(cmdPackage)

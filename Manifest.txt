@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: libs/antlr-4.1-complete.jar
+Created-By: 1.7.0_06 (Oracle Corporation)
+
