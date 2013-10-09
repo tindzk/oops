@@ -51,7 +51,7 @@ class VarOrCall extends Expression {
 
 		if (this.identifier.declaration instanceof MethodDeclaration
 				|| this.identifier.declaration instanceof VarDeclaration
-				&& ((VarDeclaration) this.identifier.declaration).isAttribute) {
+				&& ((VarDeclaration) this.identifier.declaration).declType == VarDeclaration.Type.Attribute) {
 			AccessExpression a = new AccessExpression(new VarOrCall(
 					new ResolvableIdentifier("_self", this.position)), this);
 			a.leftOperand = a.leftOperand.contextAnalysis(declarations);
@@ -171,14 +171,17 @@ class VarOrCall extends Expression {
 	void generateCode(CodeStream code) {
 		if (this.identifier.declaration instanceof VarDeclaration) {
 			VarDeclaration v = (VarDeclaration) this.identifier.declaration;
-			if (v.isAttribute) {
+			if (v.declType == VarDeclaration.Type.Attribute) {
+				/* Stored in the class object. */
 				code.println("; Referencing attribute " + this.identifier.name);
 				code.println("MRM R5, (R2)");
 				code.println("MRI R6, " + v.offset);
 				code.println("ADD R5, R6");
 				code.println("MMR (R2), R5");
-			} else {
-				code.println("; Referencing variable " + this.identifier.name);
+			} else if (v.declType == VarDeclaration.Type.Local) {
+				/* Stored in the stack frame. */
+				code.println("; Referencing local variable "
+						+ this.identifier.name);
 				code.println("MRI R5, " + v.offset);
 				code.println("ADD R5, R3");
 				code.println("ADD R2, R1");
@@ -207,7 +210,8 @@ class VarOrCall extends Expression {
 			code.println("MMR (R2), R5 ; Save return address on the stack.");
 
 			code.println("MRI R0, " + m.self.type.name + "_"
-					+ m.identifier.name + " ; Jump to method by overwriting PC.");
+					+ m.identifier.name
+					+ " ; Jump to method by overwriting PC.");
 			code.println(returnLabel + ":");
 		} else {
 			assert false;

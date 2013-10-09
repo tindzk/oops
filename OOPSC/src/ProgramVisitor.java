@@ -41,13 +41,13 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 	}
 
 	public void varDecl(GrammarParser.VariableDeclarationContext ctx,
-			List<VarDeclaration> vars, boolean isAttribute) {
+			List<VarDeclaration> vars, VarDeclaration.Type declType) {
 		ResolvableIdentifier type = this.resolvableIdentifierFromToken(ctx
 				.type().start);
 
 		for (TerminalNode ident : ctx.Identifier()) {
 			VarDeclaration var = new VarDeclaration(
-					this.identifierFromToken(ident.getSymbol()), isAttribute);
+					this.identifierFromToken(ident.getSymbol()), declType);
 			var.type = type;
 			vars.add(var);
 		}
@@ -56,7 +56,8 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 	@Override
 	public Void visitMemberVariableDeclaration(
 			GrammarParser.MemberVariableDeclarationContext ctx) {
-		this.varDecl(ctx.variableDeclaration(), this.c.attributes, true);
+		this.varDecl(ctx.variableDeclaration(), this.c.attributes,
+				VarDeclaration.Type.Attribute);
 		return this.visitChildren(ctx);
 	}
 
@@ -64,7 +65,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 	public Void visitMethodBody(GrammarParser.MethodBodyContext ctx) {
 		for (GrammarParser.VariableDeclarationContext var : ctx
 				.variableDeclaration()) {
-			this.varDecl(var, this.m.locals, false);
+			this.varDecl(var, this.m.locals, VarDeclaration.Type.Local);
 		}
 
 		this.m.statements = this.getStatements(ctx.statements());
@@ -79,7 +80,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 
 		for (GrammarParser.VariableDeclarationContext var : ctx
 				.variableDeclaration()) {
-			this.varDecl(var, this.m.parameters, false);
+			this.varDecl(var, this.m.parameters, VarDeclaration.Type.Local);
 		}
 
 		if (ctx.type() != null) {
@@ -91,7 +92,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		return this.visitChildren(ctx);
 	}
 
-	public Expression getLiteral(GrammarParser.LiteralContext ctx) {
+	public LiteralExpression getLiteral(GrammarParser.LiteralContext ctx) {
 		RuleContext rctx = ctx.getRuleContext();
 
 		Position pos = new Position(ctx.start.getLine(),
@@ -112,7 +113,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 						pos);
 			} else if (value.length() != 1) {
 				/* Unsupported character. */
-				assert(false);
+				assert (false);
 			} else {
 				return new LiteralExpression(value.charAt(0),
 						ClassDeclaration.intType, pos);
@@ -127,8 +128,6 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 			return new LiteralExpression(0, ClassDeclaration.boolType, pos);
 		} else if (rctx instanceof GrammarParser.NullLiteralContext) {
 			return new LiteralExpression(0, ClassDeclaration.nullType, pos);
-		} else if (rctx instanceof GrammarParser.SelfLiteralContext) {
-			return new VarOrCall(new ResolvableIdentifier("_self", pos));
 		}
 
 		return null;
@@ -146,10 +145,10 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 	}
 
 	public Expression getExpression(GrammarParser.ExpressionContext ctx) {
-		RuleContext rctx = ctx.getRuleContext();
-
 		Position pos = new Position(ctx.start.getLine(),
 				ctx.start.getStartIndex());
+
+		RuleContext rctx = ctx.getRuleContext();
 
 		if (rctx instanceof GrammarParser.BracketsExpressionContext) {
 			return this
@@ -179,6 +178,8 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 			return this
 					.getLiteral(((GrammarParser.LiteralExpressionContext) rctx)
 							.literal());
+		} else if (rctx instanceof GrammarParser.SelfExpressionContext) {
+			return new VarOrCall(new ResolvableIdentifier("_self", pos));
 		} else if (rctx instanceof GrammarParser.MinusExpressionContext) {
 			return new UnaryExpression(
 					Symbol.Id.MINUS,
@@ -287,7 +288,6 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 	public Statement getIfStatement(GrammarParser.IfStatementContext ctx) {
 		IfStatement s = new IfStatement(this.getExpression(ctx.expression(0)),
 				this.getStatements(ctx.statements(0)));
-		this.m.statements.add(s);
 
 		int i = 1;
 
@@ -303,6 +303,21 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		return s;
 	}
 
+	public Statement getTryStatement(GrammarParser.TryStatementContext ctx) {
+		Position pos = new Position(ctx.start.getLine(),
+				ctx.start.getStartIndex());
+
+		TryStatement s = new TryStatement(
+				this.getStatements(ctx.statements(0)), pos);
+
+		for (int i = 0; i < ctx.literal().size(); i++) {
+			s.addCatchBlock(this.getLiteral(ctx.literal(i)),
+					this.getStatements(ctx.statements(i + 1)));
+		}
+
+		return s;
+	}
+
 	public Statement getStatement(GrammarParser.StatementContext ctx) {
 		RuleContext rctx = ctx.getRuleContext();
 
@@ -312,7 +327,8 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		if (rctx instanceof GrammarParser.IfStatementContext) {
 			return this.getIfStatement((GrammarParser.IfStatementContext) rctx);
 		} else if (rctx instanceof GrammarParser.TryStatementContext) {
-			/* TODO Implement. */
+			return this
+					.getTryStatement((GrammarParser.TryStatementContext) rctx);
 		} else if (rctx instanceof GrammarParser.WhileStatementContext) {
 			WhileStatement w = new WhileStatement(
 					this.getExpression(((GrammarParser.WhileStatementContext) rctx)
@@ -338,7 +354,9 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 
 			return new ReturnStatement(pos);
 		} else if (rctx instanceof GrammarParser.ThrowStatementContext) {
-			/* TODO Implement. */
+			return new ThrowStatement(
+					this.getExpression(((GrammarParser.ThrowStatementContext) rctx)
+							.expression()), pos);
 		} else if (rctx instanceof GrammarParser.AssignStatementContext) {
 			return new Assignment(
 					this.getExpression(((GrammarParser.AssignStatementContext) rctx)

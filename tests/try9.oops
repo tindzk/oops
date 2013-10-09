@@ -1,0 +1,17 @@
+{ Verify whether RETURN is cleaning the stack when it occurs within a TRY block. }
+CLASS Main IS
+    METHOD main IS BEGIN
+        WRITE helper(1);
+    END METHOD
+    
+    METHOD helper(a: Integer) : Integer IS BEGIN
+        TRY
+            IF TRUE THEN
+                RETURN a + 'b';
+            END IF
+        CATCH 'b' DO
+            RETURN a + 'c';
+        END TRY
+        THROW 'e';
+    END METHOD
+END CLASS

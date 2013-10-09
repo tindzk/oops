@@ -56,11 +56,9 @@ public class BranchEvaluator {
 					parent.sub.add(branch);
 					constructTree(branch, whileStmt.statements);
 				}
-			} else if (stmt instanceof ReturnStatement) {
+			} else if (stmt instanceof ReturnStatement || stmt instanceof ThrowStatement) {
 				parent.terminates = true;
 			}
-
-			/* TODO Handle throw statements. */
 		}
 
 		if (!parent.terminates && parent.sub.size() != 0) {

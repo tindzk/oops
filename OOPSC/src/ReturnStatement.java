@@ -1,3 +1,5 @@
+import java.util.Stack;
+
 /**
  * Die Klasse repräsentiert die Anweisung RETURN im Syntaxbaum.
  */
@@ -86,12 +88,23 @@ class ReturnStatement extends Statement {
 	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
+	 * @param contexts
+	 *        Current stack of contexts, may be used to inject instructions for
+	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; RETURN");
 
 		if (this.value == null) {
+			/* For each RETURN statement within a TRY block, we need to unwind the stack
+			 * accordingly. */
+			for (Context c : contexts) {
+				if (c == Context.TryBlock) {
+					TryStatement.popException(code, false);
+				}
+			}
+
 			this.method.generateMethodEpilogue(code, "");
 		} else {
 			this.value.generateCode(code);
@@ -99,6 +112,14 @@ class ReturnStatement extends Statement {
 			/* Back up the value R2 points to by copying it to the register R7. R2 points
 			 * to the result of this.value. */
 			code.println("MRM R7, (R2)");
+
+			/* For each RETURN statement within a TRY block, we need to unwind the stack
+			 * accordingly. */
+			for (Context c : contexts) {
+				if (c == Context.TryBlock) {
+					TryStatement.popException(code, false);
+				}
+			}
 
 			/* The epilogue modifies R2 by making it point to its original value before
 			 * the method call. Inject the following instruction to restore our copy of

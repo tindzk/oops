@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Stack;
 
 /**
  * Die Klasse repräsentiert die Anweisung IF-THEN im Syntaxbaum.
@@ -141,8 +142,9 @@ class IfStatement extends Statement {
 		}
 	}
 
-	private void generateCode(CodeStream code, Expression condition,
-			List<Statement> stmts, String nextLabel, String endLabel) {
+	private void generateCode(CodeStream code, Stack<Context> contexts,
+			Expression condition, List<Statement> stmts, String nextLabel,
+			String endLabel) {
 		condition.generateCode(code);
 
 		code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen");
@@ -153,7 +155,7 @@ class IfStatement extends Statement {
 		code.println("; THEN");
 
 		for (Statement s : stmts) {
-			s.generateCode(code);
+			s.generateCode(code, contexts);
 		}
 
 		code.println("MRI R0, " + endLabel + " ; Sprung zu END IF");
@@ -165,16 +167,19 @@ class IfStatement extends Statement {
 	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
+	 * @param contexts
+	 *        Current stack of contexts, may be used to inject instructions for
+	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; IF");
 
 		String endLabel = code.nextLabel();
 		String nextLabel = code.nextLabel();
 
-		this.generateCode(code, this.condition, this.thenStatements, nextLabel,
-				endLabel);
+		this.generateCode(code, contexts, this.condition, this.thenStatements,
+				nextLabel, endLabel);
 
 		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
@@ -188,7 +193,7 @@ class IfStatement extends Statement {
 
 			nextLabel = code.nextLabel();
 
-			this.generateCode(code, entry.getKey(), entry.getValue(),
+			this.generateCode(code, contexts, entry.getKey(), entry.getValue(),
 					nextLabel, endLabel);
 
 			code.println("; END ELSEIF");
@@ -202,7 +207,7 @@ class IfStatement extends Statement {
 			code.println("; ELSE");
 
 			for (Statement s : elseStmts) {
-				s.generateCode(code);
+				s.generateCode(code, contexts);
 			}
 
 			code.println("; END ELSE");

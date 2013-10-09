@@ -1,5 +1,6 @@
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Die Klasse repräsentiert die Anweisung WHILE im Syntaxbaum.
@@ -70,9 +71,12 @@ class WhileStatement extends Statement {
 	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
+	 * @param contexts
+	 *        Current stack of contexts, may be used to inject instructions for
+	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	void generateCode(CodeStream code, Stack<Context> contexts) {
 		String whileLabel = code.nextLabel();
 		String endLabel = code.nextLabel();
 
@@ -87,7 +91,7 @@ class WhileStatement extends Statement {
 		code.println("; DO");
 
 		for (Statement s : this.statements) {
-			s.generateCode(code);
+			s.generateCode(code, contexts);
 		}
 
 		code.println("; END WHILE");

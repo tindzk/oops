@@ -88,6 +88,7 @@ expression
   | expression '.' Identifier                       # memberAccessExpression
   | Identifier                                      # memberAccess2Expression
   | literal                                         # literalExpression
+  | 'SELF'                                          # selfExpression
   | '-' expression                                  # minusExpression
   | 'NOT' expression                                # negateExpression
   | 'NEW' Identifier                                # instantiateExpression
@@ -111,7 +112,6 @@ literal
   | StringLiteral        # stringLiteral
   | value=(TRUE | FALSE) # booleanLiteral
   | 'NULL'               # nullLiteral
-  | 'SELF'               # selfLiteral
   ;
 
 Identifier

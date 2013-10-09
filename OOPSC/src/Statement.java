@@ -1,7 +1,14 @@
+import java.util.Stack;
+
 /**
  * Die abstrakte Basisklasse für alle Anweisungen im Syntaxbaum.
  */
 abstract class Statement {
+	enum Context {
+		Default,
+		TryBlock
+	}
+
 	/**
 	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
 	 *
@@ -28,6 +35,9 @@ abstract class Statement {
 	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
+	 * @param contexts
+	 *        Current stack of contexts, may be used to inject instructions for
+	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
-	abstract void generateCode(CodeStream code);
+	abstract void generateCode(CodeStream code, Stack<Context> contexts);
 }

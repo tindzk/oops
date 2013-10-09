@@ -1,3 +1,5 @@
+import java.util.Stack;
+
 /**
  * Die Klasse repräsentiert die Zuweisung im Syntaxbaum.
  */
@@ -62,9 +64,12 @@ class Assignment extends Statement {
 	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
+	 * @param contexts
+	 *        Current stack of contexts, may be used to inject instructions for
+	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; ASSIGNMENT code for left operand");
 		this.leftOperand.generateCode(code);
 		code.println("; ASSIGNMENT code for right operand");

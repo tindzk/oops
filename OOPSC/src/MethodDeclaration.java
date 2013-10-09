@@ -1,5 +1,6 @@
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Die Klasse repräsentiert eine Methode im Syntaxbaum.
@@ -7,7 +8,7 @@ import java.util.List;
 class MethodDeclaration extends Declaration {
 	/** Die lokale Variable SELF. */
 	VarDeclaration self = new VarDeclaration(new Identifier("_self", null),
-			false);
+			VarDeclaration.Type.Local);
 
 	/** Die Parameter der Methode. */
 	List<VarDeclaration> parameters = new LinkedList<>();
@@ -240,8 +241,11 @@ class MethodDeclaration extends Declaration {
 	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
+	 * @param contexts
+	 *        Current stack of contexts, may be used to inject instructions for
+	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
-	void generateCode(CodeStream code) {
+	void generateCode(CodeStream code, Stack<Statement.Context> contexts) {
 		code.println("; METHOD " + this.identifier.name);
 		this.generateMethodPrologue(code);
 
@@ -251,7 +255,7 @@ class MethodDeclaration extends Declaration {
 
 		for (Statement s : this.statements) {
 			code.println("; Statement: " + s.getClass().getName());
-			s.generateCode(code);
+			s.generateCode(code, contexts);
 			code.println("");
 		}
 

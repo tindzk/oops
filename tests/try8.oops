@@ -1,0 +1,20 @@
+CLASS Main IS
+    METHOD main IS BEGIN
+        WRITE helper(1);
+    END METHOD
+    
+    METHOD helper(a: Integer) : Integer IS BEGIN
+        TRY
+            RETURN helper2;
+        CATCH 'b' DO
+            { Ensure that the exception was popped before the statements are
+              executed. }
+            RETURN a + 'b';
+        END TRY
+        THROW 'd';
+    END METHOD
+    
+    METHOD helper2 : Integer IS BEGIN
+        THROW 'b';
+    END METHOD
+END CLASS

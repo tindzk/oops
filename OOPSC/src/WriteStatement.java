@@ -1,3 +1,5 @@
+import java.util.Stack;
+
 /**
  * Die Klasse repräsentiert die Anweisung WRITE im Syntaxbaum.
  */
@@ -51,9 +53,12 @@ public class WriteStatement extends Statement {
 	 *
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
+	 * @param contexts
+	 *        Current stack of contexts, may be used to inject instructions for
+	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; WRITE operand code");
 		this.operand.generateCode(code);
 		code.println("; WRITE");

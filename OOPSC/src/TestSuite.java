@@ -134,8 +134,11 @@ public class TestSuite {
 			this.p.generateCode(code, 1000, 1000);
 			String asm = stream.toString("UTF-8");
 
+			System.err.println(asm);
+
 			/* Run the VM twice with different inputs. */
 			String output = this.runVM(asm, "abc") + this.runVM(asm, "xyz");
+
 			assertEquals(expected, output);
 		} catch (UnsupportedEncodingException e) {
 			fail();

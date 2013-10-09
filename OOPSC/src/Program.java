@@ -1,5 +1,6 @@
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Die Klasse repräsentiert den Syntaxbaum des gesamten Programms.
@@ -7,22 +8,27 @@ import java.util.List;
  * Synthese.
  */
 class Program {
-	/** Die benutzerdefinierten Klassen. */
+	/**
+	 * User-defined classes.
+	 */
 	List<ClassDeclaration> classes = new LinkedList<>();
 
 	/**
-	 * Ein Ausdruck, der ein Objekt der Klasse Main erzeugt und dann darin die
-	 * Methode main aufruft. Entspricht NEW Main.main.
+	 * Initialisation statements.
 	 */
-	private Expression main = new AccessExpression(new NewExpression(
-			new ResolvableIdentifier("Main", null), null), new VarOrCall(
-			new ResolvableIdentifier("main", null)));
+	List<Statement> init = new LinkedList<>();
 
 	/**
-	 * Konstruktor.
+	 * Constructor.
 	 */
 	public Program() {
-		// Vordefinierte Klassen hinzufügen
+		/* Add a statement that instantiates the class `Main' and calls its method main().
+		 * Equivalent to NEW Main.main. */
+		this.init.add(new CallStatement(new AccessExpression(new NewExpression(
+				new ResolvableIdentifier("Main", null), null), new VarOrCall(
+				new ResolvableIdentifier("main", null)))));
+
+		/* Add predeclared classes. */
 		this.classes.add(ClassDeclaration.intClass);
 		this.classes.add(ClassDeclaration.boolClass);
 	}
@@ -50,7 +56,7 @@ class Program {
 		// Neuen Deklarationsraum schaffen
 		declarations.enter();
 
-		// Benutzerdefinierten Klassen hinzufügen
+		// Benutzerdefinierte Klassen hinzufügen
 		for (ClassDeclaration c : this.classes) {
 			declarations.add(c);
 		}
@@ -65,8 +71,10 @@ class Program {
 			c.contextAnalysis(declarations, false);
 		}
 
-		// Abhängigkeiten für Startup-Code auflösen
-		this.main = this.main.contextAnalysis(declarations);
+		/* Resolve dependencies for startup statements. */
+		for (Statement stmt : this.init) {
+			stmt.contextAnalysis(declarations);
+		}
 
 		// Deklarationsraum verlassen
 		declarations.leave();
@@ -91,27 +99,60 @@ class Program {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	void generateCode(CodeStream code, int stackSize, int heapSize) {
-		// Start-Code: Register initialisieren
+		/* Initialise registers. */
 		code.setNamespace("_init");
 		code.println("; Erzeugt durch OOPS-0 compiler, Version 2012-03-15.");
 		code.println("MRI R1, 1 ; R1 ist immer 1");
 		code.println("MRI R2, _stack ; R2 zeigt auf Stapel");
 		code.println("MRI R4, _heap ; R4 zeigt auf die nächste freie Stelle auf dem Heap");
 
-		// Ein Objekt der Klasse Main konstruieren und die Methode main aufrufen.
-		this.main.generateCode(code);
+		/* Initialise the initial exception frame, i.e., the first element is a
+		 * pointer to the second one which itself points to the default exception
+		 * handler (_uncaughtException). */
+		code.println("MRI R5, _currentExceptionFrame");
+		code.println("MRI R6, _currentExceptionFrame");
+		code.println("ADD R6, R1");
+		code.println("MMR (R5), R6");
+		code.println("ADD R5, R1");
+		code.println("MRI R6, _uncaughtException");
+		code.println("MMR (R5), R6");
+
+		Stack<Statement.Context> contexts = new Stack<>();
+		contexts.add(Statement.Context.Default);
+
+		/* Generate code for initialisation statements. */
+		for (Statement stmt : this.init) {
+			stmt.generateCode(code, contexts);
+		}
+
 		code.println("MRI R0, _end ; Programm beenden");
 
-		// Generiere Code für benutzerdefinierte Klassen
+		/* Generate code for user-defined classes. */
 		for (ClassDeclaration c : this.classes) {
 			c.generateCode(code);
 		}
 
-		// Speicher für Stapel und Heap reservieren
+		/* Allocate space for the default exception frame. */
+		code.println("_currentExceptionFrame:");
+		code.println("DAT 2, 0");
+
+		/* Allocate space for the stack and the heap. */
 		code.println("_stack: ; Hier fängt der Stapel an");
 		code.println("DAT " + stackSize + ", 0");
+
 		code.println("_heap: ; Hier fängt der Heap an");
 		code.println("DAT " + heapSize + ", 0");
+
+		/* Function being jumped to when an exception could not be caught. */
+		code.println("_uncaughtException:");
+		String s = "ABORT ";
+		for (byte c : s.getBytes()) {
+			code.println("MRI R5, " + (int) c);
+			code.println("SYS 1, 5");
+		}
+		code.println("MRR R5, R7");
+		code.println("SYS 1, 5");
+
 		code.println("_end: ; Programmende");
 	}
 }

@@ -1,0 +1,24 @@
+{ Verifies propagation with nested TRY blocks and function calls. }
+CLASS Main IS
+    METHOD main IS BEGIN
+        TRY
+            helper(1);
+        CATCH 'c' DO
+            WRITE 'M';
+        END TRY
+    END METHOD
+    
+    METHOD helper(a: Integer) IS BEGIN
+        TRY
+            TRY
+                IF TRUE THEN
+                    THROW a + 'b';
+                END IF
+            CATCH 'd' DO
+                WRITE 'G';
+            END TRY
+        CATCH 'e' DO
+            WRITE 'H';
+        END TRY
+    END METHOD
+END CLASS

@@ -1,9 +1,13 @@
 class VarDeclaration extends Declaration {
+	enum Type {
+		Attribute,
+		Local
+	}
+
 	/** Der Typ der Variablen bzw. des Attributs. */
 	ResolvableIdentifier type;
 
-	/** Wird hier ein Attribut deklariert (statt einer lokalen Variablen)? */
-	boolean isAttribute;
+	Type declType;
 
 	/**
 	 * Die Position der Variablen im Stapelrahmen bzw. des Attributs im Objekt.
@@ -20,9 +24,9 @@ class VarDeclaration extends Declaration {
 	 *        Wird hier ein Attribut deklariert (statt einer lokalen
 	 *        Variablen)?
 	 */
-	VarDeclaration(Identifier name, boolean isAttribute) {
+	VarDeclaration(Identifier name, Type declType) {
 		super(name);
-		this.isAttribute = isAttribute;
+		this.declType = declType;
 	}
 
 	/**

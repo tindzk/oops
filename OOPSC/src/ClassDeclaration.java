@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.Stack;
 
 /**
  * Die Klasse repräsentiert eine Klassendeklaration im Syntaxbaum.
@@ -40,13 +41,13 @@ class ClassDeclaration extends Declaration {
 		 * value is going to be overwritten during the contextual analysis. The
 		 * attribute is required for boxing as it holds the actual value. */
 		VarDeclaration dummyIntegerValue = new VarDeclaration(new Identifier(
-				"_value", null), true);
+				"_value", null), VarDeclaration.Type.Attribute);
 		dummyIntegerValue.type = new ResolvableIdentifier("_Integer", null);
 		dummyIntegerValue.type.declaration = ClassDeclaration.intType;
 		ClassDeclaration.intClass.attributes.add(dummyIntegerValue);
 
 		VarDeclaration dummyBooleanValue = new VarDeclaration(new Identifier(
-				"_value", null), true);
+				"_value", null), VarDeclaration.Type.Attribute);
 		dummyBooleanValue.type = new ResolvableIdentifier("_Boolean", null);
 		dummyBooleanValue.type.declaration = ClassDeclaration.boolType;
 		ClassDeclaration.boolClass.attributes.add(dummyBooleanValue);
@@ -232,8 +233,11 @@ class ClassDeclaration extends Declaration {
 
 		// Synthese für alle Methoden
 		for (MethodDeclaration m : this.methods) {
-			m.generateCode(code);
+			Stack<Statement.Context> contexts = new Stack<>();
+			contexts.add(Statement.Context.Default);
+			m.generateCode(code, contexts);
 		}
+
 		code.println("; END CLASS " + this.identifier.name);
 	}
 }
