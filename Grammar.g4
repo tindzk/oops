@@ -115,19 +115,11 @@ literal
   ;
 
 Identifier
-  : LETTER (LETTER | DIGIT)*
+  : LETTER ALPHANUM*
   ;
 
 IntegerLiteral
   : DIGIT+
-  ;
-
-DIGIT
-  : [0-9]
-  ;
-
-LETTER
-  : [a-zA-Z]
   ;
 
 CharacterLiteral
@@ -136,6 +128,18 @@ CharacterLiteral
 
 StringLiteral
   : '\'' (EscapeSequence | ~('\\'|'\''))* '\''
+  ;
+
+fragment ALPHANUM
+  : LETTER | DIGIT
+  ;
+
+fragment DIGIT
+  : [0-9]
+  ;
+
+fragment LETTER
+  : [a-zA-Z]
   ;
 
 fragment
