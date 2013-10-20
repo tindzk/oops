@@ -10,6 +10,10 @@ class MethodDeclaration extends Declaration {
 	VarDeclaration self = new VarDeclaration(new Identifier("_self", null),
 			VarDeclaration.Type.Local);
 
+	/** Die lokale Variable BASE. */
+	VarDeclaration base = new VarDeclaration(new Identifier("_base", null),
+			VarDeclaration.Type.Local);
+
 	/** Die Parameter der Methode. */
 	List<VarDeclaration> parameters = new LinkedList<>();
 
@@ -21,6 +25,8 @@ class MethodDeclaration extends Declaration {
 
 	/** Return type. Default type matches ClassDeclaration.voidType. */
 	ResolvableIdentifier retType = null;
+
+	int vmtIndex = -1;
 
 	/**
 	 * Konstruktor.
@@ -94,6 +100,11 @@ class MethodDeclaration extends Declaration {
 				declarations.currentClass.identifier.name, null);
 		this.self.type.declaration = declarations.currentClass;
 
+		// BASE represents the inherited class.
+		this.base.type = new ResolvableIdentifier(
+				declarations.currentClass.baseType.name, null);
+		this.base.type.declaration = declarations.currentClass.baseType.declaration;
+
 		// Löse Typen aller Parameter auf
 		for (VarDeclaration v : this.parameters) {
 			v.contextAnalysis(declarations, initialPass);
@@ -107,8 +118,9 @@ class MethodDeclaration extends Declaration {
 		// Neuen Deklarationsraum schaffen
 		declarations.enter();
 
-		// SELF eintragen
+		// Insert SELF and BASE.
 		declarations.add(this.self);
+		declarations.add(this.base);
 
 		// Parameter eintragen; liegen vor der Rücksprungadresse (-1) auf dem Stapel
 		int offset = -2;
@@ -121,6 +133,10 @@ class MethodDeclaration extends Declaration {
 
 		// SELF liegt vor den Parametern auf dem Stapel
 		this.self.offset = offset;
+
+		// BASE has the same address on the stack as SELF, however the type of BASE
+		// corresponds to the base type.
+		this.base.offset = offset;
 
 		// Rücksprungadresse und alten Rahmenzeiger überspringen
 		offset = 1;
@@ -209,8 +225,7 @@ class MethodDeclaration extends Declaration {
 	 */
 	public void generateMethodEpilogue(CodeStream code, String customInstruction) {
 		/* Calculate size of stack space occupied by this method and its call. */
-		int size = this.locals.size() +
-				+ 1 /* old stack frame */
+		int size = this.locals.size() + 1 /* old stack frame */
 				+ 1 /* return address */
 				+ this.parameters.size();
 
@@ -263,13 +278,38 @@ class MethodDeclaration extends Declaration {
 
 		if (this.getResolvedReturnType() == ClassDeclaration.voidType) {
 			/* When at least one return statement is always executed, we do not need to generate the
-			 * epilogue twice.
-			 */
+			 * epilogue twice. */
 			if (BranchEvaluator.terminates(this)) {
 				return;
 			}
 		}
 
 		this.generateMethodEpilogue(code, "");
+	}
+
+	/**
+	 * Compares the signature for equality.
+	 *
+	 * @param m Comparison method.
+	 * @return true if signatures are equal, false otherwise.
+	 */
+	public boolean signatureEquals(MethodDeclaration m) {
+		if (!m.retType.name.equals(this.retType.name)) {
+			return false;
+		}
+
+		if (m.parameters.size() != this.parameters.size()) {
+			return false;
+		}
+
+		for (int i = 0; i < m.parameters.size(); i++) {
+			String cmp = m.parameters.get(i).type.name;
+
+			if (!this.parameters.get(i).type.name.equals(cmp)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

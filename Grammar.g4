@@ -89,6 +89,7 @@ expression
   | Identifier                                      # memberAccess2Expression
   | literal                                         # literalExpression
   | 'SELF'                                          # selfExpression
+  | 'BASE'                                          # baseExpression
   | '-' expression                                  # minusExpression
   | 'NOT' expression                                # negateExpression
   | 'NEW' Identifier                                # instantiateExpression

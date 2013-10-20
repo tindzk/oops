@@ -28,14 +28,16 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 
 	@Override
 	public Void visitClassDeclaration(GrammarParser.ClassDeclarationContext ctx) {
-		this.c = new ClassDeclaration(this.identifierFromToken(ctx.name));
-		this.p.addClass(this.c);
+		ResolvableIdentifier baseType;
 
 		if (ctx.extendsClass != null) {
-			/* TODO Implement. */
-			Identifier extendsClass = this
-					.identifierFromToken(ctx.extendsClass);
+			baseType = this.resolvableIdentifierFromToken(ctx.extendsClass);
+		} else {
+			baseType = new ResolvableIdentifier("Object", null);
 		}
+
+		this.c = new ClassDeclaration(this.identifierFromToken(ctx.name), baseType);
+		this.p.addClass(this.c);
 
 		return this.visitChildren(ctx);
 	}
@@ -180,6 +182,8 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 							.literal());
 		} else if (rctx instanceof GrammarParser.SelfExpressionContext) {
 			return new VarOrCall(new ResolvableIdentifier("_self", pos));
+		} else if (rctx instanceof GrammarParser.BaseExpressionContext) {
+			return new VarOrCall(new ResolvableIdentifier("_base", pos));
 		} else if (rctx instanceof GrammarParser.MinusExpressionContext) {
 			return new UnaryExpression(
 					Symbol.Id.MINUS,

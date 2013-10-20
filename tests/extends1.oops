@@ -39,7 +39,7 @@ CLASS Main IS
         a.print;     | A
         b.print;     | B
         c.print;     | B
-        b.printBase; | A
+        b.printBase; | AA
     END METHOD
 END CLASS
 

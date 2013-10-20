@@ -1,0 +1,38 @@
+CLASS A IS
+    a : Integer;
+
+    METHOD init IS
+    BEGIN
+        a := 67; | C
+    END METHOD
+
+    METHOD print IS
+    BEGIN
+        WRITE a;
+    END METHOD
+END CLASS
+
+CLASS B EXTENDS A IS
+    a : Integer;
+    b : Integer;
+
+    METHOD print IS
+    BEGIN
+        WRITE a; | A
+        WRITE b; | B
+        WRITE BASE.a; | C
+        BASE.print; | C
+    END METHOD
+END CLASS
+
+CLASS Main IS
+    METHOD main IS
+        b : B;
+    BEGIN
+        b := NEW B;
+        b.init;
+        b.a := 65;
+        b.b := 66;
+        b.print;
+    END METHOD
+END CLASS

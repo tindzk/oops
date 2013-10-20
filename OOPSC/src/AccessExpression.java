@@ -55,6 +55,20 @@ class AccessExpression extends Expression {
 		this.type = this.rightOperand.type;
 		this.lValue = this.rightOperand.lValue;
 
+		/* Deal with accesses to methods or attributes in the base class. */
+		if (this.leftOperand instanceof DeRefExpression) {
+			if (((DeRefExpression) this.leftOperand).operand instanceof VarOrCall) {
+				VarOrCall call = (VarOrCall) ((DeRefExpression) this.leftOperand).operand;
+
+				if (call.identifier.name.equals("_base")) {
+					VarDeclaration vdec = (VarDeclaration) call.identifier.declaration;
+
+					this.rightOperand
+							.setStaticContext((ClassDeclaration) vdec.type.declaration);
+				}
+			}
+		}
+
 		return this;
 	}
 

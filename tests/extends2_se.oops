@@ -8,4 +8,5 @@ CLASS C EXTENDS A IS | Fehler: Zyklische Vererbung
 END CLASS
 
 CLASS Main IS
+    METHOD main IS BEGIN END METHOD
 END CLASS

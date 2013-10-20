@@ -69,12 +69,17 @@ class ReadStatement extends Statement {
 		// TODO refactor
 		code.println("; READ lvalue ablegen");
 		this.operand.generateCode(code);
+
 		code.println("; READ Speicher allokieren");
 		this.newInt.generateCode(code);
+
 		code.println("; READ");
 		code.println("MRM R5, (R2)"); // R2 zeigt auf ein boxed Integer
-		// code.println("MRI R6, " + ClassDeclaration.HEADERSIZE);
-		// code.println("ADD R5, R6");
+
+		/* Skip header. */
+		code.println("MRI R6, " + ClassDeclaration.HEADERSIZE);
+		code.println("ADD R5, R6");
+
 		code.println("SYS 0, 6 ; Gelesenen Wert in R6 ablegen");
 		code.println("MMR (R5), R6 ; Zeichen in neuen Integer schreiben");
 		code.println("MRM R5, (R2) ; Neuen Integer vom Stapel entnehmen");

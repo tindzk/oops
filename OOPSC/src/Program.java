@@ -1,6 +1,95 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
+
+class Vertex {
+	/** Visited state. */
+	public enum Visited {
+		NotVisited, BeingVisited, DoneVisited
+	}
+
+	/**
+	 * Class declaration associated to the vertex.
+	 */
+	public ClassDeclaration classDeclaration = null;
+
+	/**
+	 * By default, all vertexes were not visited.
+	 */
+	public Visited visited = Visited.NotVisited;
+
+	/**
+	 * The linked vertexes.
+	 */
+	public List<Vertex> edges = new ArrayList<>();
+
+	/**
+	 * Default constructor.
+	 */
+	public Vertex() {
+
+	}
+
+	/**
+	 * Constructor
+	 *
+	 * @param c
+	 *        Class declaration.
+	 */
+	public Vertex(ClassDeclaration c) {
+		this.classDeclaration = c;
+	}
+
+	/**
+	 * Adds edge to vertex.
+	 *
+	 * @param v
+	 *        Vertex
+	 */
+	public void addEdge(Vertex v) {
+		this.edges.add(v);
+	}
+
+	/**
+	 * Recursively checks for cycles applying a depth-first search (DFS).
+	 *
+	 * @return true if vertex or its links contains cycles, false otherwise.
+	 */
+	public boolean hasCycles() {
+		if (this.visited == Visited.BeingVisited) {
+			return true;
+		} else if (this.visited == Visited.DoneVisited) {
+			return false;
+		}
+
+		this.visited = Visited.BeingVisited;
+
+		for (Vertex v : this.edges) {
+			if (v.hasCycles()) {
+				return true;
+			}
+		}
+
+		this.visited = Visited.DoneVisited;
+		return false;
+	}
+
+	/**
+	 * Recursively converts all sub-nodes of the current vertex to a list.
+	 *
+	 * @param res
+	 *        Result list.
+	 */
+	public void toList(List<ClassDeclaration> res) {
+		for (Vertex v : this.edges) {
+			res.add(v.classDeclaration);
+			v.toList(res);
+		}
+	}
+}
 
 /**
  * Die Klasse repräsentiert den Syntaxbaum des gesamten Programms.
@@ -29,6 +118,7 @@ class Program {
 				new ResolvableIdentifier("main", null)))));
 
 		/* Add predeclared classes. */
+		this.classes.add(ClassDeclaration.objectClass);
 		this.classes.add(ClassDeclaration.intClass);
 		this.classes.add(ClassDeclaration.boolClass);
 	}
@@ -41,6 +131,56 @@ class Program {
 	 */
 	public void addClass(ClassDeclaration clazz) {
 		this.classes.add(clazz);
+	}
+
+	/**
+	 * Construct acyclic graph.
+	 *
+	 * @param declarations
+	 * @param classes
+	 * @return Class dependencies in the resolved order.
+	 * @throws CompileException
+	 */
+	public List<ClassDeclaration> resolveClassDeps(Declarations declarations,
+			List<ClassDeclaration> classes) throws CompileException {
+		Map<ClassDeclaration, Vertex> mapping = new HashMap<>();
+
+		for (ClassDeclaration cls : classes) {
+			mapping.put(cls, new Vertex(cls));
+		}
+
+		/* Dummy node facilitating traversal. */
+		Vertex root = new Vertex();
+
+		for (ClassDeclaration cls : classes) {
+			if (cls.baseType == null) {
+				/* Connect all classes without parents to the root node. */
+				root.addEdge(mapping.get(cls));
+			} else {
+				declarations.resolveType(cls.baseType);
+				mapping.get(cls.baseType.declaration).addEdge(mapping.get(cls));
+			}
+		}
+
+		if (root.hasCycles()) {
+			throw new CompileException(
+					"Class hierarchy is not devoid of cycles.", null);
+		}
+
+		/* Some classes may not be connected to the root node. Iterate over all
+		 * vertexes that were not yet visited and check for cycles.
+		 */
+		for (Vertex v : mapping.values()) {
+			if (v.visited == Vertex.Visited.NotVisited && v.hasCycles()) {
+				throw new CompileException(
+						"Class hierarchy is not devoid of cycles.", null);
+			}
+		}
+
+		List<ClassDeclaration> res = new LinkedList<>();
+		root.toList(res);
+
+		return res;
 	}
 
 	/**
@@ -60,6 +200,8 @@ class Program {
 		for (ClassDeclaration c : this.classes) {
 			declarations.add(c);
 		}
+
+		this.classes = this.resolveClassDeps(declarations, this.classes);
 
 		// Alle Klassendeklarationen initialisieren
 		for (ClassDeclaration c : this.classes) {
@@ -135,6 +277,18 @@ class Program {
 		/* Allocate space for the default exception frame. */
 		code.println("_currentExceptionFrame:");
 		code.println("DAT 2, 0");
+
+		/* Generate VMT for each class. */
+		for (ClassDeclaration c : this.classes) {
+			MethodDeclaration methods[] = c.generateVMT();
+
+			code.println(c.identifier.name + ":");
+
+			for (MethodDeclaration m : methods) {
+				code.println("DAT 1, "
+						+ c.resolveAsmMethodName(m.identifier.name));
+			}
+		}
 
 		/* Allocate space for the stack and the heap. */
 		code.println("_stack: ; Hier fängt der Stapel an");

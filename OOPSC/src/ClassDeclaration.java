@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -8,33 +9,39 @@ import java.util.Stack;
 class ClassDeclaration extends Declaration {
 	/**
 	 * Konstante für die Größe der Verwaltungsinformation am Anfang eines jeden Objekts.
-	 * Bisher ist die Größe 0.
+	 * As of now, the header only contains an address to the VMT of the object.
 	 */
-	static final int HEADERSIZE = 0;
+	static final int HEADERSIZE = 1;
 
 	/** Ein interner Typ für das Ergebnis von Methoden. */
 	static final ClassDeclaration voidType = new ClassDeclaration(
-			new Identifier("_Void", null));
+			new Identifier("_Void", null), null);
 
 	/** Ein interner Typ für null. Dieser Typ ist kompatibel zu allen Klassen. */
 	static final ClassDeclaration nullType = new ClassDeclaration(
-			new Identifier("_Null", null));
+			new Identifier("_Null", null), null);
 
 	/** Der interne Basisdatentyp für Zahlen. */
 	static final ClassDeclaration intType = new ClassDeclaration(
-			new Identifier("_Integer", null));
+			new Identifier("_Integer", null), null);
 
 	/** Der interne Basisdatentyp für Wahrheitswerte. */
 	static final ClassDeclaration boolType = new ClassDeclaration(
-			new Identifier("_Boolean", null));
+			new Identifier("_Boolean", null), null);
+
+	/** Die Klasse Object. */
+	static final ClassDeclaration objectClass = new ClassDeclaration(
+			new Identifier("Object", null), null);
 
 	/** Die Klasse Integer. */
 	static final ClassDeclaration intClass = new ClassDeclaration(
-			new Identifier("Integer", null));
+			new Identifier("Integer", null), new ResolvableIdentifier("Object",
+					null));
 
 	/** Die Klasse Boolean. */
 	static final ClassDeclaration boolClass = new ClassDeclaration(
-			new Identifier("Boolean", null));
+			new Identifier("Boolean", null), new ResolvableIdentifier("Object",
+					null));
 
 	static {
 		/* Do not set ClassDeclaration.(int|bool)Class.objectSize manually as this
@@ -54,10 +61,10 @@ class ClassDeclaration extends Declaration {
 	}
 
 	/** Die Attribute dieser Klasse. */
-	LinkedList<VarDeclaration> attributes = new LinkedList<VarDeclaration>();
+	List<VarDeclaration> attributes = new LinkedList<>();
 
 	/** Die Methoden dieser Klasse. */
-	LinkedList<MethodDeclaration> methods = new LinkedList<MethodDeclaration>();
+	List<MethodDeclaration> methods = new LinkedList<>();
 
 	/** Die innerhalb dieser Klasse sichtbaren Deklarationen. */
 	Declarations declarations;
@@ -68,14 +75,99 @@ class ClassDeclaration extends Declaration {
 	 */
 	int objectSize;
 
+	ResolvableIdentifier baseType;
+
 	/**
 	 * Konstruktor.
 	 *
 	 * @param name
 	 *        Der Name der deklarierten Klasse.
+	 * @param baseType
+	 *        The base class to extend from.
 	 */
-	ClassDeclaration(Identifier name) {
+	ClassDeclaration(Identifier name, ResolvableIdentifier baseType) {
 		super(name);
+		this.baseType = baseType;
+	}
+
+	/**
+	 * Recursively fill the VMT with the method declarations. Take into account
+	 * overridden methods.
+	 *
+	 * @param res
+	 *        Result array.
+	 */
+	protected void fillVMT(MethodDeclaration res[]) {
+		if (this.baseType != null) {
+			ClassDeclaration base = (ClassDeclaration) this.baseType.declaration;
+			base.fillVMT(res);
+		}
+
+		for (MethodDeclaration m : this.methods) {
+			res[m.vmtIndex] = m;
+		}
+	}
+
+	/**
+	 * @param cur
+	 *        Current index.
+	 * @return Highest VMT index.
+	 */
+	protected int getLastVmtIndex(int cur) {
+		if (this.baseType != null) {
+			ClassDeclaration base = (ClassDeclaration) this.baseType.declaration;
+
+			int tmp = base.getLastVmtIndex(cur);
+			if (tmp > cur) {
+				cur = tmp;
+			}
+		}
+
+		if (this.methods.size() != 0) {
+			MethodDeclaration last = this.methods.get(this.methods.size() - 1);
+
+			if (last.vmtIndex > cur) {
+				cur = last.vmtIndex;
+			}
+		}
+
+		return cur;
+	}
+
+	/**
+	 * Generates a VMT for the current class, including its sub-classes. Requires
+	 * that the contextual analysis was performed before.
+	 *
+	 * @return
+	 */
+	public MethodDeclaration[] generateVMT() {
+		MethodDeclaration res[] = new MethodDeclaration[this
+				.getLastVmtIndex(-1) + 1];
+		this.fillVMT(res);
+		return res;
+	}
+
+	/**
+	 * Finds the declaration of the given method and return it in an assembly string.
+	 * Takes into account if a method was inherited.
+	 *
+	 * @param name
+	 *        Method name.
+	 * @return null if not found, <class>_<method> otherwise.
+	 */
+	public String resolveAsmMethodName(String name) {
+		for (MethodDeclaration m : this.methods) {
+			if (m.identifier.name.equals(name)) {
+				return this.identifier.name + "_" + name;
+			}
+		}
+
+		if (this.baseType == null) {
+			return null;
+		}
+
+		ClassDeclaration base = (ClassDeclaration) this.baseType.declaration;
+		return base.resolveAsmMethodName(name);
 	}
 
 	/**
@@ -94,6 +186,75 @@ class ClassDeclaration extends Declaration {
 			throws CompileException {
 		// Standardgröße für Objekte festlegen
 		this.objectSize = HEADERSIZE;
+
+		if (this.baseType != null) {
+			declarations.resolveType(this.baseType);
+			ClassDeclaration base = (ClassDeclaration) this.baseType.declaration;
+
+			/* Inherit attributes from the parent object. */
+			this.objectSize += base.objectSize;
+
+			declarations = (Declarations) base.declarations.clone();
+
+			/* Verify that all overridden methods have the same signature as its parent. */
+			for (MethodDeclaration m : this.methods) {
+				MethodDeclaration baseMethod = base
+						.getMethod(m.identifier.name);
+
+				if (baseMethod != null) {
+					/* This method overrides a parent method. */
+					if (!baseMethod.signatureEquals(m)) {
+						throw new CompileException(
+								String.format(
+										"The overridden signature of %s.%s() does not match its parent method in %s.",
+										this.identifier.name,
+										m.identifier.name, base.identifier.name),
+								null);
+					}
+				}
+
+				if (base.getAttribute(m.identifier.name) != null) {
+					throw new CompileException(
+							String.format(
+									"The method %s.%s() is overriding a method of its base class %s.",
+									this.identifier.name, m.identifier.name,
+									base.identifier.name), null);
+				}
+			}
+
+			for (VarDeclaration var : this.attributes) {
+				if (base.getMethod(var.identifier.name) != null) {
+					throw new CompileException(
+							String.format(
+									"The attribute %s in %s is overriding a method of its base class %s.",
+									var.identifier.name, this.identifier.name,
+									base.identifier.name), null);
+				}
+			}
+
+			/* Set the VMT index for each method. */
+			int vmtIndex = base.methods.isEmpty() ? 0 : base.methods
+					.get(base.methods.size() - 1).vmtIndex + 1;
+			for (MethodDeclaration m : this.methods) {
+				/* If the method is overriden, take the VMT index from its parent method. */
+				MethodDeclaration baseMethod = base
+						.getMethod(m.identifier.name);
+
+				if (baseMethod != null) {
+					m.vmtIndex = baseMethod.vmtIndex;
+				} else {
+					m.vmtIndex = vmtIndex;
+					vmtIndex++;
+				}
+			}
+		} else {
+			/* Set the VMT index for each method. */
+			int vmtIndex = 0;
+			for (MethodDeclaration m : this.methods) {
+				m.vmtIndex = vmtIndex;
+				vmtIndex++;
+			}
+		}
 
 		// Attributtypen auflösen und Indizes innerhalb des Objekts vergeben
 		for (VarDeclaration a : this.attributes) {
@@ -134,6 +295,40 @@ class ClassDeclaration extends Declaration {
 	}
 
 	/**
+	 * Finds the declaration for the given attribute name.
+	 *
+	 * @param name
+	 *        Attribute name.
+	 * @return null if not found, declaration otherwise.
+	 */
+	private VarDeclaration getAttribute(String name) {
+		for (VarDeclaration var : this.attributes) {
+			if (var.identifier.name.equals(name)) {
+				return var;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Finds the declaration for the given method name.
+	 *
+	 * @param name
+	 *        Method name.
+	 * @return null if not found, declaration otherwise.
+	 */
+	private MethodDeclaration getMethod(String name) {
+		for (MethodDeclaration m : this.methods) {
+			if (m.identifier.name.equals(name)) {
+				return m;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Die Methode prüft, ob dieser Typ kompatibel mit einem anderen Typ ist.
 	 *
 	 * @param expected
@@ -147,9 +342,22 @@ class ClassDeclaration extends Declaration {
 		if (this == nullType && expected != intType && expected != boolType
 				&& expected != voidType) {
 			return true;
-		} else {
-			return this == expected;
 		}
+
+		/* Compare wrt. base type. */
+		for (ClassDeclaration cmp = this;;) {
+			if (cmp == expected) {
+				return true;
+			}
+
+			if (cmp.baseType == null) {
+				break;
+			}
+
+			cmp = (ClassDeclaration) cmp.baseType.declaration;
+		}
+
+		return false;
 	}
 
 	/**
