@@ -25,22 +25,25 @@ def matchFiles(path, pattern):
 
 jarFiles = matchFiles('libs/', '*.jar')
 
-for app in ["OOPSC", "OOPSVM"]:
-	if not os.path.exists("build/" + app):
-		os.makedirs("build/" + app)
+if not os.path.exists("build/"):
+	os.makedirs("build/")
 
-	srcFiles = matchFiles(app + '/src/', '*.java')
+for app in ["oopsc", "oopsvm"]:
+	srcFiles = matchFiles('src/org/' + app, '*.java')
+	srcFiles = [file for file in srcFiles if "TestSuite.java" not in file]
 
-	for file in srcFiles:
-		if "TestSuite.java" in file:
-			srcFiles.remove(file)
-			break
-
-	cmdCompile = ["/usr/bin/javac", "-cp", ":".join(jarFiles), "-d", "build/" + app] + srcFiles
+	cmdCompile = ["/usr/bin/javac", "-cp", ":".join(jarFiles), "-d", "build/"] + srcFiles
 	print(" ".join(cmdCompile))
 	run(cmdCompile)
 
-	classFiles = matchFiles('build/' + app, '*.class')
-	cmdPackage = ["/usr/bin/jar", "cvmfe", "Manifest.txt", app.lower() + ".jar", app, "-C", "build/" + app, app + ".class"] + classFiles
+	classFiles = []
+	for file in matchFiles('build/org/' + app, '*.class'):
+		classFiles.append("-C")
+		classFiles.append("build/")
+		classFiles.append(file.replace("build/", ""))
+
+	mainClass = "org." + app + "." + app.upper()
+
+	cmdPackage = ["/usr/bin/jar", "cvmfe", "Manifest.txt", app + ".jar", mainClass] + classFiles
 	print(" ".join(cmdPackage))
 	run(cmdPackage)
