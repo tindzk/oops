@@ -6,28 +6,28 @@ import java.util.Stack;
 /**
  * Die Klasse repräsentiert eine Methode im Syntaxbaum.
  */
-class MethodDeclaration extends Declaration {
+public class MethodDeclaration extends Declaration {
 	/** Die lokale Variable SELF. */
-	VarDeclaration self = new VarDeclaration(new Identifier("_self", null),
+	public VarDeclaration self = new VarDeclaration(new Identifier("_self", null),
 			VarDeclaration.Type.Local);
 
 	/** Die lokale Variable BASE. */
-	VarDeclaration base = new VarDeclaration(new Identifier("_base", null),
+	public VarDeclaration base = new VarDeclaration(new Identifier("_base", null),
 			VarDeclaration.Type.Local);
 
 	/** Die Parameter der Methode. */
-	List<VarDeclaration> parameters = new LinkedList<>();
+	public List<VarDeclaration> parameters = new LinkedList<>();
 
 	/** Die lokalen Variablen der Methode. */
-	List<VarDeclaration> locals = new LinkedList<>();
+	public List<VarDeclaration> locals = new LinkedList<>();
 
 	/** Die Anweisungen der Methode, d.h. der Methodenrumpf. */
-	List<Statement> statements = new LinkedList<>();
+	public List<Statement> statements = new LinkedList<>();
 
 	/** Return type. Default type matches ClassDeclaration.voidType. */
-	ResolvableIdentifier retType = null;
+	public ResolvableIdentifier retType = null;
 
-	int vmtIndex = -1;
+	public int vmtIndex = -1;
 
 	/**
 	 * Konstruktor.
@@ -35,7 +35,7 @@ class MethodDeclaration extends Declaration {
 	 * @param name
 	 *        Der Name der deklarierten Methode.
 	 */
-	MethodDeclaration(Identifier name) {
+	public MethodDeclaration(Identifier name) {
 		super(name);
 
 		this.retType = new ResolvableIdentifier("_Void", null);
@@ -78,7 +78,7 @@ class MethodDeclaration extends Declaration {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations, boolean initialPass)
+	public void contextAnalysis(Declarations declarations, boolean initialPass)
 			throws CompileException {
 		/* Resolve return type. */
 		declarations.resolveType(this.retType);
@@ -175,7 +175,7 @@ class MethodDeclaration extends Declaration {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		/* TODO Print parameters and return type. */
 		tree.println("METHOD " + this.identifier.name);
 		tree.indent();
@@ -261,7 +261,7 @@ class MethodDeclaration extends Declaration {
 	 *        Current stack of contexts, may be used to inject instructions for
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
-	void generateCode(CodeStream code, Stack<Statement.Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Statement.Context> contexts) {
 		code.println("; METHOD " + this.identifier.name);
 		this.generateMethodPrologue(code);
 

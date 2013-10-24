@@ -1,16 +1,24 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.Symbol;
+import org.oopsc.TreeStream;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem binären Operator im Syntaxbaum.
  */
-class BinaryExpression extends Expression {
+public class BinaryExpression extends Expression {
 	/** Der linke Operand. */
-	Expression leftOperand;
+	public Expression leftOperand;
 
 	/** Der Operator. */
-	Symbol.Id operator;
+	public Symbol.Id operator;
 
 	/** Der rechte Operand. */
-	Expression rightOperand;
+	public Expression rightOperand;
 
 	/**
 	 * Konstruktor.
@@ -22,7 +30,7 @@ class BinaryExpression extends Expression {
 	 * @param rightOperand
 	 *        Der rechte Operand.
 	 */
-	BinaryExpression(Expression leftOperand, Symbol.Id operator,
+	public BinaryExpression(Expression leftOperand, Symbol.Id operator,
 			Expression rightOperand) {
 		super(leftOperand.position);
 		this.leftOperand = leftOperand;
@@ -41,7 +49,7 @@ class BinaryExpression extends Expression {
 	 *         gefunden.
 	 */
 	@Override
-	Expression contextAnalysis(Declarations declarations)
+	public Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
 		// TODO refactor
 		this.leftOperand = this.leftOperand.contextAnalysis(declarations);
@@ -120,7 +128,7 @@ class BinaryExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println(this.operator
 				+ (this.type == null ? "" : " : " + this.type.identifier.name));
 		tree.indent();
@@ -137,7 +145,7 @@ class BinaryExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		this.leftOperand.generateCode(code);
 		this.rightOperand.generateCode(code);
 

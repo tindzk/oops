@@ -1,13 +1,14 @@
 package org.oopsc;
+
 /**
  * Die Klasse repräsentiert einen Bezeichner im Quelltext.
  */
-class Identifier {
+public class Identifier {
 	/** Der Name des Bezeichners. */
-	String name;
+	public String name;
 
 	/** Die Quelltextstelle, an der der Bezeichner gelesen wurde. */
-	Position position;
+	public Position position;
 
 	/**
 	 * Konstruktor.
@@ -17,7 +18,7 @@ class Identifier {
 	 * @param position
 	 *        Die Quelltextstelle, an der der Bezeichner gelesen wurde.
 	 */
-	Identifier(String name, Position position) {
+	public Identifier(String name, Position position) {
 		this.name = name;
 		this.position = position;
 	}

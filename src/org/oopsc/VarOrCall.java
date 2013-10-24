@@ -3,17 +3,20 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.oopsc.expression.AccessExpression;
+import org.oopsc.expression.Expression;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der dem Zugriff auf eine
  * Variable oder ein Attribut bzw. einem Methodenaufruf entspricht.
  */
-class VarOrCall extends Expression {
+public class VarOrCall extends Expression {
 	/** Der Name des Attributs, der Variablen oder der Methode. */
-	ResolvableIdentifier identifier;
+	public ResolvableIdentifier identifier;
 
-	List<Expression> arguments = new LinkedList<>();
+	public List<Expression> arguments = new LinkedList<>();
 
-	ClassDeclaration context = null;
+	public ClassDeclaration context = null;
 
 	/**
 	 * Konstruktor.
@@ -21,7 +24,7 @@ class VarOrCall extends Expression {
 	 * @param identifier
 	 *        Der Name des Attributs, der Variablen oder der Methode.
 	 */
-	VarOrCall(ResolvableIdentifier identifier) {
+	public VarOrCall(ResolvableIdentifier identifier) {
 		super(identifier.position);
 		this.identifier = identifier;
 	}
@@ -57,7 +60,7 @@ class VarOrCall extends Expression {
 	 *         gefunden.
 	 */
 	@Override
-	Expression contextAnalysis(Declarations declarations)
+	public Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
 		// TODO refactor
 		this.contextAnalysisForMember(declarations);
@@ -89,7 +92,7 @@ class VarOrCall extends Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	void contextAnalysisForMember(Declarations declarations)
+	public void contextAnalysisForMember(Declarations declarations)
 			throws CompileException {
 		// TODO refactor
 		declarations.resolveVarOrMethod(this.identifier);
@@ -112,7 +115,7 @@ class VarOrCall extends Expression {
 	 * @param declarations
 	 * @throws CompileException
 	 */
-	void contextAnalysisForArguments(Declarations declarations)
+	public void contextAnalysisForArguments(Declarations declarations)
 			throws CompileException {
 		if (!(this.identifier.declaration instanceof MethodDeclaration)) {
 			if (this.arguments.size() != 0) {
@@ -168,7 +171,7 @@ class VarOrCall extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println(this.identifier.name
 				+ (this.type == null ? "" : " : " + (this.lValue ? "REF " : "")
 						+ this.type.identifier.name));
@@ -182,7 +185,7 @@ class VarOrCall extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		if (this.identifier.declaration instanceof VarDeclaration) {
 			VarDeclaration v = (VarDeclaration) this.identifier.declaration;
 			if (v.declType == VarDeclaration.Type.Attribute) {

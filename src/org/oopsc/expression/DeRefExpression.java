@@ -1,4 +1,9 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.CodeStream;
+import org.oopsc.TreeStream;
+
+
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der eine Referenz
  * dereferenziert, d.h. aus einer Variablen, deren Adresse gegeben ist, den
@@ -6,9 +11,9 @@ package org.oopsc;
  * Dieser Ausdruck wird immer nachträglich während der Kontextanalyse in
  * den Syntaxbaum eingefügt.
  */
-class DeRefExpression extends Expression {
+public class DeRefExpression extends Expression {
 	/** Der Ausdruck, der die Adresse berechnet. */
-	Expression operand;
+	public Expression operand;
 
 	/**
 	 * Konstruktor.
@@ -16,7 +21,7 @@ class DeRefExpression extends Expression {
 	 * @param operand
 	 *        Der Ausdruck, der die Adresse berechnet.
 	 */
-	DeRefExpression(Expression operand) {
+	public DeRefExpression(Expression operand) {
 		super(operand.position);
 		this.operand = operand;
 		this.type = operand.type;
@@ -30,7 +35,7 @@ class DeRefExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("DEREF"
 				+ (this.type == null ? "" : " : " + this.type.identifier.name));
 		tree.indent();
@@ -46,7 +51,7 @@ class DeRefExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		code.println("; DEREF Argument code");
 		this.operand.generateCode(code);
 		code.println("; DEREF");

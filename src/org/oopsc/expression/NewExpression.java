@@ -1,10 +1,19 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.Position;
+import org.oopsc.ResolvableIdentifier;
+import org.oopsc.TreeStream;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der ein neues Objekt erzeugt.
  */
-class NewExpression extends Expression {
+public class NewExpression extends Expression {
 	/** Der Typ des neuen Objekts. */
-	ResolvableIdentifier newType;
+	public ResolvableIdentifier newType;
 
 	/**
 	 * Konstruktor.
@@ -14,7 +23,7 @@ class NewExpression extends Expression {
 	 * @param position
 	 *        Die Position, an der dieser Ausdruck im Quelltext beginnt.
 	 */
-	NewExpression(ResolvableIdentifier newType, Position position) {
+	public NewExpression(ResolvableIdentifier newType, Position position) {
 		super(position);
 		this.newType = newType;
 	}
@@ -30,7 +39,7 @@ class NewExpression extends Expression {
 	 *         gefunden.
 	 */
 	@Override
-	Expression contextAnalysis(Declarations declarations)
+	public Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
 		declarations.resolveType(this.newType);
 		this.type = (ClassDeclaration) this.newType.declaration;
@@ -45,7 +54,7 @@ class NewExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("NEW " + this.newType.name
 				+ (this.type == null ? "" : " : " + this.type.identifier.name));
 	}
@@ -58,7 +67,7 @@ class NewExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		code.println("; NEW " + this.newType.name);
 		code.println("ADD R2, R1");
 		code.println("MMR (R2), R4 ; Referenz auf neues Objekt auf den Stapel legen");

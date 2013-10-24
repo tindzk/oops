@@ -3,15 +3,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import org.oopsc.expression.Expression;
+
 /**
  * Die Klasse repräsentiert die Anweisung WHILE im Syntaxbaum.
  */
-class WhileStatement extends Statement {
+public class WhileStatement extends Statement {
 	/** Die Bedingung der WHILE-Anweisung. */
-	Expression condition;
+	public Expression condition;
 
 	/** Die Anweisungen im Schleifenrumpf. */
-	List<Statement> statements = new LinkedList<>();
+	public List<Statement> statements = new LinkedList<>();
 
 	/**
 	 * Konstruktor.
@@ -19,7 +21,7 @@ class WhileStatement extends Statement {
 	 * @param condition
 	 *        Die Bedingung der WHILE-Anweisung.
 	 */
-	WhileStatement(Expression condition) {
+	public WhileStatement(Expression condition) {
 		this.condition = condition;
 	}
 
@@ -33,7 +35,7 @@ class WhileStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.condition = this.condition.contextAnalysis(declarations);
 		this.condition = this.condition.unBox();
 		this.condition.type.check(ClassDeclaration.boolType,
@@ -51,7 +53,7 @@ class WhileStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("WHILE");
 		tree.indent();
 		this.condition.print(tree);
@@ -77,7 +79,7 @@ class WhileStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		String whileLabel = code.nextLabel();
 		String endLabel = code.nextLabel();
 

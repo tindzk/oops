@@ -1,20 +1,21 @@
 package org.oopsc;
-class VarDeclaration extends Declaration {
-	enum Type {
+
+public class VarDeclaration extends Declaration {
+	public enum Type {
 		Attribute,
 		Local
 	}
 
 	/** Der Typ der Variablen bzw. des Attributs. */
-	ResolvableIdentifier type;
+	public ResolvableIdentifier type;
 
-	Type declType;
+	public Type declType;
 
 	/**
 	 * Die Position der Variablen im Stapelrahmen bzw. des Attributs im Objekt.
 	 * Dies wird während der Kontextanalyse eingetragen.
 	 */
-	int offset;
+	public int offset;
 
 	/**
 	 * Konstruktor.
@@ -25,7 +26,7 @@ class VarDeclaration extends Declaration {
 	 *        Wird hier ein Attribut deklariert (statt einer lokalen
 	 *        Variablen)?
 	 */
-	VarDeclaration(Identifier name, Type declType) {
+	public VarDeclaration(Identifier name, Type declType) {
 		super(name);
 		this.declType = declType;
 	}
@@ -47,7 +48,7 @@ class VarDeclaration extends Declaration {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations, boolean initialPass)
+	public void contextAnalysis(Declarations declarations, boolean initialPass)
 			throws CompileException {
 		declarations.resolveType(this.type);
 	}
@@ -59,7 +60,7 @@ class VarDeclaration extends Declaration {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println(this.identifier.name
 				+ (this.type.declaration == null ? "" : " (" + this.offset
 						+ ")") + " : " + this.type.name);

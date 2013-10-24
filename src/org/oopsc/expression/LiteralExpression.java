@@ -1,10 +1,16 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.Position;
+import org.oopsc.TreeStream;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem Literal im Syntaxbaum.
  */
-class LiteralExpression extends Expression {
+public class LiteralExpression extends Expression {
 	/** Der Wert des Literals. */
-	int value;
+	public int value;
 
 	/**
 	 * Konstruktor.
@@ -16,7 +22,7 @@ class LiteralExpression extends Expression {
 	 * @param position
 	 *        Die Position, an der dieser Ausdruck im Quelltext beginnt.
 	 */
-	LiteralExpression(int value, ClassDeclaration type, Position position) {
+	public LiteralExpression(int value, ClassDeclaration type, Position position) {
 		super(position);
 		this.value = value;
 		this.type = type;
@@ -29,7 +35,7 @@ class LiteralExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println(this.value + " : " + this.type.identifier.name);
 	}
 
@@ -42,7 +48,7 @@ class LiteralExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		code.println("; " + this.value + " : " + this.type.identifier.name);
 
 		/* Load value into R5. */

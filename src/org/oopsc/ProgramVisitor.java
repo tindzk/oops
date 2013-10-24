@@ -5,6 +5,12 @@ import java.util.List;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.oopsc.expression.AccessExpression;
+import org.oopsc.expression.BinaryExpression;
+import org.oopsc.expression.Expression;
+import org.oopsc.expression.LiteralExpression;
+import org.oopsc.expression.NewExpression;
+import org.oopsc.expression.UnaryExpression;
 
 public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 

@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.oopsc.expression.AccessExpression;
+import org.oopsc.expression.NewExpression;
+
 class Vertex {
 	/** Visited state. */
 	public enum Visited {

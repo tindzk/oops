@@ -6,15 +6,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
+import org.oopsc.expression.LiteralExpression;
+
 /**
  * Implements a TRY statement which is needed for exception handling.
  */
-class TryStatement extends Statement {
+public class TryStatement extends Statement {
 	/** All statements associated with the TRY block. */
-	List<Statement> tryStatements = new LinkedList<>();
+	public List<Statement> tryStatements = new LinkedList<>();
 
 	/** Position in the source code associated with this statement. */
-	Position position;
+	public Position position;
 
 	/**
 	 * CATCH branches assigning a statement block to a value that needs to be caught in order for
@@ -30,7 +32,7 @@ class TryStatement extends Statement {
 	 * @param position
 	 *        The position in the source code.
 	 */
-	TryStatement(List<Statement> tryStatements, Position position) {
+	public TryStatement(List<Statement> tryStatements, Position position) {
 		this.tryStatements = tryStatements;
 		this.position = position;
 	}
@@ -45,7 +47,7 @@ class TryStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		for (Statement s : this.tryStatements) {
 			s.contextAnalysis(declarations);
 		}
@@ -85,7 +87,7 @@ class TryStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("TRY");
 
 		if (!this.tryStatements.isEmpty()) {
@@ -127,7 +129,7 @@ class TryStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; TRY");
 
 		/* Push the frame pointer on the stack as we will need to restore it later. */

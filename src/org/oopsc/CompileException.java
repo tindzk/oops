@@ -4,7 +4,7 @@ package org.oopsc;
  * Sie wird in der Hauptmethode {@link OOPSC#main(String[]) OOPSC.main} gefangen und
  * ausgegeben.
  */
-class CompileException extends Exception {
+public class CompileException extends Exception {
 	static final long serialVersionUID = 0x8374625L; // eliminiert eine Warnung
 
 	/**
@@ -19,7 +19,7 @@ class CompileException extends Exception {
 	 *        Dieser Parameter kann auch null sein, wenn die Stelle nicht
 	 *        zugeordnet werden kann.
 	 */
-	CompileException(String message, Position position) {
+	public CompileException(String message, Position position) {
 		super("Fehler"
 				+ (position == null ? "" : " in Zeile " + position.line
 						+ ", Spalte " + position.column) + ": " + message);

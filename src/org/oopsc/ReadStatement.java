@@ -1,15 +1,18 @@
 package org.oopsc;
 import java.util.Stack;
 
+import org.oopsc.expression.Expression;
+import org.oopsc.expression.NewExpression;
+
 /**
  * Die Klasse repräsentiert die Anweisung READ im Syntaxbaum.
  */
-class ReadStatement extends Statement {
+public class ReadStatement extends Statement {
 	/** Die Variable, in der das eingelesene Zeichen gespeichert wird. */
-	Expression operand;
+	public Expression operand;
 
 	/** Ein Ausdruck, der ein neues Objekt vom Typ Integer erzeugen kann. */
-	Expression newInt = new NewExpression(new ResolvableIdentifier("Integer",
+	public Expression newInt = new NewExpression(new ResolvableIdentifier("Integer",
 			null), null);
 
 	/**
@@ -18,7 +21,7 @@ class ReadStatement extends Statement {
 	 * @param operand
 	 *        Die Variable, in der das eingelesene Zeichen gespeichert wird.
 	 */
-	ReadStatement(Expression operand) {
+	public ReadStatement(Expression operand) {
 		this.operand = operand;
 	}
 
@@ -32,7 +35,7 @@ class ReadStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.operand = this.operand.contextAnalysis(declarations);
 		if (!this.operand.lValue) {
 			throw new CompileException("L-Wert erwartet", this.operand.position);
@@ -48,7 +51,7 @@ class ReadStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("READ");
 		tree.indent();
 		this.operand.print(tree);
@@ -66,7 +69,7 @@ class ReadStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		// TODO refactor
 		code.println("; READ lvalue ablegen");
 		this.operand.generateCode(code);

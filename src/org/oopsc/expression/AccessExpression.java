@@ -1,14 +1,23 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.TreeStream;
+import org.oopsc.VarDeclaration;
+import org.oopsc.VarOrCall;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem Attribut- bzw.
  * Methoden-Zugriffsoperator (d.h. der Punkt) im Syntaxbaum.
  */
-class AccessExpression extends Expression {
+public class AccessExpression extends Expression {
 	/** Der linke Operand. */
-	Expression leftOperand;
+	public Expression leftOperand;
 
 	/** Der rechte Operand. */
-	VarOrCall rightOperand;
+	public VarOrCall rightOperand;
 
 	/**
 	 * Konstruktor.
@@ -18,7 +27,7 @@ class AccessExpression extends Expression {
 	 * @param rightOperand
 	 *        Der rechte Operand.
 	 */
-	AccessExpression(Expression leftOperand, VarOrCall rightOperand) {
+	public AccessExpression(Expression leftOperand, VarOrCall rightOperand) {
 		super(leftOperand.position);
 		this.leftOperand = leftOperand;
 		this.rightOperand = rightOperand;
@@ -35,7 +44,7 @@ class AccessExpression extends Expression {
 	 *         gefunden.
 	 */
 	@Override
-	Expression contextAnalysis(Declarations declarations)
+	public Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
 		// TODO refactor
 		this.leftOperand = this.leftOperand.contextAnalysis(declarations);
@@ -81,7 +90,7 @@ class AccessExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("PERIOD"
 				+ (this.type == null ? "" : " : " + (this.lValue ? "REF " : "")
 						+ this.type.identifier.name));
@@ -99,7 +108,7 @@ class AccessExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		this.leftOperand.generateCode(code);
 		this.rightOperand.generateCode(code);
 	}

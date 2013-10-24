@@ -3,6 +3,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.oopsc.expression.Expression;
+
 /**
  * @note The term `to terminate' may be misleading. Here, it is understood in
  * its static sense (during the compilation time). Therefore, considering a

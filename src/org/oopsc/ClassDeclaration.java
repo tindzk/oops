@@ -7,40 +7,40 @@ import java.util.Stack;
  * Die Klasse repräsentiert eine Klassendeklaration im Syntaxbaum.
  * Zudem stellt sie Methoden zum Typvergleich zur Verfügung.
  */
-class ClassDeclaration extends Declaration {
+public class ClassDeclaration extends Declaration {
 	/**
 	 * Konstante für die Größe der Verwaltungsinformation am Anfang eines jeden Objekts.
 	 * As of now, the header only contains an address to the VMT of the object.
 	 */
-	static final int HEADERSIZE = 1;
+	static final public int HEADERSIZE = 1;
 
 	/** Ein interner Typ für das Ergebnis von Methoden. */
-	static final ClassDeclaration voidType = new ClassDeclaration(
+	static final public ClassDeclaration voidType = new ClassDeclaration(
 			new Identifier("_Void", null), null);
 
 	/** Ein interner Typ für null. Dieser Typ ist kompatibel zu allen Klassen. */
-	static final ClassDeclaration nullType = new ClassDeclaration(
+	static final public ClassDeclaration nullType = new ClassDeclaration(
 			new Identifier("_Null", null), null);
 
 	/** Der interne Basisdatentyp für Zahlen. */
-	static final ClassDeclaration intType = new ClassDeclaration(
+	static final public ClassDeclaration intType = new ClassDeclaration(
 			new Identifier("_Integer", null), null);
 
 	/** Der interne Basisdatentyp für Wahrheitswerte. */
-	static final ClassDeclaration boolType = new ClassDeclaration(
+	static final public ClassDeclaration boolType = new ClassDeclaration(
 			new Identifier("_Boolean", null), null);
 
 	/** Die Klasse Object. */
-	static final ClassDeclaration objectClass = new ClassDeclaration(
+	static final public ClassDeclaration objectClass = new ClassDeclaration(
 			new Identifier("Object", null), null);
 
 	/** Die Klasse Integer. */
-	static final ClassDeclaration intClass = new ClassDeclaration(
+	static final public ClassDeclaration intClass = new ClassDeclaration(
 			new Identifier("Integer", null), new ResolvableIdentifier("Object",
 					null));
 
 	/** Die Klasse Boolean. */
-	static final ClassDeclaration boolClass = new ClassDeclaration(
+	static final public ClassDeclaration boolClass = new ClassDeclaration(
 			new Identifier("Boolean", null), new ResolvableIdentifier("Object",
 					null));
 
@@ -62,21 +62,21 @@ class ClassDeclaration extends Declaration {
 	}
 
 	/** Die Attribute dieser Klasse. */
-	List<VarDeclaration> attributes = new LinkedList<>();
+	public List<VarDeclaration> attributes = new LinkedList<>();
 
 	/** Die Methoden dieser Klasse. */
-	List<MethodDeclaration> methods = new LinkedList<>();
+	public List<MethodDeclaration> methods = new LinkedList<>();
 
 	/** Die innerhalb dieser Klasse sichtbaren Deklarationen. */
-	Declarations declarations;
+	public Declarations declarations;
 
 	/**
 	 * Die Größe eines Objekts dieser Klasse. Die Größe wird innerhalb von
 	 * {@link #contextAnalysis(Declarations) contextAnalysis} bestimmt.
 	 */
-	int objectSize;
+	public int objectSize;
 
-	ResolvableIdentifier baseType;
+	public ResolvableIdentifier baseType;
 
 	/**
 	 * Konstruktor.
@@ -183,7 +183,7 @@ class ClassDeclaration extends Declaration {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations, boolean initialPass)
+	public void contextAnalysis(Declarations declarations, boolean initialPass)
 			throws CompileException {
 		// Standardgröße für Objekte festlegen
 		this.objectSize = HEADERSIZE;
@@ -336,7 +336,7 @@ class ClassDeclaration extends Declaration {
 	 *        Der Typ, mit dem verglichen wird.
 	 * @return Sind die beiden Typen sind kompatibel?
 	 */
-	boolean isA(ClassDeclaration expected) {
+	public boolean isA(ClassDeclaration expected) {
 		// Spezialbehandlung für null, das mit allen Klassen kompatibel ist,
 		// aber nicht mit den Basisdatentypen _Integer und _Boolean sowie auch nicht
 		// an Stellen erlaubt ist, wo gar kein Wert erwartet wird.
@@ -372,7 +372,7 @@ class ClassDeclaration extends Declaration {
 	 * @throws CompileException
 	 *         Die Meldung über den Typfehler.
 	 */
-	static void typeError(ClassDeclaration expected, ClassDeclaration given,
+	static public void typeError(ClassDeclaration expected, ClassDeclaration given,
 			Position position) throws CompileException {
 		throw new CompileException(String.format(
 				"Type mismatch: %s expected, %s given.",
@@ -391,7 +391,7 @@ class ClassDeclaration extends Declaration {
 	 * @throws CompileException
 	 *         Die Typen sind nicht kompatibel.
 	 */
-	void check(ClassDeclaration expected, Position position)
+	public void check(ClassDeclaration expected, Position position)
 			throws CompileException {
 		if (!this.isA(expected)) {
 			typeError(expected, this, position);
@@ -405,7 +405,7 @@ class ClassDeclaration extends Declaration {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("CLASS " + this.identifier.name);
 		tree.indent();
 

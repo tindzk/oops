@@ -6,12 +6,12 @@ import java.util.LinkedList;
  * der Kontextanalyse ermittelt wird. Alle Bezeichner werden in einer Liste
  * vermerkt, damit man sie alle bei Bedarf ausgeben kann.
  */
-class ResolvableIdentifier extends Identifier {
+public class ResolvableIdentifier extends Identifier {
 	/** Dieses Klassenattribut ist eine Liste, die alle zuordenbaren Bezeichner enthält. */
 	static LinkedList<ResolvableIdentifier> identifiers = new LinkedList<ResolvableIdentifier>();
 
 	/** Die Deklaration dieses Bezeichners. Solange sie unbekannt ist, ist dieses Attribut null. */
-	Declaration declaration;
+	public Declaration declaration;
 
 	/**
 	 * Konstruktor.
@@ -21,7 +21,7 @@ class ResolvableIdentifier extends Identifier {
 	 * @param position
 	 *        Die Quelltextstelle, an der der Bezeichner gelesen wurde.
 	 */
-	ResolvableIdentifier(String name, Position position) {
+	public ResolvableIdentifier(String name, Position position) {
 		super(name, position);
 		identifiers.add(this);
 	}
@@ -31,7 +31,7 @@ class ResolvableIdentifier extends Identifier {
 	 * Sie wird benötigt, falls mehr als einmal übersetzt wird.
 	 */
 	// TODO refactor
-	static void init() {
+	static public void init() {
 		identifiers = new LinkedList<ResolvableIdentifier>();
 	}
 
@@ -41,7 +41,7 @@ class ResolvableIdentifier extends Identifier {
 	 * ein Eintrag nach der Kontextanalyse noch "unbekannt" sein,
 	 * enthält der Übersetzer einen Fehler.
 	 */
-	static void print() {
+	static public void print() {
 		for (ResolvableIdentifier r : identifiers) {
 			if (r.position != null) { // Ignoriere vom Übersetzer nachträglich erzeugte Bezeichner
 				System.out.print("Zeile " + r.position.line + ", Spalte "

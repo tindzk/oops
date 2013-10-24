@@ -1,8 +1,9 @@
 package org.oopsc;
+
 /**
  * Die Klasse repräsentiert eine Position im Quelltext.
  */
-class Position {
+public class Position {
 	/** Die Quelltextzeile. */
 	int line;
 
@@ -21,5 +22,4 @@ class Position {
 		this.line = line;
 		this.column = column;
 	}
-
 }

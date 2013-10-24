@@ -1,12 +1,14 @@
 package org.oopsc;
 import java.util.Stack;
 
+import org.oopsc.expression.Expression;
+
 /**
  * Die Klasse repräsentiert die Anweisung WRITE im Syntaxbaum.
  */
 public class WriteStatement extends Statement {
 	/** Der Ausdruck, der als ein Zeichen ausgegeben wird. */
-	Expression operand;
+	public Expression operand;
 
 	/**
 	 * Konstruktor.
@@ -14,7 +16,7 @@ public class WriteStatement extends Statement {
 	 * @param operand
 	 *        Der Ausdruck, der als ein Zeichen ausgegeben wird.
 	 */
-	WriteStatement(Expression operand) {
+	public WriteStatement(Expression operand) {
 		this.operand = operand;
 	}
 
@@ -28,7 +30,7 @@ public class WriteStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.operand = this.operand.contextAnalysis(declarations);
 		this.operand = this.operand.unBox();
 		this.operand.type.check(ClassDeclaration.intType, this.operand.position);
@@ -41,7 +43,7 @@ public class WriteStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("WRITE");
 		tree.indent();
 		this.operand.print(tree);
@@ -59,7 +61,7 @@ public class WriteStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; WRITE operand code");
 		this.operand.generateCode(code);
 		code.println("; WRITE");

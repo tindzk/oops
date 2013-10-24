@@ -1,10 +1,12 @@
 package org.oopsc;
 import java.util.Stack;
 
+import org.oopsc.expression.Expression;
+
 /**
  * Die Klasse repräsentiert die Zuweisung im Syntaxbaum.
  */
-class Assignment extends Statement {
+public class Assignment extends Statement {
 	/** Der L-Wert, dem ein neuer Wert zugewiesen wird. */
 	Expression leftOperand;
 
@@ -34,7 +36,7 @@ class Assignment extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.leftOperand = this.leftOperand.contextAnalysis(declarations);
 		this.rightOperand = this.rightOperand.contextAnalysis(declarations);
 		if (!this.leftOperand.lValue) {
@@ -51,7 +53,7 @@ class Assignment extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("ASSIGNMENT");
 		tree.indent();
 		this.leftOperand.print(tree);
@@ -70,7 +72,7 @@ class Assignment extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; ASSIGNMENT code for left operand");
 		this.leftOperand.generateCode(code);
 		code.println("; ASSIGNMENT code for right operand");

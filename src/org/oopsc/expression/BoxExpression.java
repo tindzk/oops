@@ -1,16 +1,24 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.ResolvableIdentifier;
+import org.oopsc.TreeStream;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der einen Wert vom
  * vom Typ eines Basisdatentyps "boxt", d.h. in ein Objekt verpackt.
  * Dieser Ausdruck wird immer nachträglich während der Kontextanalyse in
  * den Syntaxbaum eingefügt.
  */
-class BoxExpression extends Expression {
+public class BoxExpression extends Expression {
 	/** Der Ausdruck, der den zu verpackenden Wert liefert. */
-	Expression operand;
+	public Expression operand;
 
 	/** Ein Ausdruck, der das entsprechende Rahmenobjekt erzeugt. */
-	Expression newType;
+	public Expression newType;
 
 	/**
 	 * Konstruktor.
@@ -25,7 +33,7 @@ class BoxExpression extends Expression {
 	 *         Während der Kontextanylyse des neuen Objekts
 	 *         wurde ein Fehler gefunden.
 	 */
-	BoxExpression(Expression operand, Declarations declarations)
+	public BoxExpression(Expression operand, Declarations declarations)
 			throws CompileException {
 		super(operand.position);
 		this.operand = operand;
@@ -53,7 +61,7 @@ class BoxExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("BOX"
 				+ (this.type == null ? "" : " : " + this.type.identifier.name));
 		tree.indent();
@@ -69,7 +77,7 @@ class BoxExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		this.newType.generateCode(code);
 		this.operand.generateCode(code);
 

@@ -1,22 +1,24 @@
 package org.oopsc;
 import java.util.Stack;
 
+import org.oopsc.expression.Expression;
+
 /**
  * Die Klasse repräsentiert die Anweisung RETURN im Syntaxbaum.
  */
-class ReturnStatement extends Statement {
+public class ReturnStatement extends Statement {
 	/** The value to be returned. */
-	Expression value = null;
+	public Expression value = null;
 
 	/** Die Quelltextposition, an der dieser Ausdruck beginnt. */
-	Position position;
+	public Position position;
 
 	protected MethodDeclaration method = null;
 
 	/**
 	 * Constructor.
 	 */
-	ReturnStatement(Position position) {
+	public ReturnStatement(Position position) {
 		this.position = position;
 	}
 
@@ -26,7 +28,7 @@ class ReturnStatement extends Statement {
 	 * @param value
 	 *        The return value.
 	 */
-	ReturnStatement(Expression value, Position position) {
+	public ReturnStatement(Expression value, Position position) {
 		this.value = value;
 		this.position = position;
 	}
@@ -41,7 +43,7 @@ class ReturnStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.method = declarations.currentMethod;
 
 		ClassDeclaration retType = declarations.currentMethod
@@ -73,7 +75,7 @@ class ReturnStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("RETURN");
 
 		if (this.value != null) {
@@ -94,7 +96,7 @@ class ReturnStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; RETURN");
 
 		if (this.value == null) {

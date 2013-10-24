@@ -1,13 +1,22 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.Position;
+import org.oopsc.Symbol;
+import org.oopsc.TreeStream;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem unären Operator im Syntaxbaum.
  */
-class UnaryExpression extends Expression {
+public class UnaryExpression extends Expression {
 	/** Der Operator. */
-	Symbol.Id operator;
+	public Symbol.Id operator;
 
 	/** Der Operand, auf den der Operator angewendet wird. */
-	Expression operand;
+	public Expression operand;
 
 	/**
 	 * Konstruktor.
@@ -19,7 +28,7 @@ class UnaryExpression extends Expression {
 	 * @param position
 	 *        Die Position, an der dieser Ausdruck im Quelltext beginnt.
 	 */
-	UnaryExpression(Symbol.Id operator, Expression operand, Position position) {
+	public UnaryExpression(Symbol.Id operator, Expression operand, Position position) {
 		super(position);
 		this.operator = operator;
 		this.operand = operand;
@@ -36,7 +45,7 @@ class UnaryExpression extends Expression {
 	 *         gefunden.
 	 */
 	@Override
-	Expression contextAnalysis(Declarations declarations)
+	public Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
 		this.operand = this.operand.contextAnalysis(declarations);
 		this.operand = this.operand.unBox();
@@ -64,7 +73,7 @@ class UnaryExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println(this.operator
 				+ (this.type == null ? "" : " : " + this.type.identifier.name));
 		tree.indent();
@@ -80,7 +89,7 @@ class UnaryExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		this.operand.generateCode(code);
 		code.println("; " + this.operator);
 		code.println("MRM R5, (R2)");

@@ -1,10 +1,11 @@
 package org.oopsc;
+
 /**
  * Die Basisklasse zur Repräsentation deklarierter Objekte.
  */
 abstract class Declaration {
 	/** Der Name der deklarierten Klasse, Methode oder Variablen. */
-	Identifier identifier;
+	public Identifier identifier;
 
 	/**
 	 * Konstruktor.
@@ -12,7 +13,7 @@ abstract class Declaration {
 	 * @param identifier
 	 *        Der Name der deklarierten Klasse, Methode oder Variablen.
 	 */
-	Declaration(Identifier identifier) {
+	public Declaration(Identifier identifier) {
 		this.identifier = identifier;
 	}
 
@@ -25,7 +26,7 @@ abstract class Declaration {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	abstract void contextAnalysis(Declarations declarations, boolean initialPass)
+	abstract public void contextAnalysis(Declarations declarations, boolean initialPass)
 			throws CompileException;
 
 	/**
@@ -34,5 +35,5 @@ abstract class Declaration {
 	 * @param tree
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
-	abstract void print(TreeStream tree);
+	abstract public void print(TreeStream tree);
 }

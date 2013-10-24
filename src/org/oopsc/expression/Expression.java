@@ -1,6 +1,14 @@
-package org.oopsc;
+package org.oopsc.expression;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.Position;
+import org.oopsc.TreeStream;
 
 /**
  * Die abstrakte Basisklasse für alle Ausdrücke im Syntaxbaum.
@@ -8,18 +16,18 @@ import java.io.UnsupportedEncodingException;
  * Methoden zur Erzeugung neuer Ausdrücke für das Boxing und Unboxing von
  * Ausdrücken sowie das Dereferenzieren.
  */
-abstract class Expression {
+abstract public class Expression {
 	/** Der Typ dieses Ausdrucks. Solange er nicht bekannt ist, ist dieser Eintrag null. */
-	ClassDeclaration type;
+	public ClassDeclaration type;
 
 	/**
 	 * Ist dieser Ausdruck ein L-Wert, d.h. eine Referenz auf eine Variable?
 	 * Die meisten Ausdrücke sind keine L-Werte.
 	 */
-	boolean lValue = false;
+	public boolean lValue = false;
 
 	/** Die Quelltextposition, an der dieser Ausdruck beginnt. */
-	Position position;
+	public Position position;
 
 	/**
 	 * Konstruktor.
@@ -27,7 +35,7 @@ abstract class Expression {
 	 * @param position
 	 *        Die Quelltextposition, an der dieser Ausdruck beginnt.
 	 */
-	Expression(Position position) {
+	public Expression(Position position) {
 		this.position = position;
 	}
 
@@ -48,7 +56,7 @@ abstract class Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	Expression contextAnalysis(Declarations declarations)
+	public Expression contextAnalysis(Declarations declarations)
 			throws CompileException {
 		return this;
 	}
@@ -60,7 +68,7 @@ abstract class Expression {
 	 * @param tree
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
-	abstract void print(TreeStream tree);
+	abstract public void print(TreeStream tree);
 
 	/**
 	 * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
@@ -69,7 +77,7 @@ abstract class Expression {
 	 * @param code
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
-	abstract void generateCode(CodeStream code);
+	abstract public void generateCode(CodeStream code);
 
 	/**
 	 * Die Methode prüft, ob dieser Ausdruck "geboxt" oder dereferenziert werden muss.
@@ -87,7 +95,7 @@ abstract class Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	Expression box(Declarations declarations) throws CompileException {
+	public Expression box(Declarations declarations) throws CompileException {
 		if (this.type.isA(ClassDeclaration.intType)) {
 			return new BoxExpression(this, declarations);
 		} else if (this.type.isA(ClassDeclaration.boolType)) {
@@ -111,7 +119,7 @@ abstract class Expression {
 	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Unboxing und/oder eine
 	 *         Dereferenzierung eingefügt wurde(n).
 	 */
-	Expression unBox() {
+	public Expression unBox() {
 		if (this.type != ClassDeclaration.nullType
 				&& this.type.isA(ClassDeclaration.boolClass)) {
 			return new UnBoxExpression(this);

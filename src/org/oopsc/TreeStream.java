@@ -9,7 +9,7 @@ import java.io.PrintStream;
  * Konsole schreiben kann. Zusätzlich gibt es Methoden zum Steuern der
  * Einrückungstiefe.
  */
-class TreeStream extends PrintStream {
+public class TreeStream extends PrintStream {
 	/** Die Schrittweite der Einrückung. */
 	private final int indentionStep;
 
@@ -30,7 +30,7 @@ class TreeStream extends PrintStream {
 	 * @param indentionStep
 	 *        Die Schrittweite der Einrückung.
 	 */
-	TreeStream(OutputStream stream, int indentionStep) {
+	public TreeStream(OutputStream stream, int indentionStep) {
 		super(stream);
 		this.indentionStep = indentionStep;
 	}
@@ -38,14 +38,14 @@ class TreeStream extends PrintStream {
 	/**
 	 * Die Methode erhöht die Einrücktiefe der Ausgabe.
 	 */
-	void indent() {
+	public void indent() {
 		this.indention += this.indentionStep;
 	}
 
 	/**
 	 * Die Methode verringert die Einrücktiefe der Ausgabe.
 	 */
-	void unindent() {
+	public void unindent() {
 		this.indention -= this.indentionStep;
 		assert this.indention >= 0;
 	}

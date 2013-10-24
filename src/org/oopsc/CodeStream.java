@@ -12,7 +12,7 @@ import java.io.PrintStream;
  * Zusätzlich kann die Klasse eindeutige Marken für den Assemblerquelltext
  * generieren.
  */
-class CodeStream extends PrintStream {
+public class CodeStream extends PrintStream {
 	/** Das Attribut enthält den gerade gültigen Namensraum (Klasse + Methode). */
 	private String namespace;
 
@@ -22,14 +22,14 @@ class CodeStream extends PrintStream {
 	/**
 	 * Konstruktor zur Ausgabe auf die Konsole.
 	 */
-	CodeStream() {
+	public CodeStream() {
 		super(System.out);
 	}
 
 	/**
 	 * Konstruktor für beliebige Streams.
 	 */
-	CodeStream(OutputStream stream) {
+	public CodeStream(OutputStream stream) {
 		super(stream);
 	}
 
@@ -41,7 +41,7 @@ class CodeStream extends PrintStream {
 	 * @throws FileNotFoundException
 	 *         Die Datei kann nicht erzeugt werden.
 	 */
-	CodeStream(String fileName) throws FileNotFoundException {
+	public CodeStream(String fileName) throws FileNotFoundException {
 		super(new File(fileName));
 	}
 
@@ -54,7 +54,7 @@ class CodeStream extends PrintStream {
 	 * @param namespace
 	 *        Den ab jetzt gültigen Namensraum (Klasse + Methode).
 	 */
-	void setNamespace(String namespace) {
+	public void setNamespace(String namespace) {
 		this.namespace = namespace;
 		this.counter = 1;
 	}
@@ -64,7 +64,7 @@ class CodeStream extends PrintStream {
 	 *
 	 * @return Die Marke.
 	 */
-	String nextLabel() {
+	public String nextLabel() {
 		return this.namespace + "_" + this.counter++;
 	}
 }

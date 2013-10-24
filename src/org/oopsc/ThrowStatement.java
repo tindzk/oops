@@ -1,15 +1,17 @@
 package org.oopsc;
 import java.util.Stack;
 
+import org.oopsc.expression.Expression;
+
 /**
  * Statement for triggering an exception.
  */
-class ThrowStatement extends Statement {
+public class ThrowStatement extends Statement {
 	/** The integer value to be thrown. */
-	Expression value;
+	public Expression value;
 
 	/** Position in the source code associated with this statement. */
-	Position position;
+	public Position position;
 
 	/**
 	 * Constructor.
@@ -19,7 +21,7 @@ class ThrowStatement extends Statement {
 	 * @param position
 	 *        The position in the source code.
 	 */
-	ThrowStatement(Expression value, Position position) {
+	public ThrowStatement(Expression value, Position position) {
 		this.value = value;
 		this.position = position;
 	}
@@ -34,7 +36,7 @@ class ThrowStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.value = this.value.contextAnalysis(declarations);
 		this.value = this.value.unBox();
 
@@ -48,7 +50,7 @@ class ThrowStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("THROW");
 		tree.indent();
 		this.value.print(tree);
@@ -78,7 +80,7 @@ class ThrowStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; THROW");
 
 		/* Push the exception code on the stack. */

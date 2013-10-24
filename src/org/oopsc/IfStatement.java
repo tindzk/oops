@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Stack;
 
+import org.oopsc.expression.Expression;
+
 /**
  * Die Klasse repräsentiert die Anweisung IF-THEN im Syntaxbaum.
  */
-class IfStatement extends Statement {
+public class IfStatement extends Statement {
 	/** Die Bedingung der IF-Anweisung. */
 	Expression condition;
 
@@ -24,7 +26,7 @@ class IfStatement extends Statement {
 	 * @param condition
 	 *        Die Bedingung der IF-Anweisung.
 	 */
-	IfStatement(Expression condition, List<Statement> thenStatements) {
+	public IfStatement(Expression condition, List<Statement> thenStatements) {
 		this.condition = condition;
 		this.thenStatements = thenStatements;
 		this.elseStatements.put(null, new LinkedList<Statement>());
@@ -40,7 +42,7 @@ class IfStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.condition = this.condition.contextAnalysis(declarations);
 
 		/* this.condition.type is either boolType or boolClass. Enforce boolType via unboxing. */
@@ -123,7 +125,7 @@ class IfStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("IF");
 		this.print(tree, this.condition, this.thenStatements);
 
@@ -173,7 +175,7 @@ class IfStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; IF");
 
 		String endLabel = code.nextLabel();

@@ -4,7 +4,7 @@ import java.util.Stack;
 /**
  * Die abstrakte Basisklasse für alle Anweisungen im Syntaxbaum.
  */
-abstract class Statement {
+abstract public class Statement {
 	enum Context {
 		Default,
 		TryBlock
@@ -19,7 +19,7 @@ abstract class Statement {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	abstract void contextAnalysis(Declarations declarations)
+	abstract public void contextAnalysis(Declarations declarations)
 			throws CompileException;
 
 	/**
@@ -28,7 +28,7 @@ abstract class Statement {
 	 * @param tree
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
-	abstract void print(TreeStream tree);
+	abstract public void print(TreeStream tree);
 
 	/**
 	 * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
@@ -40,5 +40,5 @@ abstract class Statement {
 	 *        Current stack of contexts, may be used to inject instructions for
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
-	abstract void generateCode(CodeStream code, Stack<Context> contexts);
+	abstract public void generateCode(CodeStream code, Stack<Context> contexts);
 }

@@ -1,12 +1,15 @@
 package org.oopsc;
+
 import java.util.Stack;
+
+import org.oopsc.expression.Expression;
 
 /**
  * Die Klasse repräsentiert die Anweisung "Methodenaufruf" im Syntaxbaum.
  */
 class CallStatement extends Statement {
 	/** Der Ausdruck, der den Methodenaufruf repräsentiert. */
-	Expression call;
+	public Expression call;
 
 	/**
 	 * Konstruktor.
@@ -14,7 +17,7 @@ class CallStatement extends Statement {
 	 * @param call
 	 *        Der Ausdruck, der den Methodenaufruf repräsentiert.
 	 */
-	CallStatement(Expression call) {
+	public CallStatement(Expression call) {
 		this.call = call;
 	}
 
@@ -28,7 +31,7 @@ class CallStatement extends Statement {
 	 *         gefunden.
 	 */
 	@Override
-	void contextAnalysis(Declarations declarations) throws CompileException {
+	public void contextAnalysis(Declarations declarations) throws CompileException {
 		this.call = this.call.contextAnalysis(declarations);
 		this.call.type.check(ClassDeclaration.voidType, this.call.position);
 	}
@@ -40,7 +43,7 @@ class CallStatement extends Statement {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("CALL");
 		tree.indent();
 		this.call.print(tree);
@@ -58,7 +61,7 @@ class CallStatement extends Statement {
 	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
 	 */
 	@Override
-	void generateCode(CodeStream code, Stack<Context> contexts) {
+	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; CALL");
 		this.call.generateCode(code);
 	}

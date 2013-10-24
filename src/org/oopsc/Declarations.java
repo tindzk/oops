@@ -7,7 +7,7 @@ import java.util.LinkedList;
  * Die Deklarationen werden dabei als sich überlagernde Sichtbarkeitsebenen dargestellt.
  * Die Klasse stellt Methoden zum Auflösen von Bezeichnern bereit.
  */
-class Declarations {
+public class Declarations {
 	/**
 	 * Die Ebenen mit allen Deklarationen. Deklarationen in später hinzugefügten Ebenen überdecken
 	 * Deklarationen in früher hinzugefügten Ebenen. Jede Ebene wird durch eine Hash-Tabelle
@@ -42,14 +42,14 @@ class Declarations {
 	/**
 	 * Erzeugt eine neue Deklarationsebene.
 	 */
-	void enter() {
+	public void enter() {
 		this.levels.addFirst(new HashMap<String, Declaration>());
 	}
 
 	/**
 	 * Verwirft die zuletzt erzeugte Deklarationsebene.
 	 */
-	void leave() {
+	public void leave() {
 		this.levels.removeFirst();
 	}
 
@@ -63,7 +63,7 @@ class Declarations {
 	 * @throws CompileException
 	 *         Dieser Bezeichner wurde bereits in dieser Ebene verwendet.
 	 */
-	void add(Declaration declaration) throws CompileException {
+	public void add(Declaration declaration) throws CompileException {
 		if (this.levels.getFirst().get(declaration.identifier.name) != null) {
 			throw new CompileException("Doppelte Deklaration von "
 					+ declaration.identifier.name,
@@ -104,7 +104,7 @@ class Declarations {
 	 * @throws CompileException
 	 *         Die Deklaration des Typs wurde nicht gefunden.
 	 */
-	void resolveType(ResolvableIdentifier type) throws CompileException {
+	public void resolveType(ResolvableIdentifier type) throws CompileException {
 		this.resolve(type);
 		if (!(type.declaration instanceof ClassDeclaration)) {
 			throw new CompileException("Typ erwartet", type.position);
@@ -121,7 +121,7 @@ class Declarations {
 	 *         Die Deklaration der Variable, des Attributs oder
 	 *         des Methodenaufruf wurde nicht gefunden.
 	 */
-	void resolveVarOrMethod(ResolvableIdentifier varOrMethod)
+	public void resolveVarOrMethod(ResolvableIdentifier varOrMethod)
 			throws CompileException {
 		this.resolve(varOrMethod);
 		if (varOrMethod.declaration instanceof ClassDeclaration) {

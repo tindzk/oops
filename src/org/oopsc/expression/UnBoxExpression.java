@@ -1,13 +1,18 @@
-package org.oopsc;
+package org.oopsc.expression;
+
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.TreeStream;
+
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der ein Objekt in
  * einen Wert eines Basisdatentyps auspackt ("unboxing").
  * Dieser Ausdruck wird immer nachträglich während der Kontextanalyse in
  * den Syntaxbaum eingefügt.
  */
-class UnBoxExpression extends Expression {
+public class UnBoxExpression extends Expression {
 	/** Der Ausdruck, der das auszupackende Objekt berechnet. */
-	Expression operand;
+	public Expression operand;
 
 	/**
 	 * Konstruktor.
@@ -17,7 +22,7 @@ class UnBoxExpression extends Expression {
 	 * @param operand
 	 *        Der Ausdruck, der das auszupackende Objekt berechnet.
 	 */
-	UnBoxExpression(Expression operand) {
+	public UnBoxExpression(Expression operand) {
 		super(operand.position);
 		this.operand = operand;
 
@@ -38,7 +43,7 @@ class UnBoxExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void print(TreeStream tree) {
+	public void print(TreeStream tree) {
 		tree.println("UNBOX"
 				+ (this.type == null ? "" : " : " + this.type.identifier.name));
 		tree.indent();
@@ -54,7 +59,7 @@ class UnBoxExpression extends Expression {
 	 *        Der Strom, in den die Ausgabe erfolgt.
 	 */
 	@Override
-	void generateCode(CodeStream code) {
+	public void generateCode(CodeStream code) {
 		this.operand.generateCode(code);
 		code.println("; UNBOX");
 		code.println("MRM R5, (R2) ; Objektreferenz vom Stapel lesen");
