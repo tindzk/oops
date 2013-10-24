@@ -1,10 +1,15 @@
-package org.oopsc;
+package org.oopsc.statement;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Stack;
 
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.TreeStream;
 import org.oopsc.expression.Expression;
 
 /**
@@ -12,10 +17,10 @@ import org.oopsc.expression.Expression;
  */
 public class IfStatement extends Statement {
 	/** Die Bedingung der IF-Anweisung. */
-	Expression condition;
+	public Expression condition;
 
 	/** Die Anweisungen im THEN-Teil. */
-	List<Statement> thenStatements = new LinkedList<>();
+	public List<Statement> thenStatements = new LinkedList<>();
 
 	/** Die ELSE-IF-Anweisungen und der ELSE-Block. */
 	public HashMap<Expression, List<Statement>> elseStatements = new HashMap<>();

@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.oopsc.expression.Expression;
+import org.oopsc.statement.IfStatement;
+import org.oopsc.statement.ReturnStatement;
+import org.oopsc.statement.Statement;
+import org.oopsc.statement.ThrowStatement;
+import org.oopsc.statement.WhileStatement;
 
 /**
  * @note The term `to terminate' may be misleading. Here, it is understood in

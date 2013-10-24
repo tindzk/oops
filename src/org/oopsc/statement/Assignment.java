@@ -1,6 +1,10 @@
-package org.oopsc;
+package org.oopsc.statement;
 import java.util.Stack;
 
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.TreeStream;
 import org.oopsc.expression.Expression;
 
 /**
@@ -8,10 +12,10 @@ import org.oopsc.expression.Expression;
  */
 public class Assignment extends Statement {
 	/** Der L-Wert, dem ein neuer Wert zugewiesen wird. */
-	Expression leftOperand;
+	public Expression leftOperand;
 
 	/** Der Ausdruck, dessen Ergebnis zugewiesen wird. */
-	Expression rightOperand;
+	public Expression rightOperand;
 
 	/**
 	 * Konstruktor.
@@ -21,7 +25,7 @@ public class Assignment extends Statement {
 	 * @param rightOperand
 	 *        Der Ausdruck, dessen Ergebnis zugewiesen wird.
 	 */
-	Assignment(Expression leftOperand, Expression rightOperand) {
+	public Assignment(Expression leftOperand, Expression rightOperand) {
 		this.leftOperand = leftOperand;
 		this.rightOperand = rightOperand;
 	}

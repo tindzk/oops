@@ -1,8 +1,13 @@
-package org.oopsc;
+package org.oopsc.statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.TreeStream;
 import org.oopsc.expression.Expression;
 
 /**

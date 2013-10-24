@@ -1,11 +1,16 @@
-package org.oopsc;
+package org.oopsc.statement;
 import java.util.Stack;
+
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.TreeStream;
 
 /**
  * Die abstrakte Basisklasse für alle Anweisungen im Syntaxbaum.
  */
 abstract public class Statement {
-	enum Context {
+	public enum Context {
 		Default,
 		TryBlock
 	}

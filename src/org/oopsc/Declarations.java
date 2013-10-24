@@ -13,13 +13,13 @@ public class Declarations {
 	 * Deklarationen in früher hinzugefügten Ebenen. Jede Ebene wird durch eine Hash-Tabelle
 	 * realisiert.
 	 */
-	LinkedList<HashMap<String, Declaration>> levels = new LinkedList<HashMap<String, Declaration>>();
+	public LinkedList<HashMap<String, Declaration>> levels = new LinkedList<HashMap<String, Declaration>>();
 
 	/** Die aktuelle Klasse. */
-	ClassDeclaration currentClass;
+	public ClassDeclaration currentClass;
 
 	/** Die aktuelle Methode. */
-	MethodDeclaration currentMethod;
+	public MethodDeclaration currentMethod;
 
 	/**
 	 * Die Method erstellt eine Kopie dieses Objekts. Dabei werden die Ebenen nicht kopiert,

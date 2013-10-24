@@ -1,23 +1,29 @@
-package org.oopsc;
+package org.oopsc.statement;
+
 import java.util.Stack;
 
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.TreeStream;
 import org.oopsc.expression.Expression;
 
 /**
- * Die Klasse repräsentiert die Anweisung WRITE im Syntaxbaum.
+ * Die Klasse repräsentiert die Anweisung "Methodenaufruf" im Syntaxbaum.
  */
-public class WriteStatement extends Statement {
-	/** Der Ausdruck, der als ein Zeichen ausgegeben wird. */
-	public Expression operand;
+public class CallStatement extends Statement {
+	/** Der Ausdruck, der den Methodenaufruf repräsentiert. */
+	public Expression call;
 
 	/**
 	 * Konstruktor.
 	 *
-	 * @param operand
-	 *        Der Ausdruck, der als ein Zeichen ausgegeben wird.
+	 * @param call
+	 *        Der Ausdruck, der den Methodenaufruf repräsentiert.
 	 */
-	public WriteStatement(Expression operand) {
-		this.operand = operand;
+	public CallStatement(Expression call) {
+		this.call = call;
 	}
 
 	/**
@@ -31,9 +37,8 @@ public class WriteStatement extends Statement {
 	 */
 	@Override
 	public void contextAnalysis(Declarations declarations) throws CompileException {
-		this.operand = this.operand.contextAnalysis(declarations);
-		this.operand = this.operand.unBox();
-		this.operand.type.check(ClassDeclaration.intType, this.operand.position);
+		this.call = this.call.contextAnalysis(declarations);
+		this.call.type.check(ClassDeclaration.voidType, this.call.position);
 	}
 
 	/**
@@ -44,9 +49,9 @@ public class WriteStatement extends Statement {
 	 */
 	@Override
 	public void print(TreeStream tree) {
-		tree.println("WRITE");
+		tree.println("CALL");
 		tree.indent();
-		this.operand.print(tree);
+		this.call.print(tree);
 		tree.unindent();
 	}
 
@@ -62,11 +67,7 @@ public class WriteStatement extends Statement {
 	 */
 	@Override
 	public void generateCode(CodeStream code, Stack<Context> contexts) {
-		code.println("; WRITE operand code");
-		this.operand.generateCode(code);
-		code.println("; WRITE");
-		code.println("MRM R5, (R2)");
-		code.println("SUB R2, R1");
-		code.println("SYS 1, 5");
+		code.println("; CALL");
+		this.call.generateCode(code);
 	}
 }

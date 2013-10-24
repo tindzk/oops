@@ -3,6 +3,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import org.oopsc.statement.Statement;
+
 /**
  * Die Klasse repräsentiert eine Methode im Syntaxbaum.
  */

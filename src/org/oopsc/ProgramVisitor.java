@@ -11,6 +11,16 @@ import org.oopsc.expression.Expression;
 import org.oopsc.expression.LiteralExpression;
 import org.oopsc.expression.NewExpression;
 import org.oopsc.expression.UnaryExpression;
+import org.oopsc.statement.Assignment;
+import org.oopsc.statement.CallStatement;
+import org.oopsc.statement.IfStatement;
+import org.oopsc.statement.ReadStatement;
+import org.oopsc.statement.ReturnStatement;
+import org.oopsc.statement.Statement;
+import org.oopsc.statement.ThrowStatement;
+import org.oopsc.statement.TryStatement;
+import org.oopsc.statement.WhileStatement;
+import org.oopsc.statement.WriteStatement;
 
 public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 
