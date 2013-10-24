@@ -6,7 +6,6 @@ import org.oopsc.CompileException;
 import org.oopsc.Declarations;
 import org.oopsc.TreeStream;
 import org.oopsc.VarDeclaration;
-import org.oopsc.VarOrCall;
 
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem Attribut- bzw.

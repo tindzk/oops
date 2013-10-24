@@ -1,10 +1,17 @@
-package org.oopsc;
+package org.oopsc.expression;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.oopsc.expression.AccessExpression;
-import org.oopsc.expression.Expression;
+import org.oopsc.ClassDeclaration;
+import org.oopsc.CodeStream;
+import org.oopsc.CompileException;
+import org.oopsc.Declarations;
+import org.oopsc.MethodDeclaration;
+import org.oopsc.ResolvableIdentifier;
+import org.oopsc.TreeStream;
+import org.oopsc.VarDeclaration;
+import org.oopsc.VarDeclaration.Type;
 
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der dem Zugriff auf eine

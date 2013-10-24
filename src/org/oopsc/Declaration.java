@@ -3,7 +3,7 @@ package org.oopsc;
 /**
  * Die Basisklasse zur Repräsentation deklarierter Objekte.
  */
-abstract class Declaration {
+public abstract class Declaration {
 	/** Der Name der deklarierten Klasse, Methode oder Variablen. */
 	public Identifier identifier;
 

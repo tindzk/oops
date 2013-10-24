@@ -8,6 +8,7 @@ import java.util.Stack;
 
 import org.oopsc.expression.AccessExpression;
 import org.oopsc.expression.NewExpression;
+import org.oopsc.expression.VarOrCall;
 import org.oopsc.statement.CallStatement;
 import org.oopsc.statement.Statement;
 
