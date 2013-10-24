@@ -4,18 +4,21 @@ import org.oopsc.ClassDeclaration;
 import org.oopsc.CodeStream;
 import org.oopsc.CompileException;
 import org.oopsc.Declarations;
-import org.oopsc.Symbol;
 import org.oopsc.TreeStream;
 
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem binären Operator im Syntaxbaum.
  */
 public class BinaryExpression extends Expression {
+	public enum Operator {
+		EQ, NEQ, GT, GTEQ, LT, LTEQ, PLUS, MINUS, MUL, DIV, MOD, AND, OR, NOT
+	}
+
 	/** Der linke Operand. */
 	public Expression leftOperand;
 
 	/** Der Operator. */
-	public Symbol.Id operator;
+	public Operator operator;
 
 	/** Der rechte Operand. */
 	public Expression rightOperand;
@@ -30,7 +33,7 @@ public class BinaryExpression extends Expression {
 	 * @param rightOperand
 	 *        Der rechte Operand.
 	 */
-	public BinaryExpression(Expression leftOperand, Symbol.Id operator,
+	public BinaryExpression(Expression leftOperand, Operator operator,
 			Expression rightOperand) {
 		super(leftOperand.position);
 		this.leftOperand = leftOperand;

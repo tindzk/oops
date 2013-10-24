@@ -1,4 +1,5 @@
 package org.oopsc;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,7 +55,8 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 			baseType = new ResolvableIdentifier("Object", null);
 		}
 
-		this.c = new ClassDeclaration(this.identifierFromToken(ctx.name), baseType);
+		this.c = new ClassDeclaration(this.identifierFromToken(ctx.name),
+				baseType);
 		this.p.addClass(this.c);
 
 		return this.visitChildren(ctx);
@@ -204,12 +206,12 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 			return new VarOrCall(new ResolvableIdentifier("_base", pos));
 		} else if (rctx instanceof GrammarParser.MinusExpressionContext) {
 			return new UnaryExpression(
-					Symbol.Id.MINUS,
+					UnaryExpression.Operator.MINUS,
 					this.getExpression(((GrammarParser.MinusExpressionContext) rctx)
 							.expression()), pos);
 		} else if (rctx instanceof GrammarParser.NegateExpressionContext) {
 			return new UnaryExpression(
-					Symbol.Id.NOT,
+					UnaryExpression.Operator.NOT,
 					this.getExpression(((GrammarParser.NegateExpressionContext) rctx)
 							.expression()), pos);
 		} else if (rctx instanceof GrammarParser.InstantiateExpressionContext) {
@@ -219,14 +221,14 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.MulDivModExpressionContext) {
 			int tokenOp = ((GrammarParser.MulDivModExpressionContext) rctx).op
 					.getType();
-			Symbol.Id op = null;
+			BinaryExpression.Operator op = null;
 
 			if (tokenOp == GrammarParser.MUL) {
-				op = Symbol.Id.MUL;
+				op = BinaryExpression.Operator.MUL;
 			} else if (tokenOp == GrammarParser.DIV) {
-				op = Symbol.Id.DIV;
+				op = BinaryExpression.Operator.DIV;
 			} else if (tokenOp == GrammarParser.MOD) {
-				op = Symbol.Id.MOD;
+				op = BinaryExpression.Operator.MOD;
 			}
 
 			return new BinaryExpression(
@@ -238,12 +240,12 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.AddSubExpressionContext) {
 			int tokenOp = ((GrammarParser.AddSubExpressionContext) rctx).op
 					.getType();
-			Symbol.Id op = null;
+			BinaryExpression.Operator op = null;
 
 			if (tokenOp == GrammarParser.ADD) {
-				op = Symbol.Id.PLUS;
+				op = BinaryExpression.Operator.PLUS;
 			} else if (tokenOp == GrammarParser.SUB) {
-				op = Symbol.Id.MINUS;
+				op = BinaryExpression.Operator.MINUS;
 			}
 
 			return new BinaryExpression(
@@ -255,16 +257,16 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.CompareExpressionContext) {
 			int tokenOp = ((GrammarParser.CompareExpressionContext) rctx).op
 					.getType();
-			Symbol.Id op = null;
+			BinaryExpression.Operator op = null;
 
 			if (tokenOp == GrammarParser.LEQ) {
-				op = Symbol.Id.LTEQ;
+				op = BinaryExpression.Operator.LTEQ;
 			} else if (tokenOp == GrammarParser.GEQ) {
-				op = Symbol.Id.GTEQ;
+				op = BinaryExpression.Operator.GTEQ;
 			} else if (tokenOp == GrammarParser.LT) {
-				op = Symbol.Id.LT;
+				op = BinaryExpression.Operator.LT;
 			} else if (tokenOp == GrammarParser.GT) {
-				op = Symbol.Id.GT;
+				op = BinaryExpression.Operator.GT;
 			}
 
 			return new BinaryExpression(
@@ -277,23 +279,23 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 			return new BinaryExpression(
 					this.getExpression(((GrammarParser.ConjunctionExpressionContext) rctx)
 							.expression(0)),
-					Symbol.Id.AND,
+					BinaryExpression.Operator.AND,
 					this.getExpression(((GrammarParser.ConjunctionExpressionContext) rctx)
 							.expression(1)));
 		} else if (rctx instanceof GrammarParser.DisjunctionExpressionContext) {
 			return new BinaryExpression(
 					this.getExpression(((GrammarParser.DisjunctionExpressionContext) rctx)
 							.expression(0)),
-					Symbol.Id.OR,
+					BinaryExpression.Operator.OR,
 					this.getExpression(((GrammarParser.DisjunctionExpressionContext) rctx)
 							.expression(1)));
 		} else if (rctx instanceof GrammarParser.EqualityExpressionContext) {
-			Symbol.Id op = null;
+			BinaryExpression.Operator op = null;
 
 			if (((GrammarParser.EqualityExpressionContext) rctx).EQ() != null) {
-				op = Symbol.Id.EQ;
+				op = BinaryExpression.Operator.EQ;
 			} else {
-				op = Symbol.Id.NEQ;
+				op = BinaryExpression.Operator.NEQ;
 			}
 
 			return new BinaryExpression(

@@ -5,15 +5,18 @@ import org.oopsc.CodeStream;
 import org.oopsc.CompileException;
 import org.oopsc.Declarations;
 import org.oopsc.Position;
-import org.oopsc.Symbol;
 import org.oopsc.TreeStream;
 
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem unären Operator im Syntaxbaum.
  */
 public class UnaryExpression extends Expression {
+	public enum Operator {
+		MINUS, NOT
+	}
+
 	/** Der Operator. */
-	public Symbol.Id operator;
+	public Operator operator;
 
 	/** Der Operand, auf den der Operator angewendet wird. */
 	public Expression operand;
@@ -28,7 +31,7 @@ public class UnaryExpression extends Expression {
 	 * @param position
 	 *        Die Position, an der dieser Ausdruck im Quelltext beginnt.
 	 */
-	public UnaryExpression(Symbol.Id operator, Expression operand, Position position) {
+	public UnaryExpression(Operator operator, Expression operand, Position position) {
 		super(position);
 		this.operator = operator;
 		this.operand = operand;
