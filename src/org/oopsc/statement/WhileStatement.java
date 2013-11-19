@@ -1,13 +1,10 @@
 package org.oopsc.statement;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.TreeStream;
+import org.oopsc.*;
 import org.oopsc.expression.Expression;
 
 /**
@@ -30,33 +27,24 @@ public class WhileStatement extends Statement {
 		this.condition = condition;
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
-	@Override
-	public void contextAnalysis(Declarations declarations) throws CompileException {
-		this.condition = this.condition.contextAnalysis(declarations);
-		this.condition = this.condition.unBox();
-		this.condition.type.check(ClassDeclaration.boolType,
-				this.condition.position);
-
+	public void defPass(SemanticAnalysis sem) throws CompileException {
 		for (Statement s : this.statements) {
-			s.contextAnalysis(declarations);
+			s.defPass(sem);
 		}
 	}
 
-	/**
-	 * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
+	@Override
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.condition = this.condition.refPass(sem);
+		this.condition = this.condition.unBox(sem);
+		this.condition.type.check(sem, sem.types().boolType(),
+				this.condition.position);
+
+		for (Statement s : this.statements) {
+			s.refPass(sem);
+		}
+	}
+
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("WHILE");
@@ -73,16 +61,6 @@ public class WhileStatement extends Statement {
 		tree.unindent();
 	}
 
-	/**
-	 * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
-	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 * @param contexts
-	 *        Current stack of contexts, may be used to inject instructions for
-	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
-	 */
 	@Override
 	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		String whileLabel = code.nextLabel();

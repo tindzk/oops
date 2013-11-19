@@ -1,4 +1,5 @@
 package org.oopsc.statement;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -6,12 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.Position;
-import org.oopsc.TreeStream;
+import org.oopsc.*;
 import org.oopsc.expression.LiteralExpression;
 
 /**
@@ -43,28 +39,32 @@ public class TryStatement extends Statement {
 		this.position = position;
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
-	@Override
-	public void contextAnalysis(Declarations declarations) throws CompileException {
+	public void defPass(SemanticAnalysis sem) throws CompileException {
 		for (Statement s : this.tryStatements) {
-			s.contextAnalysis(declarations);
+			s.defPass(sem);
+		}
+
+		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements
+				.entrySet()) {
+			for (Statement s : entry.getValue()) {
+				s.defPass(sem);
+			}
+		}
+	}
+
+	@Override
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		for (Statement s : this.tryStatements) {
+			s.refPass(sem);
 		}
 
 		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements
 				.entrySet()) {
 			LiteralExpression expr = entry.getKey();
-			expr.type.check(ClassDeclaration.intType, expr.position);
+			expr.type.check(sem, sem.types().intType(), expr.position);
 
 			for (Statement s : entry.getValue()) {
-				s.contextAnalysis(declarations);
+				s.refPass(sem);
 			}
 		}
 
@@ -86,12 +86,6 @@ public class TryStatement extends Statement {
 		this.catchStatements.put(condition, stmts);
 	}
 
-	/**
-	 * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("TRY");
@@ -106,7 +100,8 @@ public class TryStatement extends Statement {
 			tree.unindent();
 		}
 
-		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements.entrySet()) {
+		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements
+				.entrySet()) {
 			tree.println("CATCH");
 			tree.indent();
 

@@ -1,4 +1,5 @@
 package org.oopsc;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -53,7 +54,7 @@ public class TestSuite {
 		return encoding.decode(ByteBuffer.wrap(encoded)).toString();
 	}
 
-	public String runVM(String asm, String input) throws FileNotFoundException,
+	public String runVM(String asm, String input) throws
 			IOException, AsmException, VMException {
 		InputStream asmStream = new ByteArrayInputStream(asm.getBytes("UTF-8"));
 
@@ -131,7 +132,7 @@ public class TestSuite {
 		try {
 			this.p = new SyntaxAnalysis(this.path, false).parse();
 			this.p.printTree();
-			this.p.contextAnalysis();
+			this.p.semanticAnalysis();
 
 			/* Test code generation. */
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();

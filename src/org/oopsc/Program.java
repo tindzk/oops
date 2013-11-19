@@ -1,4 +1,5 @@
 package org.oopsc;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -6,11 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.oopsc.expression.AccessExpression;
-import org.oopsc.expression.NewExpression;
-import org.oopsc.expression.VarOrCall;
-import org.oopsc.statement.CallStatement;
-import org.oopsc.statement.Statement;
+import org.oopsc.expression.*;
+import org.oopsc.scope.*;
+import org.oopsc.symbol.*;
+import org.oopsc.statement.*;
 
 class Vertex {
 	/** Visited state. */
@@ -21,7 +21,7 @@ class Vertex {
 	/**
 	 * Class declaration associated to the vertex.
 	 */
-	public ClassDeclaration classDeclaration = null;
+	public ClassSymbol classDeclaration = null;
 
 	/**
 	 * By default, all vertexes were not visited.
@@ -44,9 +44,9 @@ class Vertex {
 	 * Constructor
 	 *
 	 * @param c
-	 *        Class declaration.
+	 *        Class symbol.
 	 */
-	public Vertex(ClassDeclaration c) {
+	public Vertex(ClassSymbol c) {
 		this.classDeclaration = c;
 	}
 
@@ -83,19 +83,6 @@ class Vertex {
 		this.visited = Visited.DoneVisited;
 		return false;
 	}
-
-	/**
-	 * Recursively converts all sub-nodes of the current vertex to a list.
-	 *
-	 * @param res
-	 *        Result list.
-	 */
-	public void toList(List<ClassDeclaration> res) {
-		for (Vertex v : this.edges) {
-			res.add(v.classDeclaration);
-			v.toList(res);
-		}
-	}
 }
 
 /**
@@ -104,15 +91,19 @@ class Vertex {
  * Synthese.
  */
 class Program {
+	SemanticAnalysis sem = new SemanticAnalysis();
+
 	/**
 	 * User-defined classes.
 	 */
-	List<ClassDeclaration> classes = new LinkedList<>();
+	List<ClassSymbol> classes = new LinkedList<>();
 
 	/**
 	 * Initialisation statements.
 	 */
 	List<Statement> init = new LinkedList<>();
+
+	final scala.Option<Symbol> x = scala.Option.apply(null);
 
 	/**
 	 * Constructor.
@@ -121,13 +112,10 @@ class Program {
 		/* Add a statement that instantiates the class `Main' and calls its method main().
 		 * Equivalent to NEW Main.main. */
 		this.init.add(new CallStatement(new AccessExpression(new NewExpression(
-				new ResolvableIdentifier("Main", null), null), new VarOrCall(
-				new ResolvableIdentifier("main", null)))));
-
-		/* Add predeclared classes. */
-		this.classes.add(ClassDeclaration.objectClass);
-		this.classes.add(ClassDeclaration.intClass);
-		this.classes.add(ClassDeclaration.boolClass);
+				new ResolvableSymbol(
+						new Identifier("Main", new Position(0, 0)), this.x)),
+				new VarOrCall(new ResolvableSymbol(new Identifier("main",
+						new Position(0, 0)), this.x)))));
 	}
 
 	/**
@@ -136,97 +124,98 @@ class Program {
 	 * @param clazz
 	 *        Die benutzerdefinierte Klasse.
 	 */
-	public void addClass(ClassDeclaration clazz) {
+	public void addClass(ClassSymbol clazz) {
 		this.classes.add(clazz);
 	}
 
 	/**
-	 * Construct acyclic graph.
+	 * Check whether the class dependencies are an acyclic graph.
 	 *
-	 * @param declarations
 	 * @param classes
-	 * @return Class dependencies in the resolved order.
 	 * @throws CompileException
 	 */
-	public List<ClassDeclaration> resolveClassDeps(Declarations declarations,
-			List<ClassDeclaration> classes) throws CompileException {
-		Map<ClassDeclaration, Vertex> mapping = new HashMap<>();
+	public void checkCycles(List<ClassSymbol> classes)
+			throws CompileException {
+		/* TODO perform cycle checking directly in ClassSymbol */
+		Map<ClassSymbol, Vertex> mapping = new HashMap<>();
 
-		for (ClassDeclaration cls : classes) {
+		for (ClassSymbol cls : classes) {
 			mapping.put(cls, new Vertex(cls));
 		}
 
 		/* Dummy node facilitating traversal. */
 		Vertex root = new Vertex();
 
-		for (ClassDeclaration cls : classes) {
-			if (cls.baseType == null) {
-				/* Connect all classes without parents to the root node. */
-				root.addEdge(mapping.get(cls));
+		for (ClassSymbol cls : classes) {
+			if (cls.superClass().isDefined()) {
+				mapping.get(cls.superClass().get().declaration().get())
+						.addEdge(mapping.get(cls));
 			} else {
-				declarations.resolveType(cls.baseType);
-				mapping.get(cls.baseType.declaration).addEdge(mapping.get(cls));
+				/* Connect all classes without parents to the root node, effectively this is only
+				 * the `Object' class. */
+				root.addEdge(mapping.get(cls));
 			}
 		}
 
 		if (root.hasCycles()) {
 			throw new CompileException(
-					"Class hierarchy is not devoid of cycles.", null);
+					"Class hierarchy is not devoid of cycles.",
+					root.classDeclaration.identifier().position());
 		}
 
 		/* Some classes may not be connected to the root node. Iterate over all
-		 * vertexes that were not yet visited and check for cycles.
-		 */
+		 * vertexes that were not yet visited and check for cycles. */
 		for (Vertex v : mapping.values()) {
 			if (v.visited == Vertex.Visited.NotVisited && v.hasCycles()) {
 				throw new CompileException(
-						"Class hierarchy is not devoid of cycles.", null);
+						"Class hierarchy is not devoid of cycles.",
+						v.classDeclaration.identifier().position());
 			}
 		}
-
-		List<ClassDeclaration> res = new LinkedList<>();
-		root.toList(res);
-
-		return res;
 	}
 
 	/**
-	 * Die Methode führt die Kontextanalyse für das Programm durch.
+	 * Die Methode führt die semantische Analyse für das Programm durch.
 	 *
 	 * @throws CompileException
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	void contextAnalysis() throws CompileException {
-		Declarations declarations = new Declarations();
+	public void semanticAnalysis() throws CompileException {
+		/* Add predeclared classes. */
+		this.classes.add(this.sem.types().objectClass());
+		this.classes.add(this.sem.types().intClass());
+		this.classes.add(this.sem.types().boolClass());
 
-		// Neuen Deklarationsraum schaffen
-		declarations.enter();
+		GlobalScope scope = new GlobalScope();
+		this.sem.enter(scope);
 
-		// Benutzerdefinierte Klassen hinzufügen
-		for (ClassDeclaration c : this.classes) {
-			declarations.add(c);
+		for (ClassSymbol c : this.classes) {
+			c.defPass(this.sem);
 		}
 
-		this.classes = this.resolveClassDeps(declarations, this.classes);
-
-		// Alle Klassendeklarationen initialisieren
-		for (ClassDeclaration c : this.classes) {
-			c.contextAnalysis(declarations, true);
+		for (Statement stmt : this.init) {
+			stmt.defPass(this.sem);
 		}
 
-		// Kontextanalyse für die Methoden aller Klassen durchführen
-		for (ClassDeclaration c : this.classes) {
-			c.contextAnalysis(declarations, false);
+		for (ClassSymbol c : this.classes) {
+			c.refPass(this.sem);
 		}
 
 		/* Resolve dependencies for startup statements. */
 		for (Statement stmt : this.init) {
-			stmt.contextAnalysis(declarations);
+			stmt.refPass(this.sem);
 		}
 
-		// Deklarationsraum verlassen
-		declarations.leave();
+		this.sem.leave();
+
+		if (this.sem.currentScope().isDefined()) {
+			throw new CompileException(
+					"Current scope must be None after semantic analysis.",
+					new Position(0, 0));
+		}
+
+		this.checkCycles(this.classes);
 	}
 
 	/**
@@ -235,7 +224,7 @@ class Program {
 	void printTree() {
 		TreeStream tree = new TreeStream(System.out, 4);
 
-		for (ClassDeclaration c : this.classes) {
+		for (ClassSymbol c : this.classes) {
 			c.print(tree);
 		}
 	}
@@ -277,7 +266,7 @@ class Program {
 		code.println("MRI R0, _end ; Programm beenden");
 
 		/* Generate code for user-defined classes. */
-		for (ClassDeclaration c : this.classes) {
+		for (ClassSymbol c : this.classes) {
 			c.generateCode(code);
 		}
 
@@ -286,14 +275,13 @@ class Program {
 		code.println("DAT 2, 0");
 
 		/* Generate VMT for each class. */
-		for (ClassDeclaration c : this.classes) {
-			MethodDeclaration methods[] = c.generateVMT();
+		for (ClassSymbol c : this.classes) {
+			code.println(c.identifier().name() + ":");
 
-			code.println(c.identifier.name + ":");
-
-			for (MethodDeclaration m : methods) {
+			for (MethodSymbol m : scala.collection.JavaConversions.asJavaList(c
+					.generateVMT())) {
 				code.println("DAT 1, "
-						+ c.resolveAsmMethodName(m.identifier.name));
+						+ c.resolveAsmMethodName(m.identifier().name()));
 			}
 		}
 

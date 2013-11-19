@@ -1,0 +1,9 @@
+CLASS Main IS
+    a: Integer;
+    METHOD main IS
+        a : Integer;
+    BEGIN
+        a := 'A';
+        SELF.a := 'B';
+    END METHOD
+END CLASS

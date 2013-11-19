@@ -1,14 +1,10 @@
 package org.oopsc.statement;
+
 import java.util.Stack;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.MethodDeclaration;
-import org.oopsc.Position;
-import org.oopsc.TreeStream;
-import org.oopsc.expression.Expression;
+import org.oopsc.*;
+import org.oopsc.symbol.*;
+import org.oopsc.expression.*;
 
 /**
  * Die Klasse repräsentiert die Anweisung RETURN im Syntaxbaum.
@@ -20,7 +16,7 @@ public class ReturnStatement extends Statement {
 	/** Die Quelltextposition, an der dieser Ausdruck beginnt. */
 	public Position position;
 
-	protected MethodDeclaration method = null;
+	protected MethodSymbol method = null;
 
 	/**
 	 * Constructor.
@@ -40,47 +36,31 @@ public class ReturnStatement extends Statement {
 		this.position = position;
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
 	@Override
-	public void contextAnalysis(Declarations declarations) throws CompileException {
-		this.method = declarations.currentMethod;
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.method = sem.currentMethod();
 
-		ClassDeclaration retType = declarations.currentMethod
-				.getResolvedReturnType();
+		ClassSymbol retType = sem.currentMethod().getResolvedReturnType();
 
 		if (this.value == null) {
-			if (retType != ClassDeclaration.voidType) {
+			if (retType != sem.types().voidType()) {
 				throw new CompileException("Return value of type "
-						+ retType.identifier.name + " expected.", this.position);
+						+ retType.name() + " expected.", this.position);
 			}
 
 		} else {
-			this.value = this.value.contextAnalysis(declarations);
-			this.value = this.value.box(declarations);
+			this.value = this.value.refPass(sem);
+			this.value = this.value.box(sem);
 
-			if (retType == ClassDeclaration.voidType) {
+			if (retType == sem.types().voidType()) {
 				throw new CompileException("No return value expected.",
 						this.value.position);
 			}
 
-			this.value.type.check(retType, this.value.position);
+			this.value.type.check(sem, retType, this.value.position);
 		}
 	}
 
-	/**
-	 * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("RETURN");
@@ -92,16 +72,6 @@ public class ReturnStatement extends Statement {
 		}
 	}
 
-	/**
-	 * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
-	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 * @param contexts
-	 *        Current stack of contexts, may be used to inject instructions for
-	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
-	 */
 	@Override
 	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; RETURN");

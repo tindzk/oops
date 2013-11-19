@@ -1,4 +1,5 @@
 package org.oopsc;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -60,12 +61,9 @@ class SyntaxAnalysis {
 	 * @throws IOException
 	 *         Ein Lesefehler ist aufgetreten.
 	 */
-	SyntaxAnalysis(String fileName, boolean printSymbols)
-			throws FileNotFoundException, IOException {
+	SyntaxAnalysis(String fileName, boolean printSymbols) throws IOException {
 		this.file = new FileInputStream(fileName);
 		this.printSymbols = printSymbols;
-
-		ResolvableIdentifier.init();
 	}
 
 	/**

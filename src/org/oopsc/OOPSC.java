@@ -1,4 +1,5 @@
 package org.oopsc;
+
 /**
  * Diese Klasse stellt die Hauptmethode des Übersetzers für OOPS
  * dar. Sie wertet die Kommandozeilen-Optionen aus und bietet
@@ -21,7 +22,6 @@ class OOPSC {
 		String outFile = null;
 		boolean showContext = false;
 		boolean showSymbols = false;
-		boolean showIdentifiers = false;
 		boolean showSyntax = false;
 		boolean debug = false;
 		int heapSize = 100;
@@ -43,8 +43,6 @@ class OOPSC {
 				}
 			} else if (arg.equals("-d")) {
 				debug = true;
-			} else if (arg.equals("-i")) {
-				showIdentifiers = true;
 			} else if (arg.equals("-l")) {
 				showSymbols = true;
 			} else if (arg.equals("-s")) {
@@ -82,10 +80,7 @@ class OOPSC {
 			if (showSyntax) {
 				p.printTree();
 			}
-			p.contextAnalysis();
-			if (showIdentifiers) {
-				ResolvableIdentifier.print();
-			}
+			p.semanticAnalysis();
 			if (showContext) {
 				p.printTree();
 			}
@@ -118,7 +113,6 @@ class OOPSC {
 		System.out.println("    -h       Zeige diese Hilfe");
 		System.out
 				.println("    -hs <n>  Reserviere <n> Worte fuer den Heap (Standard ist 100)");
-		System.out.println("    -i       Zeige die Zuordnung der Bezeichner");
 		System.out
 				.println("    -l       Zeige das Ergebnis der lexikalischen Analyse");
 		System.out

@@ -1,9 +1,7 @@
 package org.oopsc.expression;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.Position;
-import org.oopsc.TreeStream;
+import org.oopsc.*;
+import org.oopsc.symbol.*;
 
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem Literal im Syntaxbaum.
@@ -22,7 +20,7 @@ public class LiteralExpression extends Expression {
 	 * @param position
 	 *        Die Position, an der dieser Ausdruck im Quelltext beginnt.
 	 */
-	public LiteralExpression(int value, ClassDeclaration type, Position position) {
+	public LiteralExpression(int value, ClassSymbol type, Position position) {
 		super(position);
 		this.value = value;
 		this.type = type;
@@ -36,7 +34,7 @@ public class LiteralExpression extends Expression {
 	 */
 	@Override
 	public void print(TreeStream tree) {
-		tree.println(this.value + " : " + this.type.identifier.name);
+		tree.println(this.value + " : " + this.type.name());
 	}
 
 	/**
@@ -49,7 +47,7 @@ public class LiteralExpression extends Expression {
 	 */
 	@Override
 	public void generateCode(CodeStream code) {
-		code.println("; " + this.value + " : " + this.type.identifier.name);
+		code.println("; " + this.value + " : " + this.type.name());
 
 		/* Load value into R5. */
 		code.println("MRI R5, " + this.value);
@@ -62,9 +60,9 @@ public class LiteralExpression extends Expression {
 	}
 
 	@Override
-	public boolean isAlwaysTrue() {
+	public boolean isAlwaysTrue(SemanticAnalysis sem) {
 		return this.value == 1
-				&& (this.type.isA(ClassDeclaration.intType) || this.type
-						.isA(ClassDeclaration.boolType));
+				&& (this.type.isA(sem, sem.types().intType()) || this.type.isA(
+						sem, sem.types().boolType()));
 	}
 }

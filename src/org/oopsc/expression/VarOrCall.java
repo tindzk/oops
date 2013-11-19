@@ -1,17 +1,14 @@
 package org.oopsc.expression;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.MethodDeclaration;
-import org.oopsc.ResolvableIdentifier;
-import org.oopsc.TreeStream;
-import org.oopsc.VarDeclaration;
-import org.oopsc.VarDeclaration.Type;
+import org.oopsc.*;
+import org.oopsc.scope.*;
+import org.oopsc.symbol.*;
+
+import scala.Some;
 
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der dem Zugriff auf eine
@@ -19,25 +16,21 @@ import org.oopsc.VarDeclaration.Type;
  */
 public class VarOrCall extends Expression {
 	/** Der Name des Attributs, der Variablen oder der Methode. */
-	public ResolvableIdentifier identifier;
+	public ResolvableSymbol ref;
 
 	public List<Expression> arguments = new LinkedList<>();
 
-	public ClassDeclaration context = null;
+	public ClassSymbol context = null;
 
 	/**
 	 * Konstruktor.
 	 *
-	 * @param identifier
+	 * @param ref
 	 *        Der Name des Attributs, der Variablen oder der Methode.
 	 */
-	public VarOrCall(ResolvableIdentifier identifier) {
-		super(identifier.position);
-		this.identifier = identifier;
-	}
-
-	public void addArgument(Expression e) {
-		this.arguments.add(e);
+	public VarOrCall(ResolvableSymbol ref) {
+		super(ref.identifier().position());
+		this.ref = ref;
 	}
 
 	/**
@@ -47,45 +40,32 @@ public class VarOrCall extends Expression {
 	 *
 	 * @param context
 	 */
-	public void setStaticContext(ClassDeclaration context) {
+	public void setStaticContext(ClassSymbol context) {
 		this.context = context;
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diesen Ausdruck durch.
-	 * Dabei wird ein Zugriff über SELF in den Syntaxbaum eingefügt,
-	 * wenn dieser Ausdruck ein Attribut oder eine Methode bezeichnet.
-	 * Diese Methode wird niemals für Ausdrücke aufgerufen, die rechts
-	 * vom Objekt-Zugriffsoperator stehen.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing
-	 *         oder der Zugriff über SELF eingefügt wurde.
-	 * @throws CompileException
-	 *         Während der Kontextanalyse wurde ein Fehler
-	 *         gefunden.
-	 */
 	@Override
-	public Expression contextAnalysis(Declarations declarations)
-			throws CompileException {
+	public Expression refPass(SemanticAnalysis sem) throws CompileException {
 		// TODO refactor
-		this.contextAnalysisForMember(declarations);
-		this.contextAnalysisForArguments(declarations);
+		this.contextAnalysisForMember(sem.currentScope().get().getThis());
+		this.contextAnalysisForArguments(sem);
 
-		if (this.identifier.declaration instanceof MethodDeclaration
-				|| this.identifier.declaration instanceof VarDeclaration
-				&& ((VarDeclaration) this.identifier.declaration).declType == VarDeclaration.Type.Attribute) {
+		if (this.ref.declaration().get() instanceof MethodSymbol
+				|| this.ref.declaration().get() instanceof AttributeSymbol) {
 			AccessExpression a = new AccessExpression(new VarOrCall(
-					new ResolvableIdentifier("_self", this.position)), this);
-			a.leftOperand = a.leftOperand.contextAnalysis(declarations);
-			a.leftOperand = a.leftOperand.box(declarations);
+					new ResolvableSymbol(
+							new Identifier("_self", this.position), null)),
+					this);
+
+			a.leftOperand = a.leftOperand.refPass(sem);
+			a.leftOperand = a.leftOperand.box(sem);
 			a.type = this.type;
 			a.lValue = this.lValue;
+
 			return a;
-		} else {
-			return this;
 		}
+
+		return this;
 	}
 
 	/**
@@ -93,23 +73,23 @@ public class VarOrCall extends Expression {
 	 * Diese Methode wird auch für Ausdrücke aufgerufen, die rechts
 	 * vom Objekt-Zugriffsoperator stehen.
 	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
 	 * @throws CompileException
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	public void contextAnalysisForMember(Declarations declarations)
+	public void contextAnalysisForMember(Scope scope)
 			throws CompileException {
-		// TODO refactor
-		declarations.resolveVarOrMethod(this.identifier);
+		/* Resolve variable or method. */
+		this.ref.declaration_$eq(new Some<>(scope.checkedResolve(this.ref
+				.identifier())));
 
-		if (this.identifier.declaration instanceof VarDeclaration) {
-			VarDeclaration var = (VarDeclaration) this.identifier.declaration;
+		/* Propagate resolved type. */
+		if (this.ref.declaration().get() instanceof VariableSymbol) {
+			VariableSymbol var = (VariableSymbol) this.ref.declaration().get();
 			this.type = var.getResolvedType();
 			this.lValue = true;
-		} else if (this.identifier.declaration instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) this.identifier.declaration;
+		} else if (this.ref.declaration().get() instanceof MethodSymbol) {
+			MethodSymbol method = (MethodSymbol) this.ref.declaration().get();
 			this.type = method.getResolvedReturnType();
 		} else {
 			assert false;
@@ -119,50 +99,51 @@ public class VarOrCall extends Expression {
 	/**
 	 * Contextual analysis for arguments.
 	 *
-	 * @param declarations
+	 * @param sem
 	 * @throws CompileException
 	 */
-	public void contextAnalysisForArguments(Declarations declarations)
+	public void contextAnalysisForArguments(SemanticAnalysis sem)
 			throws CompileException {
-		if (!(this.identifier.declaration instanceof MethodDeclaration)) {
+		if (!(this.ref.declaration().get() instanceof MethodSymbol)) {
 			if (this.arguments.size() != 0) {
 				throw new CompileException(
-						"Arguments cannot be passed to a variable.",
-						this.identifier.position);
+						"Arguments cannot be passed to a variable.", this.ref
+								.identifier().position());
 			}
 		} else {
 			/* Verify that the passed arguments match the expected parameters. */
-			MethodDeclaration decl = (MethodDeclaration) this.identifier.declaration;
+			MethodSymbol decl = (MethodSymbol) this.ref.declaration().get();
 
-			if (this.arguments.size() != decl.parameters.size()) {
+			if (this.arguments.size() != decl.parameters().size()) {
 				throw new CompileException(String.format(
 						"Parameter count mismatch: %d expected, %d given.",
-						decl.parameters.size(), this.arguments.size()),
-						this.identifier.position);
+						decl.parameters().size(), this.arguments.size()),
+						this.ref.identifier().position());
 			}
 
 			List<Expression> boxed = new LinkedList<>();
 
 			Iterator<Expression> args = this.arguments.iterator();
-			Iterator<VarDeclaration> params = decl.parameters.iterator();
+
+			scala.collection.Iterator<VariableSymbol> params = decl
+					.parameters().iterator();
 
 			for (int num = 1; args.hasNext(); num++) {
 				Expression arg = args.next();
-				VarDeclaration param = params.next();
+				VariableSymbol param = params.next();
 
-				arg = arg.contextAnalysis(declarations);
+				arg = arg.refPass(sem);
 
 				/* Parameters expect boxed values, i.e., Integer instead of _Integer. */
-				arg = arg.box(declarations);
+				arg = arg.box(sem);
 				boxed.add(arg);
 
-				assert (param.type.declaration instanceof ClassDeclaration);
-
-				if (!arg.type.isA((ClassDeclaration) param.type.declaration)) {
+				if (!arg.type.isA(sem, param.getResolvedType())) {
 					throw new CompileException(String.format(
 							"Argument %d mismatches: %s expected, %s given.",
-							num, param.type.declaration.identifier.name,
-							arg.type.identifier.name), this.identifier.position);
+							num,
+							param.resolvedType().get().identifier().name(),
+							arg.type.name()), this.ref.identifier().position());
 				}
 			}
 
@@ -179,9 +160,9 @@ public class VarOrCall extends Expression {
 	 */
 	@Override
 	public void print(TreeStream tree) {
-		tree.println(this.identifier.name
+		tree.println(this.ref.identifier().name()
 				+ (this.type == null ? "" : " : " + (this.lValue ? "REF " : "")
-						+ this.type.identifier.name));
+						+ this.type.name()));
 	}
 
 	/**
@@ -193,30 +174,31 @@ public class VarOrCall extends Expression {
 	 */
 	@Override
 	public void generateCode(CodeStream code) {
-		if (this.identifier.declaration instanceof VarDeclaration) {
-			VarDeclaration v = (VarDeclaration) this.identifier.declaration;
-			if (v.declType == VarDeclaration.Type.Attribute) {
-				/* Stored in the class object. */
-				code.println("; Referencing attribute " + this.identifier.name);
-				code.println("MRM R5, (R2)");
-				code.println("MRI R6, " + v.offset);
-				code.println("ADD R5, R6");
-				code.println("MMR (R2), R5");
-			} else if (v.declType == VarDeclaration.Type.Local) {
-				/* Stored in the stack frame. */
-				code.println("; Referencing local variable "
-						+ this.identifier.name);
-				code.println("MRI R5, " + v.offset);
-				code.println("ADD R5, R3");
-				code.println("ADD R2, R1");
-				code.println("MMR (R2), R5");
-			}
-		} else if (this.identifier.declaration instanceof MethodDeclaration) {
+		Symbol decl = this.ref.declaration().get();
+
+		if (decl instanceof AttributeSymbol) {
+			/* Stored in the class object. */
+			code.println("; Referencing attribute "
+					+ this.ref.identifier().name());
+			code.println("MRM R5, (R2)");
+			code.println("MRI R6, " + ((AttributeSymbol) decl).offset());
+			code.println("ADD R5, R6");
+			code.println("MMR (R2), R5");
+		} else if (decl instanceof VariableSymbol) {
+			/* Stored in the stack frame. */
+			code.println("; Referencing local variable "
+					+ this.ref.identifier().name());
+			code.println("MRI R5, " + ((VariableSymbol) decl).offset());
+			code.println("ADD R5, R3");
+			code.println("ADD R2, R1");
+			code.println("MMR (R2), R5");
+		} else if (decl instanceof MethodSymbol) {
 			String returnLabel = code.nextLabel();
-			MethodDeclaration m = (MethodDeclaration) this.identifier.declaration;
+			MethodSymbol m = (MethodSymbol) decl;
 
 			if (this.context != null) {
-				code.println("; Static method call: " + this.identifier.name);
+				code.println("; Static method call: "
+						+ this.ref.identifier().name());
 
 				code.println("; Arguments");
 				code.println("");
@@ -237,10 +219,12 @@ public class VarOrCall extends Expression {
 
 				/* Jump to method by overwriting PC. */
 				code.println("MRI R0, "
-						+ this.context.resolveAsmMethodName(m.identifier.name));
+						+ this.context.resolveAsmMethodName(m.identifier()
+								.name()));
 			} else {
-				code.println("; Dynamic method call: " + this.identifier.name);
-				code.println("; VMT index = " + m.vmtIndex);
+				code.println("; Dynamic method call: "
+						+ this.ref.identifier().name());
+				code.println("; VMT index = " + m.vmtIndex());
 
 				code.println("; Arguments");
 				code.println("");
@@ -267,7 +251,7 @@ public class VarOrCall extends Expression {
 				code.println("MRM R6, (R5)"); // R5 = Object address.
 				code.println("MRM R6, (R6)"); // R6 = VMT address.
 
-				code.println("MRI R5, " + m.vmtIndex);
+				code.println("MRI R5, " + m.vmtIndex());
 				code.println("ADD R6, R5");
 
 				/* Jump to method by overwriting PC. */

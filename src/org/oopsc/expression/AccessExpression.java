@@ -1,11 +1,7 @@
 package org.oopsc.expression;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.TreeStream;
-import org.oopsc.VarDeclaration;
+import org.oopsc.*;
+import org.oopsc.symbol.*;
 
 /**
  * Die Klasse repräsentiert einen Ausdruck mit einem Attribut- bzw.
@@ -32,33 +28,21 @@ public class AccessExpression extends Expression {
 		this.rightOperand = rightOperand;
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diesen Ausdruck durch.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @return Dieser Ausdruck.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
 	@Override
-	public Expression contextAnalysis(Declarations declarations)
-			throws CompileException {
+	public Expression refPass(SemanticAnalysis sem) throws CompileException {
 		// TODO refactor
-		this.leftOperand = this.leftOperand.contextAnalysis(declarations);
+		this.leftOperand = this.leftOperand.refPass(sem);
 
 		// Dereferenzieren. Außerdem könnte man einen Ausdruck wie z.B. 5.print
 		// schreiben, wenn Integer Methoden hätte.
-		this.leftOperand = this.leftOperand.box(declarations);
+		this.leftOperand = this.leftOperand.box(sem);
 
 		// Der rechte Operand hat einen Deklarationsraum, der sich aus dem
 		// Ergebnistyp des linken Operanden ergibt.
-		this.rightOperand
-				.contextAnalysisForMember(this.leftOperand.type.declarations);
+		this.rightOperand.contextAnalysisForMember(this.leftOperand.type);
 
 		/* Contextual analysis for arguments, but with the original declaration context. */
-		this.rightOperand.contextAnalysisForArguments(declarations);
+		this.rightOperand.contextAnalysisForArguments(sem);
 
 		// Der Typ dieses Ausdrucks ist immer der des rechten Operanden.
 		this.type = this.rightOperand.type;
@@ -69,11 +53,11 @@ public class AccessExpression extends Expression {
 			if (((DeRefExpression) this.leftOperand).operand instanceof VarOrCall) {
 				VarOrCall call = (VarOrCall) ((DeRefExpression) this.leftOperand).operand;
 
-				if (call.identifier.name.equals("_base")) {
-					VarDeclaration vdec = (VarDeclaration) call.identifier.declaration;
-
-					this.rightOperand
-							.setStaticContext((ClassDeclaration) vdec.type.declaration);
+				if (call.ref.identifier().name().equals("_base")) {
+					VariableSymbol vdec = (VariableSymbol) call.ref
+							.declaration().get();
+					this.rightOperand.setStaticContext(vdec.resolvedType()
+							.get());
 				}
 			}
 		}
@@ -81,31 +65,17 @@ public class AccessExpression extends Expression {
 		return this;
 	}
 
-	/**
-	 * Die Methode gibt diesen Ausdruck in einer Baumstruktur aus.
-	 * Wenn der Typ des Ausdrucks bereits ermittelt wurde, wird er auch ausgegeben.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("PERIOD"
 				+ (this.type == null ? "" : " : " + (this.lValue ? "REF " : "")
-						+ this.type.identifier.name));
+						+ this.type.name()));
 		tree.indent();
 		this.leftOperand.print(tree);
 		this.rightOperand.print(tree);
 		tree.unindent();
 	}
 
-	/**
-	 * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
-	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void generateCode(CodeStream code) {
 		this.leftOperand.generateCode(code);

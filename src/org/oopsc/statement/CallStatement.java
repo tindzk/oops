@@ -2,11 +2,7 @@ package org.oopsc.statement;
 
 import java.util.Stack;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.TreeStream;
+import org.oopsc.*;
 import org.oopsc.expression.Expression;
 
 /**
@@ -26,27 +22,12 @@ public class CallStatement extends Statement {
 		this.call = call;
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
 	@Override
-	public void contextAnalysis(Declarations declarations) throws CompileException {
-		this.call = this.call.contextAnalysis(declarations);
-		this.call.type.check(ClassDeclaration.voidType, this.call.position);
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.call = this.call.refPass(sem);
+		this.call.type.check(sem, sem.types().voidType(), this.call.position);
 	}
 
-	/**
-	 * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("CALL");
@@ -55,16 +36,6 @@ public class CallStatement extends Statement {
 		tree.unindent();
 	}
 
-	/**
-	 * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
-	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 * @param contexts
-	 *        Current stack of contexts, may be used to inject instructions for
-	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
-	 */
 	@Override
 	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; CALL");

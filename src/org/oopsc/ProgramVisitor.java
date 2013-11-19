@@ -23,16 +23,21 @@ import org.oopsc.statement.ThrowStatement;
 import org.oopsc.statement.TryStatement;
 import org.oopsc.statement.WhileStatement;
 import org.oopsc.statement.WriteStatement;
+import org.oopsc.symbol.*;
+import scala.Some;
+import scala.collection.mutable.ListBuffer;
 
 public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 
 	final private Program p;
 
-	private ClassDeclaration c = null;
-	private MethodDeclaration m = null;
+	private SemanticAnalysis sem = null;
+	private ClassSymbol c = null;
+	private MethodSymbol m = null;
 
 	public ProgramVisitor(Program p) {
 		this.p = p;
+		this.sem = p.sem;
 	}
 
 	public Identifier identifierFromToken(Token t) {
@@ -40,46 +45,54 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 				t.getStartIndex()));
 	}
 
-	public ResolvableIdentifier resolvableIdentifierFromToken(Token t) {
-		return new ResolvableIdentifier(t.getText(), new Position(t.getLine(),
-				t.getStartIndex()));
+	public ResolvableSymbol resolvableIdentifierFromToken(Token t) {
+		final scala.Option<Symbol> x = scala.Option.apply(null);
+		return new ResolvableSymbol(new Identifier(t.getText(), new Position(
+				t.getLine(), t.getStartIndex())), x);
+	}
+
+	public ResolvableClassSymbol resolvableClassIdentifierFromToken(Token t) {
+		final scala.Option<ClassSymbol> x = scala.Option.apply(null);
+		return new ResolvableClassSymbol(new Identifier(t.getText(),
+				new Position(t.getLine(), t.getStartIndex())), x);
 	}
 
 	@Override
 	public Void visitClassDeclaration(GrammarParser.ClassDeclarationContext ctx) {
-		ResolvableIdentifier baseType;
+		ResolvableClassSymbol baseType;
 
 		if (ctx.extendsClass != null) {
-			baseType = this.resolvableIdentifierFromToken(ctx.extendsClass);
+			baseType = this
+					.resolvableClassIdentifierFromToken(ctx.extendsClass);
+
+			this.c = new ClassSymbol(this.identifierFromToken(ctx.name),
+					new Some<>(baseType));
 		} else {
-			baseType = new ResolvableIdentifier("Object", null);
+			final scala.Option<ResolvableClassSymbol> x = scala.Option
+					.apply(null);
+			this.c = new ClassSymbol(this.identifierFromToken(ctx.name), x);
 		}
 
-		this.c = new ClassDeclaration(this.identifierFromToken(ctx.name),
-				baseType);
 		this.p.addClass(this.c);
 
 		return this.visitChildren(ctx);
 	}
 
 	public void varDecl(GrammarParser.VariableDeclarationContext ctx,
-			List<VarDeclaration> vars, VarDeclaration.Type declType) {
-		ResolvableIdentifier type = this.resolvableIdentifierFromToken(ctx
-				.type().start);
+			ListBuffer<VariableSymbol> vars, boolean attr) {
+		Identifier type = this.identifierFromToken(ctx.type().start);
 
 		for (TerminalNode ident : ctx.Identifier()) {
-			VarDeclaration var = new VarDeclaration(
-					this.identifierFromToken(ident.getSymbol()), declType);
-			var.type = type;
-			vars.add(var);
+			Identifier name = this.identifierFromToken(ident.getSymbol());
+			vars.$plus$eq(attr ? new AttributeSymbol(name, type)
+								: new VariableSymbol(name, type));
 		}
 	}
 
 	@Override
 	public Void visitMemberVariableDeclaration(
 			GrammarParser.MemberVariableDeclarationContext ctx) {
-		this.varDecl(ctx.variableDeclaration(), this.c.attributes,
-				VarDeclaration.Type.Attribute);
+		this.varDecl(ctx.variableDeclaration(), this.c.attributes(), true);
 		return this.visitChildren(ctx);
 	}
 
@@ -87,28 +100,30 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 	public Void visitMethodBody(GrammarParser.MethodBodyContext ctx) {
 		for (GrammarParser.VariableDeclarationContext var : ctx
 				.variableDeclaration()) {
-			this.varDecl(var, this.m.locals, VarDeclaration.Type.Local);
+			this.varDecl(var, this.m.locals(), false);
 		}
 
-		this.m.statements = this.getStatements(ctx.statements());
+		for (Statement stmt : this.getStatements(ctx.statements())) {
+			this.m.statements().$plus$eq(stmt);
+		}
+
 		return this.visitChildren(ctx);
 	}
 
 	@Override
 	public Void visitMethodDeclaration(
 			GrammarParser.MethodDeclarationContext ctx) {
-		this.m = new MethodDeclaration(this.identifierFromToken(ctx.name));
-		this.c.methods.add(this.m);
+		this.m = new MethodSymbol(this.identifierFromToken(ctx.name));
+		this.c.methods().$plus$eq(this.m);
 
 		for (GrammarParser.VariableDeclarationContext var : ctx
 				.variableDeclaration()) {
-			this.varDecl(var, this.m.parameters, VarDeclaration.Type.Local);
+			this.varDecl(var, this.m.parameters(), false);
 		}
 
 		if (ctx.type() != null) {
-			ResolvableIdentifier retType = this
-					.resolvableIdentifierFromToken(ctx.type().start);
-			this.m.setReturnType(retType);
+			Identifier retType = this.identifierFromToken(ctx.type().start);
+			this.m.retType_$eq(retType);
 		}
 
 		return this.visitChildren(ctx);
@@ -121,35 +136,33 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 				ctx.start.getStartIndex());
 
 		if (rctx instanceof GrammarParser.IntegerLiteralContext) {
-			return new LiteralExpression(Integer.parseInt(ctx.getText()),
-					ClassDeclaration.intType, pos);
+			return new LiteralExpression(Integer.parseInt(ctx.getText()), this.sem
+					.types().intType(), pos);
 		} else if (rctx instanceof GrammarParser.CharacterLiteralContext) {
 			String value = ctx.getText().substring(1,
 					ctx.getText().length() - 1);
 
 			if (value.equals("\\n")) {
-				return new LiteralExpression('\n', ClassDeclaration.intType,
-						pos);
+				return new LiteralExpression('\n', this.sem.types().intType(), pos);
 			} else if (value.equals("\\\\")) {
-				return new LiteralExpression('\\', ClassDeclaration.intType,
-						pos);
+				return new LiteralExpression('\\', this.sem.types().intType(), pos);
 			} else if (value.length() != 1) {
 				/* Unsupported character. */
 				assert (false);
 			} else {
-				return new LiteralExpression(value.charAt(0),
-						ClassDeclaration.intType, pos);
+				return new LiteralExpression(value.charAt(0), this.sem.types()
+						.intType(), pos);
 			}
 		} else if (rctx instanceof GrammarParser.StringLiteralContext) {
 			/* TODO Implement ClassDeclaration.stringType. */
 		} else if (rctx instanceof GrammarParser.BooleanLiteralContext) {
 			if (((GrammarParser.BooleanLiteralContext) rctx).value.getType() == GrammarParser.TRUE) {
-				return new LiteralExpression(1, ClassDeclaration.boolType, pos);
+				return new LiteralExpression(1, this.sem.types().boolType(), pos);
 			}
 
-			return new LiteralExpression(0, ClassDeclaration.boolType, pos);
+			return new LiteralExpression(0, this.sem.types().boolType(), pos);
 		} else if (rctx instanceof GrammarParser.NullLiteralContext) {
-			return new LiteralExpression(0, ClassDeclaration.nullType, pos);
+			return new LiteralExpression(0, this.sem.types().nullType(), pos);
 		}
 
 		return null;
@@ -201,9 +214,11 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 					.getLiteral(((GrammarParser.LiteralExpressionContext) rctx)
 							.literal());
 		} else if (rctx instanceof GrammarParser.SelfExpressionContext) {
-			return new VarOrCall(new ResolvableIdentifier("_self", pos));
+			return new VarOrCall(new ResolvableSymbol(new Identifier("_self",
+					pos), null));
 		} else if (rctx instanceof GrammarParser.BaseExpressionContext) {
-			return new VarOrCall(new ResolvableIdentifier("_base", pos));
+			return new VarOrCall(new ResolvableSymbol(new Identifier("_base",
+					pos), null));
 		} else if (rctx instanceof GrammarParser.MinusExpressionContext) {
 			return new UnaryExpression(
 					UnaryExpression.Operator.MINUS,
@@ -217,7 +232,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.InstantiateExpressionContext) {
 			return new NewExpression(
 					this.resolvableIdentifierFromToken(((GrammarParser.InstantiateExpressionContext) rctx)
-							.Identifier().getSymbol()), pos);
+							.Identifier().getSymbol()));
 		} else if (rctx instanceof GrammarParser.MulDivModExpressionContext) {
 			int tokenOp = ((GrammarParser.MulDivModExpressionContext) rctx).op
 					.getType();
@@ -290,7 +305,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 					this.getExpression(((GrammarParser.DisjunctionExpressionContext) rctx)
 							.expression(1)));
 		} else if (rctx instanceof GrammarParser.EqualityExpressionContext) {
-			BinaryExpression.Operator op = null;
+			BinaryExpression.Operator op;
 
 			if (((GrammarParser.EqualityExpressionContext) rctx).EQ() != null) {
 				op = BinaryExpression.Operator.EQ;
@@ -396,8 +411,9 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		return null;
 	}
 
-	public List<Statement> getStatements(GrammarParser.StatementsContext ctx) {
-		List<Statement> stmts = new LinkedList<>();
+	public LinkedList<Statement> getStatements(
+			GrammarParser.StatementsContext ctx) {
+		LinkedList<Statement> stmts = new LinkedList<>();
 
 		for (GrammarParser.StatementContext stmt : ctx.statement()) {
 			stmts.add(this.getStatement(stmt));
@@ -405,5 +421,4 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 
 		return stmts;
 	}
-
 }

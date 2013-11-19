@@ -1,15 +1,12 @@
 package org.oopsc.statement;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.TreeStream;
+import org.oopsc.*;
 import org.oopsc.expression.Expression;
 
 /**
@@ -37,26 +34,30 @@ public class IfStatement extends Statement {
 		this.elseStatements.put(null, new LinkedList<Statement>());
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
+	public void defPass(SemanticAnalysis sem) throws CompileException {
+		for (Statement s : this.thenStatements) {
+			s.defPass(sem);
+		}
+
+		for (Entry<Expression, List<Statement>> entry : this.elseStatements
+				.entrySet()) {
+			for (Statement s : entry.getValue()) {
+				s.defPass(sem);
+			}
+		}
+	}
+
 	@Override
-	public void contextAnalysis(Declarations declarations) throws CompileException {
-		this.condition = this.condition.contextAnalysis(declarations);
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.condition = this.condition.refPass(sem);
 
 		/* this.condition.type is either boolType or boolClass. Enforce boolType via unboxing. */
-		this.condition = this.condition.unBox();
-		this.condition.type.check(ClassDeclaration.boolType,
+		this.condition = this.condition.unBox(sem);
+		this.condition.type.check(sem, sem.types().boolType(),
 				this.condition.position);
 
 		for (Statement s : this.thenStatements) {
-			s.contextAnalysis(declarations);
+			s.refPass(sem);
 		}
 
 		HashMap<Expression, List<Statement>> newElseStatements = new HashMap<>();
@@ -66,32 +67,25 @@ public class IfStatement extends Statement {
 			Expression cond = entry.getKey();
 
 			if (cond != null) {
-				cond = cond.contextAnalysis(declarations);
-				cond = cond.unBox();
-				cond.type.check(ClassDeclaration.boolType, cond.position);
+				cond = cond.refPass(sem);
+				cond = cond.unBox(sem);
+				cond.type.check(sem, sem.types().boolType(), cond.position);
 			}
 
 			newElseStatements.put(cond, entry.getValue());
 
 			for (Statement s : entry.getValue()) {
-				s.contextAnalysis(declarations);
+				s.refPass(sem);
 			}
 		}
 
 		this.elseStatements = newElseStatements;
 	}
 
-	/**
-	 * @param condition
-	 * @param stmts
-	 */
 	public void addIfElse(Expression condition, List<Statement> stmts) {
 		this.elseStatements.put(condition, stmts);
 	}
 
-	/**
-	 * @param stmts
-	 */
 	public void setElse(List<Statement> stmts) {
 		this.elseStatements.put(null, stmts);
 	}
@@ -123,12 +117,6 @@ public class IfStatement extends Statement {
 		tree.unindent();
 	}
 
-	/**
-	 * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("IF");
@@ -169,16 +157,6 @@ public class IfStatement extends Statement {
 		code.println("MRI R0, " + endLabel + " ; Sprung zu END IF");
 	}
 
-	/**
-	 * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
-	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 * @param contexts
-	 *        Current stack of contexts, may be used to inject instructions for
-	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
-	 */
 	@Override
 	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; IF");

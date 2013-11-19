@@ -3,7 +3,6 @@ package org.oopsc.expression;
 import org.oopsc.CodeStream;
 import org.oopsc.TreeStream;
 
-
 /**
  * Die Klasse repräsentiert einen Ausdruck im Syntaxbaum, der eine Referenz
  * dereferenziert, d.h. aus einer Variablen, deren Adresse gegeben ist, den
@@ -27,29 +26,15 @@ public class DeRefExpression extends Expression {
 		this.type = operand.type;
 	}
 
-	/**
-	 * Die Methode gibt diesen Ausdruck in einer Baumstruktur aus.
-	 * Wenn der Typ des Ausdrucks bereits ermittelt wurde, wird er auch ausgegeben.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("DEREF"
-				+ (this.type == null ? "" : " : " + this.type.identifier.name));
+				+ (this.type == null ? "" : " : " + this.type.name()));
 		tree.indent();
 		this.operand.print(tree);
 		tree.unindent();
 	}
 
-	/**
-	 * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
-	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void generateCode(CodeStream code) {
 		code.println("; DEREF Argument code");

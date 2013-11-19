@@ -1,4 +1,5 @@
 package org.oopsc;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -9,13 +10,14 @@ import org.oopsc.statement.ReturnStatement;
 import org.oopsc.statement.Statement;
 import org.oopsc.statement.ThrowStatement;
 import org.oopsc.statement.WhileStatement;
+import org.oopsc.symbol.MethodSymbol;
 
 /**
  * @note The term `to terminate' may be misleading. Here, it is understood in
- * its static sense (during the compilation time). Therefore, considering a
- * method, we are merely determining statically if it is always returning a
- * value (a total function). However, a method identified as `terminating' by
- * our algorithm may still never terminate during run-time.
+ *       its static sense (during the compilation time). Therefore, considering a
+ *       method, we are merely determining statically if it is always returning a
+ *       value (a total function). However, a method identified as `terminating' by
+ *       our algorithm may still never terminate during run-time.
  */
 class Branch {
 	boolean terminates = false;
@@ -23,21 +25,21 @@ class Branch {
 }
 
 public class BranchEvaluator {
-
 	/**
 	 * Constructs a tree for the given statements, notably all branches. This
 	 * method is called recursively, taking into all nesting levels.
 	 */
-	protected static void constructTree(Branch parent, List<Statement> stmts) {
+	protected static void constructTree(SemanticAnalysis sem, Branch parent,
+			List<Statement> stmts) {
 		for (Statement stmt : stmts) {
 			if (stmt instanceof IfStatement) {
 				IfStatement ifStmt = (IfStatement) stmt;
 
 				Branch branchIf = new Branch();
 				parent.sub.add(branchIf);
-				constructTree(branchIf, ifStmt.thenStatements);
+				constructTree(sem, branchIf, ifStmt.thenStatements);
 
-				if (branchIf.terminates && ifStmt.condition.isAlwaysTrue()) {
+				if (branchIf.terminates && ifStmt.condition.isAlwaysTrue(sem)) {
 					parent.terminates = true;
 				}
 
@@ -47,11 +49,11 @@ public class BranchEvaluator {
 						.entrySet()) {
 					Branch branch = new Branch();
 					parent.sub.add(branch);
-					constructTree(branch, entry.getValue());
+					constructTree(sem, branch, entry.getValue());
 
 					if (branch.terminates
 							&& (entry.getKey() == null || entry.getKey()
-									.isAlwaysTrue())) {
+									.isAlwaysTrue(sem))) {
 						parent.terminates = true;
 					}
 				}
@@ -59,12 +61,13 @@ public class BranchEvaluator {
 				/* Only consider while statements if the condition is always true. */
 				WhileStatement whileStmt = (WhileStatement) stmt;
 
-				if (whileStmt.condition.isAlwaysTrue()) {
+				if (whileStmt.condition.isAlwaysTrue(sem)) {
 					Branch branch = new Branch();
 					parent.sub.add(branch);
-					constructTree(branch, whileStmt.statements);
+					constructTree(sem, branch, whileStmt.statements);
 				}
-			} else if (stmt instanceof ReturnStatement || stmt instanceof ThrowStatement) {
+			} else if (stmt instanceof ReturnStatement
+					|| stmt instanceof ThrowStatement) {
 				parent.terminates = true;
 			}
 		}
@@ -92,10 +95,12 @@ public class BranchEvaluator {
 	 * Finally, using back-propagation we determine whether each sub-tree is
 	 * terminating. The method returns true if the root node terminates.
 	 */
-	public static boolean terminates(MethodDeclaration method) {
+	public static boolean terminates(SemanticAnalysis sem, MethodSymbol method) {
 		Branch root = new Branch();
-		constructTree(root, method.statements);
+		constructTree(
+				sem,
+				root,
+				scala.collection.JavaConversions.asJavaList(method.statements()));
 		return root.terminates;
 	}
-
 }

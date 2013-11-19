@@ -1,9 +1,10 @@
 package org.oopsc.statement;
+
 import java.util.Stack;
 
 import org.oopsc.CodeStream;
 import org.oopsc.CompileException;
-import org.oopsc.Declarations;
+import org.oopsc.SemanticAnalysis;
 import org.oopsc.TreeStream;
 import org.oopsc.expression.Expression;
 
@@ -30,32 +31,19 @@ public class Assignment extends Statement {
 		this.rightOperand = rightOperand;
 	}
 
-	/**
-	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
-	 *
-	 * @param declarations
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
 	@Override
-	public void contextAnalysis(Declarations declarations) throws CompileException {
-		this.leftOperand = this.leftOperand.contextAnalysis(declarations);
-		this.rightOperand = this.rightOperand.contextAnalysis(declarations);
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.leftOperand = this.leftOperand.refPass(sem);
+		this.rightOperand = this.rightOperand.refPass(sem);
 		if (!this.leftOperand.lValue) {
-			throw new CompileException("L-Wert erwartet", this.leftOperand.position);
+			throw new CompileException("Lvalue expected",
+					this.leftOperand.position);
 		}
-		this.rightOperand = this.rightOperand.box(declarations);
-		this.rightOperand.type.check(this.leftOperand.type, this.rightOperand.position);
+		this.rightOperand = this.rightOperand.box(sem);
+		this.rightOperand.type.check(sem, this.leftOperand.type,
+				this.rightOperand.position);
 	}
 
-	/**
-	 * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
-	 *
-	 * @param tree
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 */
 	@Override
 	public void print(TreeStream tree) {
 		tree.println("ASSIGNMENT");
@@ -65,16 +53,6 @@ public class Assignment extends Statement {
 		tree.unindent();
 	}
 
-	/**
-	 * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
-	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-	 *
-	 * @param code
-	 *        Der Strom, in den die Ausgabe erfolgt.
-	 * @param contexts
-	 *        Current stack of contexts, may be used to inject instructions for
-	 *        unwinding the stack (as needed for RETURN statements in TRY blocks).
-	 */
 	@Override
 	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; ASSIGNMENT code for left operand");

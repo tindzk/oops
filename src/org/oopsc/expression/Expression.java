@@ -3,12 +3,8 @@ package org.oopsc.expression;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 
-import org.oopsc.ClassDeclaration;
-import org.oopsc.CodeStream;
-import org.oopsc.CompileException;
-import org.oopsc.Declarations;
-import org.oopsc.Position;
-import org.oopsc.TreeStream;
+import org.oopsc.*;
+import org.oopsc.symbol.ClassSymbol;
 
 /**
  * Die abstrakte Basisklasse für alle Ausdrücke im Syntaxbaum.
@@ -18,7 +14,7 @@ import org.oopsc.TreeStream;
  */
 abstract public class Expression {
 	/** Der Typ dieses Ausdrucks. Solange er nicht bekannt ist, ist dieser Eintrag null. */
-	public ClassDeclaration type;
+	public ClassSymbol type;
 
 	/**
 	 * Ist dieser Ausdruck ein L-Wert, d.h. eine Referenz auf eine Variable?
@@ -47,7 +43,7 @@ abstract public class Expression {
 	 * können, sollte diese Methode immer in der Form "a = a.contextAnalysis(...)"
 	 * aufgerufen werden, damit ein neuer Ausdruck auch im Baum gespeichert wird.
 	 *
-	 * @param declarations
+	 * @param sem
 	 *        Die an dieser Stelle gültigen Deklarationen.
 	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing,
 	 *         Unboxing oder eine Dereferenzierung in den Baum eingefügt
@@ -56,8 +52,7 @@ abstract public class Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	public Expression contextAnalysis(Declarations declarations)
-			throws CompileException {
+	public Expression refPass(SemanticAnalysis sem) throws CompileException {
 		return this;
 	}
 
@@ -87,7 +82,7 @@ abstract public class Expression {
 	 * "Boxing" ist das Verpacken eines Basisdatentyps in ein Objekt. Dereferenzieren ist
 	 * das Auslesen eines Werts, dessen Adresse angegeben wurde.
 	 *
-	 * @param declarations
+	 * @param sem
 	 *        Die an dieser Stelle gültigen Deklarationen.
 	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing oder eine
 	 *         Dereferenzierung eingefügt wurde.
@@ -95,11 +90,11 @@ abstract public class Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	public Expression box(Declarations declarations) throws CompileException {
-		if (this.type.isA(ClassDeclaration.intType)) {
-			return new BoxExpression(this, declarations);
-		} else if (this.type.isA(ClassDeclaration.boolType)) {
-			return new BoxExpression(this, declarations);
+	public Expression box(SemanticAnalysis sem) throws CompileException {
+		if (this.type.isA(sem, sem.types().intType())) {
+			return new BoxExpression(this, sem);
+		} else if (this.type.isA(sem, sem.types().boolType())) {
+			return new BoxExpression(this, sem);
 		} else if (this.lValue) {
 			return new DeRefExpression(this);
 		} else {
@@ -119,17 +114,15 @@ abstract public class Expression {
 	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Unboxing und/oder eine
 	 *         Dereferenzierung eingefügt wurde(n).
 	 */
-	public Expression unBox() {
-		if (this.type != ClassDeclaration.nullType
-				&& this.type.isA(ClassDeclaration.boolClass)) {
-			return new UnBoxExpression(this);
-		}
-
-		if (this.lValue) {
-			return new DeRefExpression(this).unBox();
-		} else if (this.type != ClassDeclaration.nullType
-				&& this.type.isA(ClassDeclaration.intClass)) {
-			return new UnBoxExpression(this);
+	public Expression unBox(SemanticAnalysis sem) {
+		if (this.type != sem.types().nullType()
+				&& this.type.isA(sem, sem.types().boolClass())) {
+			return new UnBoxExpression(sem, this);
+		} else if (this.lValue) {
+			return new DeRefExpression(this).unBox(sem);
+		} else if (this.type != sem.types().nullType()
+				&& this.type.isA(sem, sem.types().intClass())) {
+			return new UnBoxExpression(sem, this);
 		} else {
 			return this;
 		}
@@ -155,7 +148,7 @@ abstract public class Expression {
 	 * TODO Must also evaluate more sophisticated expression such as `x == x' to
 	 * true.
 	 */
-	public boolean isAlwaysTrue() {
+	public boolean isAlwaysTrue(SemanticAnalysis sem) {
 		return false;
 	}
 }

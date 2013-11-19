@@ -1,9 +1,10 @@
 package org.oopsc.statement;
+
 import java.util.Stack;
 
 import org.oopsc.CodeStream;
 import org.oopsc.CompileException;
-import org.oopsc.Declarations;
+import org.oopsc.SemanticAnalysis;
 import org.oopsc.TreeStream;
 
 /**
@@ -11,21 +12,25 @@ import org.oopsc.TreeStream;
  */
 abstract public class Statement {
 	public enum Context {
-		Default,
-		TryBlock
+		Default, TryBlock
 	}
 
 	/**
 	 * Die Methode führt die Kontextanalyse für diese Anweisung durch.
 	 *
-	 * @param declarations
+	 * @param sem
 	 *        Die an dieser Stelle gültigen Deklarationen.
 	 * @throws CompileException
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	abstract public void contextAnalysis(Declarations declarations)
-			throws CompileException;
+	public void defPass(SemanticAnalysis sem) throws CompileException {
+
+	}
+
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+
+	}
 
 	/**
 	 * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
