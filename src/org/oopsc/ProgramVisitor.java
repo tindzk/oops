@@ -136,33 +136,32 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 				ctx.start.getStartIndex());
 
 		if (rctx instanceof GrammarParser.IntegerLiteralContext) {
-			return new LiteralExpression(Integer.parseInt(ctx.getText()), this.sem
-					.types().intType(), pos);
+			return new LiteralExpression(Integer.parseInt(ctx.getText()), Types.intType(), pos);
 		} else if (rctx instanceof GrammarParser.CharacterLiteralContext) {
 			String value = ctx.getText().substring(1,
 					ctx.getText().length() - 1);
 
 			if (value.equals("\\n")) {
-				return new LiteralExpression('\n', this.sem.types().intType(), pos);
+				return new LiteralExpression('\n', Types.intType(), pos);
 			} else if (value.equals("\\\\")) {
-				return new LiteralExpression('\\', this.sem.types().intType(), pos);
+				return new LiteralExpression('\\', Types.intType(), pos);
 			} else if (value.length() != 1) {
 				/* Unsupported character. */
 				assert (false);
 			} else {
-				return new LiteralExpression(value.charAt(0), this.sem.types()
+				return new LiteralExpression(value.charAt(0), Types
 						.intType(), pos);
 			}
 		} else if (rctx instanceof GrammarParser.StringLiteralContext) {
 			/* TODO Implement ClassDeclaration.stringType. */
 		} else if (rctx instanceof GrammarParser.BooleanLiteralContext) {
 			if (((GrammarParser.BooleanLiteralContext) rctx).value.getType() == GrammarParser.TRUE) {
-				return new LiteralExpression(1, this.sem.types().boolType(), pos);
+				return new LiteralExpression(1, Types.boolType(), pos);
 			}
 
-			return new LiteralExpression(0, this.sem.types().boolType(), pos);
+			return new LiteralExpression(0, Types.boolType(), pos);
 		} else if (rctx instanceof GrammarParser.NullLiteralContext) {
-			return new LiteralExpression(0, this.sem.types().nullType(), pos);
+			return new LiteralExpression(0, Types.nullType(), pos);
 		}
 
 		return null;

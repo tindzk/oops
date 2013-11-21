@@ -39,7 +39,6 @@ public class Assignment extends Statement {
 			throw new CompileException("Lvalue expected",
 					this.leftOperand.position);
 		}
-		this.rightOperand.types = sem.types();
 		this.rightOperand.type.check(sem, this.leftOperand.type,
 				this.rightOperand.position);
 	}

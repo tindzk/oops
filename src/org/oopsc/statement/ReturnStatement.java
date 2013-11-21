@@ -43,16 +43,15 @@ public class ReturnStatement extends Statement {
 		ClassSymbol retType = sem.currentMethod().getResolvedReturnType();
 
 		if (this.value == null) {
-			if (retType != sem.types().voidType()) {
+			if (retType != Types.voidType()) {
 				throw new CompileException("Return value of type "
 						+ retType.name() + " expected.", this.position);
 			}
 
 		} else {
 			this.value = this.value.refPass(sem);
-			this.value.types = sem.types();
 
-			if (retType == sem.types().voidType()) {
+			if (retType == Types.voidType()) {
 				throw new CompileException("No return value expected.",
 						this.value.position);
 			}

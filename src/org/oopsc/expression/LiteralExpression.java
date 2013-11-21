@@ -62,7 +62,7 @@ public class LiteralExpression extends Expression {
 	@Override
 	public boolean isAlwaysTrue(SemanticAnalysis sem) {
 		return this.value == 1
-				&& (this.type.isA(sem, sem.types().intType()) || this.type.isA(
-						sem, sem.types().boolType()));
+				&& (this.type.isA(sem, Types.intType()) || this.type.isA(
+						sem, Types.boolType()));
 	}
 }

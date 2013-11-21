@@ -55,9 +55,6 @@ public class AccessExpression extends Expression {
 			}
 		}
 
-		this.leftOperand.types = sem.types();
-		this.rightOperand.types = sem.types();
-
 		return this;
 	}
 

@@ -2,7 +2,7 @@ package org.oopsc
 
 import org.oopsc.symbol._
 
-class Types {
+object Types {
   /** Ein interner Typ für das Ergebnis von Methoden. */
   final val voidType = new ClassSymbol(new Identifier("_Void"))
 

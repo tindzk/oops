@@ -47,11 +47,11 @@ public class BinaryExpression extends Expression {
 		switch (this.operator) {
 			case AND:
 			case OR:
-				this.leftOperand.type.check(sem, sem.types().boolType(),
+				this.leftOperand.type.check(sem, Types.boolType(),
 						this.leftOperand.position);
-				this.rightOperand.type.check(sem, sem.types().boolType(),
+				this.rightOperand.type.check(sem, Types.boolType(),
 						this.rightOperand.position);
-				this.type = sem.types().boolType();
+				this.type = Types.boolType();
 				break;
 
 			case PLUS:
@@ -59,22 +59,22 @@ public class BinaryExpression extends Expression {
 			case MUL:
 			case DIV:
 			case MOD:
-				this.leftOperand.type.check(sem, sem.types().intType(),
+				this.leftOperand.type.check(sem, Types.intType(),
 						this.leftOperand.position);
-				this.rightOperand.type.check(sem, sem.types().intType(),
+				this.rightOperand.type.check(sem, Types.intType(),
 						this.rightOperand.position);
-				this.type = sem.types().intType();
+				this.type = Types.intType();
 				break;
 
 			case GT:
 			case GTEQ:
 			case LT:
 			case LTEQ:
-				this.leftOperand.type.check(sem, sem.types().intType(),
+				this.leftOperand.type.check(sem, Types.intType(),
 						this.leftOperand.position);
-				this.rightOperand.type.check(sem, sem.types().intType(),
+				this.rightOperand.type.check(sem, Types.intType(),
 						this.rightOperand.position);
-				this.type = sem.types().boolType();
+				this.type = Types.boolType();
 				break;
 
 			case EQ:
@@ -87,15 +87,12 @@ public class BinaryExpression extends Expression {
 					ClassSymbol.typeError(this.leftOperand.type,
 							this.rightOperand.type, this.rightOperand.position);
 				}
-				this.type = sem.types().boolType();
+				this.type = Types.boolType();
 				break;
 
 			default:
 				assert false;
 		}
-
-		this.leftOperand.types = sem.types();
-		this.rightOperand.types = sem.types();
 
 		return this;
 	}
@@ -115,9 +112,9 @@ public class BinaryExpression extends Expression {
 		/* If one of the operands is NULL, then the other one must be an object.
 		 * Box the value if this is the case. */
 		this.leftOperand.generateCode(code,
-				(this.leftOperand.type == this.leftOperand.types.nullType()));
+				(this.leftOperand.type == Types.nullType()));
 		this.rightOperand.generateCode(code,
-				(this.rightOperand.type == this.rightOperand.types.nullType()));
+				(this.rightOperand.type == Types.nullType()));
 
 		code.println("; " + this.operator);
 		code.println("MRM R5, (R2)");

@@ -50,13 +50,13 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     sem.enter(this)
 
     if (this.retType == null) {
-      this.resolvedRetType = new Some(sem.types.voidType)
+      this.resolvedRetType = new Some(Types.voidType)
     }
 
     if ((sem.currentClass.name == "Main") && (this.identifier.name == "main")) {
       if (this.parameters.size != 0) {
         throw new CompileException("Main.main() must not have any parameters.", this.identifier.position)
-      } else if (this.getResolvedReturnType ne sem.types.voidType) {
+      } else if (this.getResolvedReturnType ne Types.voidType) {
         throw new CompileException("Main.main() must not have a non-void return type.", this.identifier.position)
       }
     }
@@ -133,7 +133,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
       v.refPass(sem)
     }
 
-    this.hasReturnValue = this.getResolvedReturnType ne sem.types.voidType
+    this.hasReturnValue = this.getResolvedReturnType ne Types.voidType
     this.terminates = BranchEvaluator.terminates(sem, this)
 
     if (this.hasReturnValue && !this.terminates) {

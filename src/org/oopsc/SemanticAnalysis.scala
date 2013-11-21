@@ -18,7 +18,6 @@ import org.oopsc.symbol._
  * From http://en.wikipedia.org/wiki/Semantic_analysis_%28compilers%29#Front_end
  */
 class SemanticAnalysis {
-  var types = new Types
   var currentScope: Option[Scope] = None
   var currentClass: ClassSymbol = null
   var currentMethod: MethodSymbol = null

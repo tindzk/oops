@@ -52,8 +52,7 @@ public class IfStatement extends Statement {
 		this.condition = this.condition.refPass(sem);
 
 		/* this.condition.type is either boolType or boolClass. Enforce boolType via unboxing. */
-		this.condition.types = sem.types();
-		this.condition.type.check(sem, sem.types().boolType(),
+		this.condition.type.check(sem, Types.boolType(),
 				this.condition.position);
 
 		for (Statement s : this.thenStatements) {
@@ -69,8 +68,7 @@ public class IfStatement extends Statement {
 
 			if (cond != null) {
 				cond = cond.refPass(sem);
-				cond.types = sem.types();
-				cond.type.check(sem, sem.types().boolType(), cond.position);
+				cond.type.check(sem, Types.boolType(), cond.position);
 			}
 
 			newElseStatements.put(cond, entry.getValue());

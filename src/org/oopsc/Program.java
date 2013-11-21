@@ -184,9 +184,9 @@ class Program {
 	 */
 	public void semanticAnalysis() throws CompileException {
 		/* Add predeclared classes. */
-		this.classes.add(this.sem.types().objectClass());
-		this.classes.add(this.sem.types().intClass());
-		this.classes.add(this.sem.types().boolClass());
+		this.classes.add(Types.objectClass());
+		this.classes.add(Types.intClass());
+		this.classes.add(Types.boolClass());
 
 		GlobalScope scope = new GlobalScope();
 		this.sem.enter(scope);

@@ -61,7 +61,7 @@ public class TryStatement extends Statement {
 		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements
 				.entrySet()) {
 			LiteralExpression expr = entry.getKey();
-			expr.type.check(sem, sem.types().intType(), expr.position);
+			expr.type.check(sem, Types.intType(), expr.position);
 
 			for (Statement s : entry.getValue()) {
 				s.refPass(sem);

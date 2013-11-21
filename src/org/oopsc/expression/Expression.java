@@ -19,9 +19,6 @@ abstract public class Expression {
 	// TODO delete, provide helper method instead
 	public ClassSymbol type;
 
-	// TODO delete
-	public Types types = null;
-
 	/**
 	 * Ist dieser Ausdruck ein L-Wert, d.h. eine Referenz auf eine Variable?
 	 * Die meisten Ausdrücke sind keine L-Werte.
@@ -99,8 +96,8 @@ abstract public class Expression {
 	}
 
 	protected void generateUnBoxCode(CodeStream code) {
-		if (this.type == this.types.boolClass()
-				|| this.type == this.types.intClass()) {
+		if (this.type == Types.boolClass()
+				|| this.type == Types.intClass()) {
 			code.println("; UNBOX type = " + this.type.identifier().name());
 			code.println("MRM R5, (R2) ; Objektreferenz vom Stapel lesen");
 			code.println("MRI R6, " + ClassSymbol.HEADERSIZE());
@@ -112,21 +109,21 @@ abstract public class Expression {
 
 	public void generateCode(CodeStream code, boolean box) {
 		if (box) {
-			if (this.type == this.types.intType()
-					|| this.type == this.types.boolType()) {
+			if (this.type == Types.intType()
+					|| this.type == Types.boolType()) {
 				NewExpression newType = null;
 
-				if (this.type == this.types.intType()) {
+				if (this.type == Types.intType()) {
 					newType = new NewExpression(
 							new ResolvableClassSymbol(new Identifier("Integer",
 									new Position(0, 0)), null));
-					newType.newType.declaration_$eq(new Some<>(this.types
+					newType.newType.declaration_$eq(new Some<>(Types
 							.intClass()));
 				} else {
 					newType = new NewExpression(
 							new ResolvableClassSymbol(new Identifier("Boolean",
 									new Position(0, 0)), null));
-					newType.newType.declaration_$eq(new Some<>(this.types
+					newType.newType.declaration_$eq(new Some<>(Types
 							.boolClass()));
 				}
 

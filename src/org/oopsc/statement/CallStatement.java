@@ -25,7 +25,7 @@ public class CallStatement extends Statement {
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 		this.call = this.call.refPass(sem);
-		this.call.type.check(sem, sem.types().voidType(), this.call.position);
+		this.call.type.check(sem, Types.voidType(), this.call.position);
 	}
 
 	@Override

@@ -130,29 +130,36 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
     base.resolveAsmMethodName(name)
   }
 
+  /* Needed so that the definition pass can be performed multiple times for built-in classes. */
+  // TODO find a better solution
+  var first = true
+
   override def defPass(sem: SemanticAnalysis) {
     sem.defineSymbol(this)
     sem.enter(this)
 
-    if (this.superClass.isEmpty && !(this eq sem.types.objectClass)) {
+    if (this.superClass.isEmpty && !(this eq Types.objectClass)) {
       /* Object is the only class without a super class. */
       this.superClass = {
-        val c = new ResolvableClassSymbol(sem.types.objectClass.identifier)
-        c.declaration = Some(sem.types.objectClass)
+        val c = new ResolvableClassSymbol(Types.objectClass.identifier)
+        c.declaration = Some(Types.objectClass)
         Some(c)
       }
     }
 
-    // Attributtypen auflösen und Indizes innerhalb des Objekts vergeben.
-    for (a <- this.attributes) {
-      a.defPass(sem)
-    }
+    if (first) {
+      for (a <- this.attributes) {
+        a.defPass(sem)
+      }
 
-    for (m <- this.methods) {
-      m.defPass(sem)
+      for (m <- this.methods) {
+        m.defPass(sem)
+      }
     }
 
     sem.leave
+
+    first = false
   }
 
   def getSuperClass(): Option[ClassSymbol] = {
@@ -235,6 +242,7 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
         }
     }
 
+    // Attributtypen auflösen und Indizes innerhalb des Objekts vergeben.
     for (a <- this.attributes) {
       a.refPass(sem)
       a.offset = this.objectSize
@@ -343,25 +351,25 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
     // Spezialbehandlung für null, das mit allen Klassen kompatibel ist,
     // aber nicht mit den Basisdatentypen _Integer und _Boolean sowie auch nicht
     // an Stellen erlaubt ist, wo gar kein Wert erwartet wird.
-    if ((this eq sem.types.nullType) &&
-      (expected ne sem.types.intType) &&
-      (expected ne sem.types.boolType) &&
-      (expected ne sem.types.voidType)) {
+    if ((this eq Types.nullType) &&
+      (expected ne Types.intType) &&
+      (expected ne Types.boolType) &&
+      (expected ne Types.voidType)) {
       return true
     }
 
     /* Type promotions for built-in types integer and boolean. */
-    if ((this eq sem.types.intType) && (expected eq sem.types.intClass)) {
+    if ((this eq Types.intType) && (expected eq Types.intClass)) {
       return true;
     }
-    if ((this eq sem.types.intClass) && (expected eq sem.types.intType)) {
+    if ((this eq Types.intClass) && (expected eq Types.intType)) {
       return true;
     }
 
-    if ((this eq sem.types.boolType) && (expected eq sem.types.boolClass)) {
+    if ((this eq Types.boolType) && (expected eq Types.boolClass)) {
       return true;
     }
-    if ((this eq sem.types.boolClass) && (expected eq sem.types.boolType)) {
+    if ((this eq Types.boolClass) && (expected eq Types.boolType)) {
       return true;
     }
 

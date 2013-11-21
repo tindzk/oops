@@ -36,15 +36,14 @@ public class UnaryExpression extends Expression {
 	@Override
 	public Expression refPass(SemanticAnalysis sem) throws CompileException {
 		this.operand = this.operand.refPass(sem);
-		this.operand.types = sem.types();
 
 		switch (this.operator) {
 			case NOT:
-				this.operand.type.check(sem, sem.types().boolType(),
+				this.operand.type.check(sem, Types.boolType(),
 						this.operand.position);
 				break;
 			case MINUS:
-				this.operand.type.check(sem, sem.types().intType(),
+				this.operand.type.check(sem, Types.intType(),
 						this.operand.position);
 				break;
 			default:

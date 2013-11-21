@@ -58,7 +58,6 @@ public class VarOrCall extends Expression {
 					this);
 
 			a.leftOperand = a.leftOperand.refPass(sem);
-			a.leftOperand.types = sem.types();
 			a.type = this.type;
 			a.lValue = this.lValue;
 
@@ -133,7 +132,6 @@ public class VarOrCall extends Expression {
 				VariableSymbol param = params.next();
 
 				arg = arg.refPass(sem);
-				arg.types = sem.types();
 
 				/* Parameters expect boxed values, i.e., Integer instead of _Integer. */
 				boxed.add(arg);

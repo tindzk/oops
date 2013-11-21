@@ -35,7 +35,7 @@ public class ReadStatement extends Statement {
 			throw new CompileException("Lvalue expected", this.operand.position);
 		}
 
-		this.operand.type.check(sem, sem.types().intClass(),
+		this.operand.type.check(sem, Types.intClass(),
 				this.operand.position);
 		this.newInt = this.newInt.refPass(sem);
 	}
