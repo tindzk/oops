@@ -33,10 +33,6 @@ public class AccessExpression extends Expression {
 		// TODO refactor
 		this.leftOperand = this.leftOperand.refPass(sem);
 
-		// Dereferenzieren. Außerdem könnte man einen Ausdruck wie z.B. 5.print
-		// schreiben, wenn Integer Methoden hätte.
-		this.leftOperand = this.leftOperand.box(sem);
-
 		// Der rechte Operand hat einen Deklarationsraum, der sich aus dem
 		// Ergebnistyp des linken Operanden ergibt.
 		this.rightOperand.contextAnalysisForMember(this.leftOperand.type);
@@ -49,18 +45,18 @@ public class AccessExpression extends Expression {
 		this.lValue = this.rightOperand.lValue;
 
 		/* Deal with accesses to methods or attributes in the base class. */
-		if (this.leftOperand instanceof DeRefExpression) {
-			if (((DeRefExpression) this.leftOperand).operand instanceof VarOrCall) {
-				VarOrCall call = (VarOrCall) ((DeRefExpression) this.leftOperand).operand;
+		if (this.leftOperand instanceof VarOrCall) {
+			VarOrCall call = (VarOrCall) this.leftOperand;
 
-				if (call.ref.identifier().name().equals("_base")) {
-					VariableSymbol vdec = (VariableSymbol) call.ref
-							.declaration().get();
-					this.rightOperand.setStaticContext(vdec.resolvedType()
-							.get());
-				}
+			if (call.ref.identifier().name().equals("_base")) {
+				VariableSymbol vdec = (VariableSymbol) call.ref.declaration()
+						.get();
+				this.rightOperand.setStaticContext(vdec.resolvedType().get());
 			}
 		}
+
+		this.leftOperand.types = sem.types();
+		this.rightOperand.types = sem.types();
 
 		return this;
 	}
@@ -78,7 +74,7 @@ public class AccessExpression extends Expression {
 
 	@Override
 	public void generateCode(CodeStream code) {
-		this.leftOperand.generateCode(code);
+		this.leftOperand.generateCode(code, true);
 		this.rightOperand.generateCode(code);
 	}
 }

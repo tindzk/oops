@@ -39,7 +39,7 @@ public class Assignment extends Statement {
 			throw new CompileException("Lvalue expected",
 					this.leftOperand.position);
 		}
-		this.rightOperand = this.rightOperand.box(sem);
+		this.rightOperand.types = sem.types();
 		this.rightOperand.type.check(sem, this.leftOperand.type,
 				this.rightOperand.position);
 	}
@@ -58,7 +58,7 @@ public class Assignment extends Statement {
 		code.println("; ASSIGNMENT code for left operand");
 		this.leftOperand.generateCode(code);
 		code.println("; ASSIGNMENT code for right operand");
-		this.rightOperand.generateCode(code);
+		this.rightOperand.generateCode(code, true);
 		code.println("; ASSIGNMENT");
 		code.println("MRM R5, (R2) ; Rechten Wert vom Stapel nehmen");
 		code.println("SUB R2, R1");

@@ -24,7 +24,7 @@ public class IfStatement extends Statement {
 
 	/**
 	 * Konstruktor.
-	 *
+	 * 
 	 * @param condition
 	 *        Die Bedingung der IF-Anweisung.
 	 */
@@ -52,7 +52,7 @@ public class IfStatement extends Statement {
 		this.condition = this.condition.refPass(sem);
 
 		/* this.condition.type is either boolType or boolClass. Enforce boolType via unboxing. */
-		this.condition = this.condition.unBox(sem);
+		this.condition.types = sem.types();
 		this.condition.type.check(sem, sem.types().boolType(),
 				this.condition.position);
 
@@ -60,6 +60,7 @@ public class IfStatement extends Statement {
 			s.refPass(sem);
 		}
 
+		// TODO not necessary
 		HashMap<Expression, List<Statement>> newElseStatements = new HashMap<>();
 
 		for (Entry<Expression, List<Statement>> entry : this.elseStatements
@@ -68,7 +69,7 @@ public class IfStatement extends Statement {
 
 			if (cond != null) {
 				cond = cond.refPass(sem);
-				cond = cond.unBox(sem);
+				cond.types = sem.types();
 				cond.type.check(sem, sem.types().boolType(), cond.position);
 			}
 
@@ -141,7 +142,7 @@ public class IfStatement extends Statement {
 	private void generateCode(CodeStream code, Stack<Context> contexts,
 			Expression condition, List<Statement> stmts, String nextLabel,
 			String endLabel) {
-		condition.generateCode(code);
+		condition.generateCode(code, false);
 
 		code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen");
 		code.println("SUB R2, R1");

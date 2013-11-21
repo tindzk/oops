@@ -10,7 +10,7 @@ import scala.Some;
  */
 public class NewExpression extends Expression {
 	/** Der Typ des neuen Objekts. */
-	public ResolvableSymbol newType;
+	public ResolvableClassSymbol newType;
 
 	/**
 	 * Konstruktor.
@@ -18,7 +18,7 @@ public class NewExpression extends Expression {
 	 * @param newType
 	 *        Der Typ des neuen Objekts.
 	 */
-	public NewExpression(ResolvableSymbol newType) {
+	public NewExpression(ResolvableClassSymbol newType) {
 		super(newType.identifier().position());
 		this.newType = newType;
 	}
@@ -35,9 +35,9 @@ public class NewExpression extends Expression {
 	 */
 	@Override
 	public Expression refPass(SemanticAnalysis sem) throws CompileException {
-		this.newType.declaration_$eq(new Some<Symbol>(sem.currentScope().get()
+		this.newType.declaration_$eq(new Some<>(sem.currentScope().get()
 				.resolveClass(this.newType.identifier())));
-		this.type = (ClassSymbol) this.newType.declaration().get();
+		this.type = this.newType.declaration().get();
 		return this;
 	}
 
@@ -66,8 +66,7 @@ public class NewExpression extends Expression {
 		code.println("; NEW " + this.newType.identifier().name());
 		code.println("ADD R2, R1");
 		code.println("MMR (R2), R4 ; Referenz auf neues Objekt auf den Stapel legen");
-		code.println("MRI R5, "
-				+ ((ClassSymbol) this.newType.declaration().get()).objectSize());
+		code.println("MRI R5, " + this.newType.declaration().get().objectSize());
 
 		/* Insert the address pointing to the VMT at the relative position 0 of the
 		 * object. The offsets 1.. denote the attributes. */

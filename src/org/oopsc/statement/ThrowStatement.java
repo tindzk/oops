@@ -31,7 +31,7 @@ public class ThrowStatement extends Statement {
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 		this.value = this.value.refPass(sem);
-		this.value = this.value.unBox(sem);
+		this.value.types = sem.types();
 
 		this.value.type.check(sem, sem.types().intType(), this.value.position);
 	}
@@ -61,7 +61,7 @@ public class ThrowStatement extends Statement {
 		code.println("; THROW");
 
 		/* Push the exception code on the stack. */
-		this.value.generateCode(code);
+		this.value.generateCode(code, false);
 
 		/* Copy the exception code to R7. */
 		code.println("MRM R7, (R2)");

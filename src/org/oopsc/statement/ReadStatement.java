@@ -14,7 +14,7 @@ public class ReadStatement extends Statement {
 	public Expression operand;
 
 	/** Ein Ausdruck, der ein neues Objekt vom Typ Integer erzeugen kann. */
-	public Expression newInt = new NewExpression(new ResolvableSymbol(
+	public Expression newInt = new NewExpression(new ResolvableClassSymbol(
 			new Identifier("Integer", new Position(0, 0)), null));
 
 	/**

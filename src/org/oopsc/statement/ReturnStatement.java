@@ -50,7 +50,7 @@ public class ReturnStatement extends Statement {
 
 		} else {
 			this.value = this.value.refPass(sem);
-			this.value = this.value.box(sem);
+			this.value.types = sem.types();
 
 			if (retType == sem.types().voidType()) {
 				throw new CompileException("No return value expected.",
@@ -87,7 +87,7 @@ public class ReturnStatement extends Statement {
 
 			this.method.generateMethodEpilogue(code, "");
 		} else {
-			this.value.generateCode(code);
+			this.value.generateCode(code, true);
 
 			/* Back up the value R2 points to by copying it to the register R7. R2 points
 			 * to the result of this.value. */

@@ -350,6 +350,21 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
       return true
     }
 
+    /* Type promotions for built-in types integer and boolean. */
+    if ((this eq sem.types.intType) && (expected eq sem.types.intClass)) {
+      return true;
+    }
+    if ((this eq sem.types.intClass) && (expected eq sem.types.intType)) {
+      return true;
+    }
+
+    if ((this eq sem.types.boolType) && (expected eq sem.types.boolClass)) {
+      return true;
+    }
+    if ((this eq sem.types.boolClass) && (expected eq sem.types.boolType)) {
+      return true;
+    }
+
     /* Compare wrt. base type. */
     var cmp = this
 

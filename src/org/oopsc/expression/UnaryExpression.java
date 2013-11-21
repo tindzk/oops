@@ -36,7 +36,8 @@ public class UnaryExpression extends Expression {
 	@Override
 	public Expression refPass(SemanticAnalysis sem) throws CompileException {
 		this.operand = this.operand.refPass(sem);
-		this.operand = this.operand.unBox(sem);
+		this.operand.types = sem.types();
+
 		switch (this.operator) {
 			case NOT:
 				this.operand.type.check(sem, sem.types().boolType(),
@@ -49,6 +50,7 @@ public class UnaryExpression extends Expression {
 			default:
 				assert false;
 		}
+
 		this.type = this.operand.type;
 		return this;
 	}
@@ -64,7 +66,7 @@ public class UnaryExpression extends Expression {
 
 	@Override
 	public void generateCode(CodeStream code) {
-		this.operand.generateCode(code);
+		this.operand.generateCode(code, false);
 		code.println("; " + this.operator);
 		code.println("MRM R5, (R2)");
 		switch (this.operator) {

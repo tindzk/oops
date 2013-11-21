@@ -58,7 +58,7 @@ public class VarOrCall extends Expression {
 					this);
 
 			a.leftOperand = a.leftOperand.refPass(sem);
-			a.leftOperand = a.leftOperand.box(sem);
+			a.leftOperand.types = sem.types();
 			a.type = this.type;
 			a.lValue = this.lValue;
 
@@ -77,8 +77,7 @@ public class VarOrCall extends Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	public void contextAnalysisForMember(Scope scope)
-			throws CompileException {
+	public void contextAnalysisForMember(Scope scope) throws CompileException {
 		/* Resolve variable or method. */
 		this.ref.declaration_$eq(new Some<>(scope.checkedResolve(this.ref
 				.identifier())));
@@ -121,6 +120,7 @@ public class VarOrCall extends Expression {
 						this.ref.identifier().position());
 			}
 
+			// TODO list not necessary
 			List<Expression> boxed = new LinkedList<>();
 
 			Iterator<Expression> args = this.arguments.iterator();
@@ -133,9 +133,9 @@ public class VarOrCall extends Expression {
 				VariableSymbol param = params.next();
 
 				arg = arg.refPass(sem);
+				arg.types = sem.types();
 
 				/* Parameters expect boxed values, i.e., Integer instead of _Integer. */
-				arg = arg.box(sem);
 				boxed.add(arg);
 
 				if (!arg.type.isA(sem, param.getResolvedType())) {
@@ -208,7 +208,7 @@ public class VarOrCall extends Expression {
 				for (Expression e : this.arguments) {
 					code.println("; Argument " + i);
 					code.println("; " + e.getClass());
-					e.generateCode(code);
+					e.generateCode(code, true);
 					i++;
 				}
 
@@ -234,7 +234,7 @@ public class VarOrCall extends Expression {
 				for (Expression e : this.arguments) {
 					code.println("; Argument " + i);
 					code.println("; " + e.getClass());
-					e.generateCode(code);
+					e.generateCode(code, true);
 					i++;
 				}
 

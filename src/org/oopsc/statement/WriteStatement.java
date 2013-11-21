@@ -25,7 +25,7 @@ public class WriteStatement extends Statement {
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 		this.operand = this.operand.refPass(sem);
-		this.operand = this.operand.unBox(sem);
+		this.operand.types = sem.types();
 		this.operand.type.check(sem, sem.types().intType(),
 				this.operand.position);
 	}
@@ -41,7 +41,7 @@ public class WriteStatement extends Statement {
 	@Override
 	public void generateCode(CodeStream code, Stack<Context> contexts) {
 		code.println("; WRITE operand code");
-		this.operand.generateCode(code);
+		this.operand.generateCode(code, false);
 		code.println("; WRITE");
 		code.println("MRM R5, (R2)");
 		code.println("SUB R2, R1");

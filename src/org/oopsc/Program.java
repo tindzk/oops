@@ -103,7 +103,8 @@ class Program {
 	 */
 	List<Statement> init = new LinkedList<>();
 
-	final scala.Option<Symbol> x = scala.Option.apply(null);
+	final scala.Option<ClassSymbol> x = scala.Option.apply(null);
+	final scala.Option<Symbol> x2 = scala.Option.apply(null);
 
 	/**
 	 * Constructor.
@@ -112,10 +113,10 @@ class Program {
 		/* Add a statement that instantiates the class `Main' and calls its method main().
 		 * Equivalent to NEW Main.main. */
 		this.init.add(new CallStatement(new AccessExpression(new NewExpression(
-				new ResolvableSymbol(
+				new ResolvableClassSymbol(
 						new Identifier("Main", new Position(0, 0)), this.x)),
 				new VarOrCall(new ResolvableSymbol(new Identifier("main",
-						new Position(0, 0)), this.x)))));
+						new Position(0, 0)), this.x2)))));
 	}
 
 	/**

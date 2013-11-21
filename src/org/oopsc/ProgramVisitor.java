@@ -231,7 +231,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 							.expression()), pos);
 		} else if (rctx instanceof GrammarParser.InstantiateExpressionContext) {
 			return new NewExpression(
-					this.resolvableIdentifierFromToken(((GrammarParser.InstantiateExpressionContext) rctx)
+					this.resolvableClassIdentifierFromToken(((GrammarParser.InstantiateExpressionContext) rctx)
 							.Identifier().getSymbol()));
 		} else if (rctx instanceof GrammarParser.MulDivModExpressionContext) {
 			int tokenOp = ((GrammarParser.MulDivModExpressionContext) rctx).op

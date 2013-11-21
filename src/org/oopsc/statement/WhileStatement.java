@@ -36,7 +36,7 @@ public class WhileStatement extends Statement {
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 		this.condition = this.condition.refPass(sem);
-		this.condition = this.condition.unBox(sem);
+		this.condition.types = sem.types();
 		this.condition.type.check(sem, sem.types().boolType(),
 				this.condition.position);
 
@@ -68,7 +68,7 @@ public class WhileStatement extends Statement {
 
 		code.println("; WHILE");
 		code.println(whileLabel + ":");
-		this.condition.generateCode(code);
+		this.condition.generateCode(code, false);
 
 		code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen");
 		code.println("SUB R2, R1");

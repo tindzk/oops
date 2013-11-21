@@ -43,57 +43,42 @@ public class BinaryExpression extends Expression {
 		// TODO refactor
 		this.leftOperand = this.leftOperand.refPass(sem);
 		this.rightOperand = this.rightOperand.refPass(sem);
+
 		switch (this.operator) {
 			case AND:
 			case OR:
-				this.leftOperand = this.leftOperand.unBox(sem);
-				this.rightOperand = this.rightOperand.unBox(sem);
 				this.leftOperand.type.check(sem, sem.types().boolType(),
 						this.leftOperand.position);
 				this.rightOperand.type.check(sem, sem.types().boolType(),
 						this.rightOperand.position);
 				this.type = sem.types().boolType();
 				break;
+
 			case PLUS:
 			case MINUS:
 			case MUL:
 			case DIV:
 			case MOD:
-				this.leftOperand = this.leftOperand.unBox(sem);
-				this.rightOperand = this.rightOperand.unBox(sem);
 				this.leftOperand.type.check(sem, sem.types().intType(),
 						this.leftOperand.position);
 				this.rightOperand.type.check(sem, sem.types().intType(),
 						this.rightOperand.position);
 				this.type = sem.types().intType();
 				break;
+
 			case GT:
 			case GTEQ:
 			case LT:
 			case LTEQ:
-				this.leftOperand = this.leftOperand.unBox(sem);
-				this.rightOperand = this.rightOperand.unBox(sem);
 				this.leftOperand.type.check(sem, sem.types().intType(),
 						this.leftOperand.position);
 				this.rightOperand.type.check(sem, sem.types().intType(),
 						this.rightOperand.position);
 				this.type = sem.types().boolType();
 				break;
+
 			case EQ:
 			case NEQ:
-				// Wenn einer der beiden Operanden NULL ist, muss der andere
-				// ein Objekt sein (oder auch NULL)
-				if (this.leftOperand.type == sem.types().nullType()) {
-					this.rightOperand = this.rightOperand.box(sem);
-				} else if (this.rightOperand.type == sem.types().nullType()) {
-					this.leftOperand = this.leftOperand.box(sem);
-				} else {
-					// ansonsten wird versucht, die beiden Operanden in
-					// Basisdatentypen zu wandeln
-					this.leftOperand = this.leftOperand.unBox(sem);
-					this.rightOperand = this.rightOperand.unBox(sem);
-				}
-
 				// Nun muss der Typ mindestens eines Operanden gleich oder eine
 				// Ableitung des Typs des anderen Operanden sein.
 				if (!this.leftOperand.type.isA(sem, this.rightOperand.type)
@@ -104,9 +89,14 @@ public class BinaryExpression extends Expression {
 				}
 				this.type = sem.types().boolType();
 				break;
+
 			default:
 				assert false;
 		}
+
+		this.leftOperand.types = sem.types();
+		this.rightOperand.types = sem.types();
+
 		return this;
 	}
 
@@ -122,8 +112,12 @@ public class BinaryExpression extends Expression {
 
 	@Override
 	public void generateCode(CodeStream code) {
-		this.leftOperand.generateCode(code);
-		this.rightOperand.generateCode(code);
+		/* If one of the operands is NULL, then the other one must be an object.
+		 * Box the value if this is the case. */
+		this.leftOperand.generateCode(code,
+				(this.leftOperand.type == this.leftOperand.types.nullType()));
+		this.rightOperand.generateCode(code,
+				(this.rightOperand.type == this.rightOperand.types.nullType()));
 
 		code.println("; " + this.operator);
 		code.println("MRM R5, (R2)");

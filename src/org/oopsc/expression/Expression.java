@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 
 import org.oopsc.*;
-import org.oopsc.symbol.ClassSymbol;
+import org.oopsc.symbol.*;
+
+import scala.Some;
 
 /**
  * Die abstrakte Basisklasse für alle Ausdrücke im Syntaxbaum.
@@ -14,7 +16,11 @@ import org.oopsc.symbol.ClassSymbol;
  */
 abstract public class Expression {
 	/** Der Typ dieses Ausdrucks. Solange er nicht bekannt ist, ist dieser Eintrag null. */
+	// TODO delete, provide helper method instead
 	public ClassSymbol type;
+
+	// TODO delete
+	public Types types = null;
 
 	/**
 	 * Ist dieser Ausdruck ein L-Wert, d.h. eine Referenz auf eine Variable?
@@ -52,6 +58,7 @@ abstract public class Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
+	// TODO do not return anything here
 	public Expression refPass(SemanticAnalysis sem) throws CompileException {
 		return this;
 	}
@@ -74,57 +81,73 @@ abstract public class Expression {
 	 */
 	abstract public void generateCode(CodeStream code);
 
-	/**
-	 * Die Methode prüft, ob dieser Ausdruck "geboxt" oder dereferenziert werden muss.
-	 * Ist dies der Fall, wird ein entsprechender Ausdruck erzeugt, von dem dieser
-	 * dann der Operand ist. Dieser neue Ausdruck wird zurückgegeben. Daher sollte diese
-	 * Methode immer in der Form "a = a.box(...)" aufgerufen werden.
-	 * "Boxing" ist das Verpacken eines Basisdatentyps in ein Objekt. Dereferenzieren ist
-	 * das Auslesen eines Werts, dessen Adresse angegeben wurde.
-	 *
-	 * @param sem
-	 *        Die an dieser Stelle gültigen Deklarationen.
-	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing oder eine
-	 *         Dereferenzierung eingefügt wurde.
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
-	public Expression box(SemanticAnalysis sem) throws CompileException {
-		if (this.type.isA(sem, sem.types().intType())) {
-			return new BoxExpression(this, sem);
-		} else if (this.type.isA(sem, sem.types().boolType())) {
-			return new BoxExpression(this, sem);
-		} else if (this.lValue) {
-			return new DeRefExpression(this);
-		} else {
-			return this;
+	protected void generateDeRefCode(CodeStream code) {
+		code.println("; DEREF");
+		code.println("MRM R5, (R2)");
+		code.println("MRM R5, (R5)");
+		code.println("MMR (R2), R5");
+	}
+
+	protected void generateBoxCode(CodeStream code) {
+		code.println("; BOX");
+		code.println("MRM R5, (R2) ; Wert vom Stapel nehmen");
+		code.println("SUB R2, R1");
+		code.println("MRM R6, (R2) ; Referenz auf neues Objekt holen (bleibt auf Stapel)");
+		code.println("MRI R7, " + ClassSymbol.HEADERSIZE());
+		code.println("ADD R6, R7 ; Speicherstelle in neuem Objekt berechnen");
+		code.println("MMR (R6), R5 ; Wert in Objekt speichern");
+	}
+
+	protected void generateUnBoxCode(CodeStream code) {
+		if (this.type == this.types.boolClass()
+				|| this.type == this.types.intClass()) {
+			code.println("; UNBOX type = " + this.type.identifier().name());
+			code.println("MRM R5, (R2) ; Objektreferenz vom Stapel lesen");
+			code.println("MRI R6, " + ClassSymbol.HEADERSIZE());
+			code.println("ADD R5, R6 ; Adresse des Werts bestimmen");
+			code.println("MRM R5, (R5) ; Wert auslesen");
+			code.println("MMR (R2), R5 ; und auf den Stapel schreiben");
 		}
 	}
 
-	/**
-	 * Die Methode prüft, ob dieser Ausdruck dereferenziert, "entboxt" oder beides
-	 * werden muss.
-	 * Ist dies der Fall, wird ein entsprechender Ausdruck erzeugt, von dem dieser
-	 * dann der Operand ist. Dieser neue Ausdruck wird zurückgegeben. Daher sollte diese
-	 * Methode immer in der Form "a = a.unBox(...)" aufgerufen werden.
-	 * "Unboxing" ist das Auspacken eines Objekts zu einem Basisdatentyp. Dereferenzieren ist
-	 * das Auslesen eines Werts, dessen Adresse angegeben wurde.
-	 *
-	 * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Unboxing und/oder eine
-	 *         Dereferenzierung eingefügt wurde(n).
-	 */
-	public Expression unBox(SemanticAnalysis sem) {
-		if (this.type != sem.types().nullType()
-				&& this.type.isA(sem, sem.types().boolClass())) {
-			return new UnBoxExpression(sem, this);
-		} else if (this.lValue) {
-			return new DeRefExpression(this).unBox(sem);
-		} else if (this.type != sem.types().nullType()
-				&& this.type.isA(sem, sem.types().intClass())) {
-			return new UnBoxExpression(sem, this);
+	public void generateCode(CodeStream code, boolean box) {
+		if (box) {
+			if (this.type == this.types.intType()
+					|| this.type == this.types.boolType()) {
+				NewExpression newType = null;
+
+				if (this.type == this.types.intType()) {
+					newType = new NewExpression(
+							new ResolvableClassSymbol(new Identifier("Integer",
+									new Position(0, 0)), null));
+					newType.newType.declaration_$eq(new Some<>(this.types
+							.intClass()));
+				} else {
+					newType = new NewExpression(
+							new ResolvableClassSymbol(new Identifier("Boolean",
+									new Position(0, 0)), null));
+					newType.newType.declaration_$eq(new Some<>(this.types
+							.boolClass()));
+				}
+
+				newType.generateCode(code);
+				this.generateCode(code);
+				this.generateBoxCode(code);
+			} else {
+				this.generateCode(code);
+
+				if (this.lValue) {
+					this.generateDeRefCode(code);
+				}
+			}
 		} else {
-			return this;
+			this.generateCode(code);
+
+			if (this.lValue) {
+				this.generateDeRefCode(code);
+			}
+
+			this.generateUnBoxCode(code);
 		}
 	}
 
