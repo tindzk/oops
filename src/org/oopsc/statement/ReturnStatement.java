@@ -49,7 +49,7 @@ public class ReturnStatement extends Statement {
 			}
 
 		} else {
-			this.value = this.value.refPass(sem);
+			this.value.refPass(sem);
 
 			if (retType == Types.voidType()) {
 				throw new CompileException("No return value expected.",

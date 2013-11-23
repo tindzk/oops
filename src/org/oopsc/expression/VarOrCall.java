@@ -18,9 +18,13 @@ public class VarOrCall extends Expression {
 	/** Der Name des Attributs, der Variablen oder der Methode. */
 	public ResolvableSymbol ref;
 
-	public List<Expression> arguments = new LinkedList<>();
+	public Scope scope = null;
 
-	public ClassSymbol context = null;
+	protected VariableSymbol context = null;
+	protected boolean isStaticContext = false;
+	protected boolean generateContextCode = true;
+
+	public List<Expression> arguments = new LinkedList<>();
 
 	/**
 	 * Konstruktor.
@@ -33,53 +37,49 @@ public class VarOrCall extends Expression {
 		this.ref = ref;
 	}
 
+	public void generateContextCode(boolean value) {
+		this.generateContextCode = value;
+	}
+
 	/**
-	 * Sets a static context. By default, methods are called dynamically by resolving the target
+	 * Sets a (static) context. By default, methods are called dynamically by resolving the target
 	 * index from the VMT to which the object counts to. A static context bypasses the VMT and calls
 	 * the method directly. This method can be used for calling methods in the base class.
 	 *
 	 * @param context
 	 */
-	public void setStaticContext(ClassSymbol context) {
+	public void setContext(VariableSymbol context, boolean isStatic) {
 		this.context = context;
+		this.isStaticContext = isStatic;
 	}
 
 	@Override
-	public Expression refPass(SemanticAnalysis sem) throws CompileException {
-		// TODO refactor
-		this.contextAnalysisForMember(sem.currentScope().get().getThis());
-		this.contextAnalysisForArguments(sem);
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		Scope resolveScope = this.scope == null ? sem.currentScope().get()
+				.getThis() : this.scope;
 
-		if (this.ref.declaration().get() instanceof MethodSymbol
-				|| this.ref.declaration().get() instanceof AttributeSymbol) {
-			AccessExpression a = new AccessExpression(new VarOrCall(
-					new ResolvableSymbol(
-							new Identifier("_self", this.position), null)),
-					this);
+		/* Resolve variable or method. */
+		this.ref.declaration_$eq(new Some<>(resolveScope
+				.checkedResolve(this.ref.identifier())));
 
-			a.leftOperand = a.leftOperand.refPass(sem);
-			a.type = this.type;
-			a.lValue = this.lValue;
-
-			return a;
+		/* Check arguments. */
+		if (!(this.ref.declaration().get() instanceof MethodSymbol)) {
+			if (this.arguments.size() != 0) {
+				throw new CompileException(
+						"Arguments cannot be passed to a variable.", this.ref
+								.identifier().position());
+			}
 		}
 
-		return this;
-	}
-
-	/**
-	 * Die Methode führt die Kontextanalyse für diesen Ausdruck durch.
-	 * Diese Methode wird auch für Ausdrücke aufgerufen, die rechts
-	 * vom Objekt-Zugriffsoperator stehen.
-	 *
-	 * @throws CompileException
-	 *         Während der Kontextanylyse wurde ein Fehler
-	 *         gefunden.
-	 */
-	public void contextAnalysisForMember(Scope scope) throws CompileException {
-		/* Resolve variable or method. */
-		this.ref.declaration_$eq(new Some<>(scope.checkedResolve(this.ref
-				.identifier())));
+		/* Resolve method or attribute context. */
+		if (this.generateContextCode) {
+			if (this.ref.declaration().get() instanceof MethodSymbol
+					|| this.ref.declaration().get() instanceof AttributeSymbol) {
+				if (this.context == null && sem.currentMethod() != null) {
+					this.context = sem.currentMethod().self();
+				}
+			}
+		}
 
 		/* Propagate resolved type. */
 		if (this.ref.declaration().get() instanceof VariableSymbol) {
@@ -89,26 +89,7 @@ public class VarOrCall extends Expression {
 		} else if (this.ref.declaration().get() instanceof MethodSymbol) {
 			MethodSymbol method = (MethodSymbol) this.ref.declaration().get();
 			this.type = method.getResolvedReturnType();
-		} else {
-			assert false;
-		}
-	}
 
-	/**
-	 * Contextual analysis for arguments.
-	 *
-	 * @param sem
-	 * @throws CompileException
-	 */
-	public void contextAnalysisForArguments(SemanticAnalysis sem)
-			throws CompileException {
-		if (!(this.ref.declaration().get() instanceof MethodSymbol)) {
-			if (this.arguments.size() != 0) {
-				throw new CompileException(
-						"Arguments cannot be passed to a variable.", this.ref
-								.identifier().position());
-			}
-		} else {
 			/* Verify that the passed arguments match the expected parameters. */
 			MethodSymbol decl = (MethodSymbol) this.ref.declaration().get();
 
@@ -119,9 +100,6 @@ public class VarOrCall extends Expression {
 						this.ref.identifier().position());
 			}
 
-			// TODO list not necessary
-			List<Expression> boxed = new LinkedList<>();
-
 			Iterator<Expression> args = this.arguments.iterator();
 
 			scala.collection.Iterator<VariableSymbol> params = decl
@@ -131,10 +109,7 @@ public class VarOrCall extends Expression {
 				Expression arg = args.next();
 				VariableSymbol param = params.next();
 
-				arg = arg.refPass(sem);
-
-				/* Parameters expect boxed values, i.e., Integer instead of _Integer. */
-				boxed.add(arg);
+				arg.refPass(sem);
 
 				if (!arg.type.isA(sem, param.getResolvedType())) {
 					throw new CompileException(String.format(
@@ -144,8 +119,6 @@ public class VarOrCall extends Expression {
 							arg.type.name()), this.ref.identifier().position());
 				}
 			}
-
-			this.arguments = boxed;
 		}
 	}
 
@@ -163,6 +136,19 @@ public class VarOrCall extends Expression {
 						+ this.type.name()));
 	}
 
+	protected void _generateContextCode(CodeStream code) {
+		if (this.context != null) {
+			code.println("; Context: " + this.context.identifier().name());
+			VarOrCall var = new VarOrCall(new ResolvableSymbol(
+					this.context.identifier(), new Some<Symbol>(this.context)));
+			var.lValue = true;
+			var.generateCode(code, false);
+			code.println("; End context.");
+		} else {
+			code.println("; No context.");
+		}
+	}
+
 	/**
 	 * Die Methode generiert den Assembler-Code für diesen Ausdruck. Sie geht
 	 * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
@@ -175,6 +161,8 @@ public class VarOrCall extends Expression {
 		Symbol decl = this.ref.declaration().get();
 
 		if (decl instanceof AttributeSymbol) {
+			this._generateContextCode(code);
+
 			/* Stored in the class object. */
 			code.println("; Referencing attribute "
 					+ this.ref.identifier().name());
@@ -194,7 +182,7 @@ public class VarOrCall extends Expression {
 			String returnLabel = code.nextLabel();
 			MethodSymbol m = (MethodSymbol) decl;
 
-			if (this.context != null) {
+			if (this.context != null && this.isStaticContext) {
 				code.println("; Static method call: "
 						+ this.ref.identifier().name());
 
@@ -217,9 +205,11 @@ public class VarOrCall extends Expression {
 
 				/* Jump to method by overwriting PC. */
 				code.println("MRI R0, "
-						+ this.context.resolveAsmMethodName(m.identifier()
-								.name()));
+						+ this.context.resolvedType().get()
+								.resolveAsmMethodName(m.identifier().name()));
 			} else {
+				this._generateContextCode(code);
+
 				code.println("; Dynamic method call: "
 						+ this.ref.identifier().name());
 				code.println("; VMT index = " + m.vmtIndex());
@@ -257,8 +247,6 @@ public class VarOrCall extends Expression {
 			}
 
 			code.println(returnLabel + ":");
-		} else {
-			assert false;
 		}
 	}
 }

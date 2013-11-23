@@ -24,7 +24,7 @@ public class WriteStatement extends Statement {
 
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
-		this.operand = this.operand.refPass(sem);
+		this.operand.refPass(sem);
 		this.operand.type.check(sem, Types.intType(),
 				this.operand.position);
 	}

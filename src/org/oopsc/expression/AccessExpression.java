@@ -29,33 +29,33 @@ public class AccessExpression extends Expression {
 	}
 
 	@Override
-	public Expression refPass(SemanticAnalysis sem) throws CompileException {
-		// TODO refactor
-		this.leftOperand = this.leftOperand.refPass(sem);
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.leftOperand.refPass(sem);
 
-		// Der rechte Operand hat einen Deklarationsraum, der sich aus dem
-		// Ergebnistyp des linken Operanden ergibt.
-		this.rightOperand.contextAnalysisForMember(this.leftOperand.type);
-
-		/* Contextual analysis for arguments, but with the original declaration context. */
-		this.rightOperand.contextAnalysisForArguments(sem);
-
-		// Der Typ dieses Ausdrucks ist immer der des rechten Operanden.
-		this.type = this.rightOperand.type;
-		this.lValue = this.rightOperand.lValue;
+		/* The left operand denotes the context. The right operand therefore does not
+		 * need to resolve the context. */
+		this.rightOperand.generateContextCode(false);
 
 		/* Deal with accesses to methods or attributes in the base class. */
 		if (this.leftOperand instanceof VarOrCall) {
 			VarOrCall call = (VarOrCall) this.leftOperand;
 
 			if (call.ref.identifier().name().equals("_base")) {
-				VariableSymbol vdec = (VariableSymbol) call.ref.declaration()
-						.get();
-				this.rightOperand.setStaticContext(vdec.resolvedType().get());
+				this.rightOperand.generateContextCode(true);
+				this.rightOperand.setContext((VariableSymbol) call.ref
+						.declaration().get(), true);
 			}
 		}
 
-		return this;
+		/* The scope of the right operand consists of the result type of the left
+		 * operand. */
+		this.rightOperand.scope = this.leftOperand.type;
+
+		this.rightOperand.refPass(sem);
+
+		/* The type of this expression is always the type of the right operand. */
+		this.type = this.rightOperand.type;
+		this.lValue = this.rightOperand.lValue;
 	}
 
 	@Override

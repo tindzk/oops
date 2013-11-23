@@ -27,15 +27,9 @@ public class WhileStatement extends Statement {
 		this.condition = condition;
 	}
 
-	public void defPass(SemanticAnalysis sem) throws CompileException {
-		for (Statement s : this.statements) {
-			s.defPass(sem);
-		}
-	}
-
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
-		this.condition = this.condition.refPass(sem);
+		this.condition.refPass(sem);
 		this.condition.type.check(sem, Types.boolType(),
 				this.condition.position);
 

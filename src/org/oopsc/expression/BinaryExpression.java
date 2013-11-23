@@ -39,10 +39,9 @@ public class BinaryExpression extends Expression {
 	}
 
 	@Override
-	public Expression refPass(SemanticAnalysis sem) throws CompileException {
-		// TODO refactor
-		this.leftOperand = this.leftOperand.refPass(sem);
-		this.rightOperand = this.rightOperand.refPass(sem);
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.leftOperand.refPass(sem);
+		this.rightOperand.refPass(sem);
 
 		switch (this.operator) {
 			case AND:
@@ -93,8 +92,6 @@ public class BinaryExpression extends Expression {
 			default:
 				assert false;
 		}
-
-		return this;
 	}
 
 	@Override

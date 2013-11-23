@@ -113,10 +113,9 @@ class Program {
 		/* Add a statement that instantiates the class `Main' and calls its method main().
 		 * Equivalent to NEW Main.main. */
 		this.init.add(new CallStatement(new AccessExpression(new NewExpression(
-				new ResolvableClassSymbol(
-						new Identifier("Main", new Position(0, 0)), this.x)),
-				new VarOrCall(new ResolvableSymbol(new Identifier("main",
-						new Position(0, 0)), this.x2)))));
+				new ResolvableClassSymbol(new Identifier("Main", new Position(
+						0, 0)), this.x)), new VarOrCall(new ResolvableSymbol(
+				new Identifier("main", new Position(0, 0)), this.x2)))));
 	}
 
 	/**
@@ -135,8 +134,7 @@ class Program {
 	 * @param classes
 	 * @throws CompileException
 	 */
-	public void checkCycles(List<ClassSymbol> classes)
-			throws CompileException {
+	public void checkCycles(List<ClassSymbol> classes) throws CompileException {
 		/* TODO perform cycle checking directly in ClassSymbol */
 		Map<ClassSymbol, Vertex> mapping = new HashMap<>();
 
@@ -193,10 +191,6 @@ class Program {
 
 		for (ClassSymbol c : this.classes) {
 			c.defPass(this.sem);
-		}
-
-		for (Statement stmt : this.init) {
-			stmt.defPass(this.sem);
 		}
 
 		for (ClassSymbol c : this.classes) {

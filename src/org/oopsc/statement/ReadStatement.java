@@ -29,7 +29,7 @@ public class ReadStatement extends Statement {
 
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
-		this.operand = this.operand.refPass(sem);
+		this.operand.refPass(sem);
 
 		if (!this.operand.lValue) {
 			throw new CompileException("Lvalue expected", this.operand.position);
@@ -37,7 +37,7 @@ public class ReadStatement extends Statement {
 
 		this.operand.type.check(sem, Types.intClass(),
 				this.operand.position);
-		this.newInt = this.newInt.refPass(sem);
+		this.newInt.refPass(sem);
 	}
 
 	@Override

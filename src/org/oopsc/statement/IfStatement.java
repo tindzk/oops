@@ -24,7 +24,7 @@ public class IfStatement extends Statement {
 
 	/**
 	 * Konstruktor.
-	 * 
+	 *
 	 * @param condition
 	 *        Die Bedingung der IF-Anweisung.
 	 */
@@ -34,22 +34,9 @@ public class IfStatement extends Statement {
 		this.elseStatements.put(null, new LinkedList<Statement>());
 	}
 
-	public void defPass(SemanticAnalysis sem) throws CompileException {
-		for (Statement s : this.thenStatements) {
-			s.defPass(sem);
-		}
-
-		for (Entry<Expression, List<Statement>> entry : this.elseStatements
-				.entrySet()) {
-			for (Statement s : entry.getValue()) {
-				s.defPass(sem);
-			}
-		}
-	}
-
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
-		this.condition = this.condition.refPass(sem);
+		this.condition.refPass(sem);
 
 		/* this.condition.type is either boolType or boolClass. Enforce boolType via unboxing. */
 		this.condition.type.check(sem, Types.boolType(),
@@ -59,26 +46,19 @@ public class IfStatement extends Statement {
 			s.refPass(sem);
 		}
 
-		// TODO not necessary
-		HashMap<Expression, List<Statement>> newElseStatements = new HashMap<>();
-
 		for (Entry<Expression, List<Statement>> entry : this.elseStatements
 				.entrySet()) {
 			Expression cond = entry.getKey();
 
 			if (cond != null) {
-				cond = cond.refPass(sem);
+				cond.refPass(sem);
 				cond.type.check(sem, Types.boolType(), cond.position);
 			}
-
-			newElseStatements.put(cond, entry.getValue());
 
 			for (Statement s : entry.getValue()) {
 				s.refPass(sem);
 			}
 		}
-
-		this.elseStatements = newElseStatements;
 	}
 
 	public void addIfElse(Expression condition, List<Statement> stmts) {

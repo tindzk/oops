@@ -39,19 +39,6 @@ public class TryStatement extends Statement {
 		this.position = position;
 	}
 
-	public void defPass(SemanticAnalysis sem) throws CompileException {
-		for (Statement s : this.tryStatements) {
-			s.defPass(sem);
-		}
-
-		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements
-				.entrySet()) {
-			for (Statement s : entry.getValue()) {
-				s.defPass(sem);
-			}
-		}
-	}
-
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 		for (Statement s : this.tryStatements) {

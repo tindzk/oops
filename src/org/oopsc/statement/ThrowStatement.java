@@ -30,7 +30,7 @@ public class ThrowStatement extends Statement {
 
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
-		this.value = this.value.refPass(sem);
+		this.value.refPass(sem);
 		this.value.type.check(sem, Types.intType(), this.value.position);
 	}
 

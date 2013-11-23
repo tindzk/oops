@@ -24,10 +24,6 @@ abstract public class Statement {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	public void defPass(SemanticAnalysis sem) throws CompileException {
-
-	}
-
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 
 	}

@@ -52,7 +52,7 @@ trait Scope {
   def checkedResolve(ident: Identifier): Symbol = {
     return resolve(ident.name) match {
       case Some(v) => v
-      case None => throw new CompileException(s"Symbol ${ident.name} not found.", ident.position)
+      case None => throw new CompileException(s"Symbol ${ident.name} not found in scope '${this.getScopeName}'.", ident.position)
     }
   }
 

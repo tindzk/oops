@@ -34,24 +34,25 @@ public class UnaryExpression extends Expression {
 	}
 
 	@Override
-	public Expression refPass(SemanticAnalysis sem) throws CompileException {
-		this.operand = this.operand.refPass(sem);
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+		this.operand.refPass(sem);
 
 		switch (this.operator) {
 			case NOT:
 				this.operand.type.check(sem, Types.boolType(),
 						this.operand.position);
 				break;
+
 			case MINUS:
 				this.operand.type.check(sem, Types.intType(),
 						this.operand.position);
 				break;
+
 			default:
 				assert false;
 		}
 
 		this.type = this.operand.type;
-		return this;
 	}
 
 	@Override

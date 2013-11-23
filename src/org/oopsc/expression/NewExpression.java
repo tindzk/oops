@@ -34,11 +34,10 @@ public class NewExpression extends Expression {
 	 *         gefunden.
 	 */
 	@Override
-	public Expression refPass(SemanticAnalysis sem) throws CompileException {
+	public void refPass(SemanticAnalysis sem) throws CompileException {
 		this.newType.declaration_$eq(new Some<>(sem.currentScope().get()
 				.resolveClass(this.newType.identifier())));
 		this.type = this.newType.declaration().get();
-		return this;
 	}
 
 	/**

@@ -33,12 +33,14 @@ public class Assignment extends Statement {
 
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
-		this.leftOperand = this.leftOperand.refPass(sem);
-		this.rightOperand = this.rightOperand.refPass(sem);
+		this.leftOperand.refPass(sem);
+		this.rightOperand.refPass(sem);
+
 		if (!this.leftOperand.lValue) {
 			throw new CompileException("Lvalue expected",
 					this.leftOperand.position);
 		}
+
 		this.rightOperand.type.check(sem, this.leftOperand.type,
 				this.rightOperand.position);
 	}

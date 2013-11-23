@@ -55,9 +55,8 @@ abstract public class Expression {
 	 *         Während der Kontextanylyse wurde ein Fehler
 	 *         gefunden.
 	 */
-	// TODO do not return anything here
-	public Expression refPass(SemanticAnalysis sem) throws CompileException {
-		return this;
+	public void refPass(SemanticAnalysis sem) throws CompileException {
+
 	}
 
 	/**
@@ -96,47 +95,33 @@ abstract public class Expression {
 	}
 
 	protected void generateUnBoxCode(CodeStream code) {
-		if (this.type == Types.boolClass()
-				|| this.type == Types.intClass()) {
-			code.println("; UNBOX type = " + this.type.identifier().name());
-			code.println("MRM R5, (R2) ; Objektreferenz vom Stapel lesen");
-			code.println("MRI R6, " + ClassSymbol.HEADERSIZE());
-			code.println("ADD R5, R6 ; Adresse des Werts bestimmen");
-			code.println("MRM R5, (R5) ; Wert auslesen");
-			code.println("MMR (R2), R5 ; und auf den Stapel schreiben");
-		}
+		code.println("; UNBOX type = " + this.type.identifier().name());
+		code.println("MRM R5, (R2) ; Objektreferenz vom Stapel lesen");
+		code.println("MRI R6, " + ClassSymbol.HEADERSIZE());
+		code.println("ADD R5, R6 ; Adresse des Werts bestimmen");
+		code.println("MRM R5, (R5) ; Wert auslesen");
+		code.println("MMR (R2), R5 ; und auf den Stapel schreiben");
 	}
 
 	public void generateCode(CodeStream code, boolean box) {
-		if (box) {
-			if (this.type == Types.intType()
-					|| this.type == Types.boolType()) {
-				NewExpression newType = null;
+		if (box
+				&& (this.type == Types.intType() || this.type == Types
+						.boolType())) {
+			NewExpression newType;
 
-				if (this.type == Types.intType()) {
-					newType = new NewExpression(
-							new ResolvableClassSymbol(new Identifier("Integer",
-									new Position(0, 0)), null));
-					newType.newType.declaration_$eq(new Some<>(Types
-							.intClass()));
-				} else {
-					newType = new NewExpression(
-							new ResolvableClassSymbol(new Identifier("Boolean",
-									new Position(0, 0)), null));
-					newType.newType.declaration_$eq(new Some<>(Types
-							.boolClass()));
-				}
-
-				newType.generateCode(code);
-				this.generateCode(code);
-				this.generateBoxCode(code);
+			if (this.type == Types.intType()) {
+				newType = new NewExpression(new ResolvableClassSymbol(Types
+						.intClass().identifier(), null));
+				newType.newType.declaration_$eq(new Some<>(Types.intClass()));
 			} else {
-				this.generateCode(code);
-
-				if (this.lValue) {
-					this.generateDeRefCode(code);
-				}
+				newType = new NewExpression(new ResolvableClassSymbol(Types
+						.boolClass().identifier(), null));
+				newType.newType.declaration_$eq(new Some<>(Types.boolClass()));
 			}
+
+			newType.generateCode(code);
+			this.generateCode(code);
+			this.generateBoxCode(code);
 		} else {
 			this.generateCode(code);
 
@@ -144,7 +129,11 @@ abstract public class Expression {
 				this.generateDeRefCode(code);
 			}
 
-			this.generateUnBoxCode(code);
+			if (!box
+					&& (this.type == Types.boolClass() || this.type == Types
+							.intClass())) {
+				this.generateUnBoxCode(code);
+			}
 		}
 	}
 

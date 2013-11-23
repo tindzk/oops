@@ -85,11 +85,6 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
       v.defPass(sem)
     }
 
-    /* Perform the definition pass for statements. */
-    for (s <- this.statements) {
-      s.defPass(sem)
-    }
-
     /* Set offsets for parameters. They are right before the return address (-1) on the stack. */
     var offset = -2
     for (v <- this.parameters.reverse) {
