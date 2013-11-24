@@ -31,12 +31,12 @@ public class ReadStatement extends Statement {
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 		this.operand.refPass(sem);
 
-		if (!this.operand.lValue) {
-			throw new CompileException("Lvalue expected", this.operand.position);
+		if (!this.operand.lValue()) {
+			throw new CompileException("Lvalue expected", this.operand.position());
 		}
 
-		this.operand.type.check(sem, Types.intClass(),
-				this.operand.position);
+		this.operand.type().check(sem, Types.intClass(),
+				this.operand.position());
 		this.newInt.refPass(sem);
 	}
 

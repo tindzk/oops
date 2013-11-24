@@ -53,10 +53,10 @@ public class ReturnStatement extends Statement {
 
 			if (retType == Types.voidType()) {
 				throw new CompileException("No return value expected.",
-						this.value.position);
+						this.value.position());
 			}
 
-			this.value.type.check(sem, retType, this.value.position);
+			this.value.type().check(sem, retType, this.value.position());
 		}
 	}
 

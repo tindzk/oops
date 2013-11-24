@@ -48,7 +48,7 @@ public class TryStatement extends Statement {
 		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements
 				.entrySet()) {
 			LiteralExpression expr = entry.getKey();
-			expr.type.check(sem, Types.intType(), expr.position);
+			expr.type().check(sem, Types.intType(), expr.position());
 
 			for (Statement s : entry.getValue()) {
 				s.refPass(sem);
@@ -162,12 +162,12 @@ public class TryStatement extends Statement {
 		for (Entry<LiteralExpression, List<Statement>> entry : this.catchStatements
 				.entrySet()) {
 			/* An exception was thrown. */
-			code.println("; CATCH " + entry.getKey().value);
+			code.println("; CATCH " + entry.getKey().value());
 			code.println(catchLabel + ":");
 			catchLabel = code.nextLabel();
 
 			/* When an exception is thrown, the associated error code is stored in R7. */
-			code.println("MRI R5, " + entry.getKey().value);
+			code.println("MRI R5, " + entry.getKey().value());
 			code.println("SUB R5, R7");
 
 			/* If entry.getKey().value != error code, jump to the next `catch' branch. */

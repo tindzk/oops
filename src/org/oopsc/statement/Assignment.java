@@ -36,13 +36,17 @@ public class Assignment extends Statement {
 		this.leftOperand.refPass(sem);
 		this.rightOperand.refPass(sem);
 
-		if (!this.leftOperand.lValue) {
+		if (!this.leftOperand.lValue()) {
 			throw new CompileException("Lvalue expected",
-					this.leftOperand.position);
+					this.leftOperand.position());
 		}
 
-		this.rightOperand.type.check(sem, this.leftOperand.type,
-				this.rightOperand.position);
+        System.out.println("lo = " + this.leftOperand);
+        System.out.println("lot = " + this.leftOperand.type());
+        System.out.println("ro = " + this.rightOperand);
+
+		this.rightOperand.type().check(sem, this.leftOperand.type(),
+				this.rightOperand.position());
 	}
 
 	@Override

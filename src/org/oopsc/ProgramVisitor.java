@@ -24,6 +24,7 @@ import org.oopsc.statement.TryStatement;
 import org.oopsc.statement.WhileStatement;
 import org.oopsc.statement.WriteStatement;
 import org.oopsc.symbol.*;
+import scala.Enumeration;
 import scala.Some;
 import scala.collection.mutable.ListBuffer;
 
@@ -136,7 +137,8 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 				ctx.start.getStartIndex());
 
 		if (rctx instanceof GrammarParser.IntegerLiteralContext) {
-			return new LiteralExpression(Integer.parseInt(ctx.getText()), Types.intType(), pos);
+			return new LiteralExpression(Integer.parseInt(ctx.getText()),
+					Types.intType(), pos);
 		} else if (rctx instanceof GrammarParser.CharacterLiteralContext) {
 			String value = ctx.getText().substring(1,
 					ctx.getText().length() - 1);
@@ -149,8 +151,8 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 				/* Unsupported character. */
 				assert (false);
 			} else {
-				return new LiteralExpression(value.charAt(0), Types
-						.intType(), pos);
+				return new LiteralExpression(value.charAt(0), Types.intType(),
+						pos);
 			}
 		} else if (rctx instanceof GrammarParser.StringLiteralContext) {
 			/* TODO Implement ClassDeclaration.stringType. */
@@ -172,7 +174,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 				.Identifier().getSymbol()));
 
 		for (GrammarParser.ExpressionContext e : ctx.expression()) {
-			call.arguments.add(this.getExpression(e));
+			call.addArgument(this.getExpression(e));
 		}
 
 		return call;
@@ -220,12 +222,12 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 					pos), null));
 		} else if (rctx instanceof GrammarParser.MinusExpressionContext) {
 			return new UnaryExpression(
-					UnaryExpression.Operator.MINUS,
+					UnaryExpression.MINUS(),
 					this.getExpression(((GrammarParser.MinusExpressionContext) rctx)
 							.expression()), pos);
 		} else if (rctx instanceof GrammarParser.NegateExpressionContext) {
 			return new UnaryExpression(
-					UnaryExpression.Operator.NOT,
+					UnaryExpression.NOT(),
 					this.getExpression(((GrammarParser.NegateExpressionContext) rctx)
 							.expression()), pos);
 		} else if (rctx instanceof GrammarParser.InstantiateExpressionContext) {
@@ -235,14 +237,14 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.MulDivModExpressionContext) {
 			int tokenOp = ((GrammarParser.MulDivModExpressionContext) rctx).op
 					.getType();
-			BinaryExpression.Operator op = null;
+			Enumeration.Value op = null;
 
 			if (tokenOp == GrammarParser.MUL) {
-				op = BinaryExpression.Operator.MUL;
+				op = BinaryExpression.MUL();
 			} else if (tokenOp == GrammarParser.DIV) {
-				op = BinaryExpression.Operator.DIV;
+				op = BinaryExpression.DIV();
 			} else if (tokenOp == GrammarParser.MOD) {
-				op = BinaryExpression.Operator.MOD;
+				op = BinaryExpression.MOD();
 			}
 
 			return new BinaryExpression(
@@ -254,12 +256,12 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.AddSubExpressionContext) {
 			int tokenOp = ((GrammarParser.AddSubExpressionContext) rctx).op
 					.getType();
-			BinaryExpression.Operator op = null;
+			Enumeration.Value op = null;
 
 			if (tokenOp == GrammarParser.ADD) {
-				op = BinaryExpression.Operator.PLUS;
+				op = BinaryExpression.PLUS();
 			} else if (tokenOp == GrammarParser.SUB) {
-				op = BinaryExpression.Operator.MINUS;
+				op = BinaryExpression.MINUS();
 			}
 
 			return new BinaryExpression(
@@ -271,16 +273,16 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.CompareExpressionContext) {
 			int tokenOp = ((GrammarParser.CompareExpressionContext) rctx).op
 					.getType();
-			BinaryExpression.Operator op = null;
+			Enumeration.Value op = null;
 
 			if (tokenOp == GrammarParser.LEQ) {
-				op = BinaryExpression.Operator.LTEQ;
+				op = BinaryExpression.LTEQ();
 			} else if (tokenOp == GrammarParser.GEQ) {
-				op = BinaryExpression.Operator.GTEQ;
+				op = BinaryExpression.GTEQ();
 			} else if (tokenOp == GrammarParser.LT) {
-				op = BinaryExpression.Operator.LT;
+				op = BinaryExpression.LT();
 			} else if (tokenOp == GrammarParser.GT) {
-				op = BinaryExpression.Operator.GT;
+				op = BinaryExpression.GT();
 			}
 
 			return new BinaryExpression(
@@ -293,23 +295,23 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 			return new BinaryExpression(
 					this.getExpression(((GrammarParser.ConjunctionExpressionContext) rctx)
 							.expression(0)),
-					BinaryExpression.Operator.AND,
+					BinaryExpression.AND(),
 					this.getExpression(((GrammarParser.ConjunctionExpressionContext) rctx)
 							.expression(1)));
 		} else if (rctx instanceof GrammarParser.DisjunctionExpressionContext) {
 			return new BinaryExpression(
 					this.getExpression(((GrammarParser.DisjunctionExpressionContext) rctx)
 							.expression(0)),
-					BinaryExpression.Operator.OR,
+					BinaryExpression.OR(),
 					this.getExpression(((GrammarParser.DisjunctionExpressionContext) rctx)
 							.expression(1)));
 		} else if (rctx instanceof GrammarParser.EqualityExpressionContext) {
-			BinaryExpression.Operator op;
+			Enumeration.Value op;
 
 			if (((GrammarParser.EqualityExpressionContext) rctx).EQ() != null) {
-				op = BinaryExpression.Operator.EQ;
+				op = BinaryExpression.EQ();
 			} else {
-				op = BinaryExpression.Operator.NEQ;
+				op = BinaryExpression.NEQ();
 			}
 
 			return new BinaryExpression(
