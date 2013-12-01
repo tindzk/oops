@@ -29,10 +29,17 @@ if not os.path.exists("build/"):
 	os.makedirs("build/")
 
 for app in ["oopsc", "oopsvm"]:
-	srcFiles = matchFiles('src/org/' + app, '*.java')
-	srcFiles = [file for file in srcFiles if "TestSuite.java" not in file]
+	javaFiles = matchFiles('src/org/' + app, '*.java')
+	javaFiles = [file for file in javaFiles if "TestSuite.java" not in file]
 
-	cmdCompile = ["/usr/bin/javac", "-cp", ":".join(jarFiles), "-d", "build/"] + srcFiles
+	scalaFiles = matchFiles('src/org/' + app, '*.scala')
+	srcFiles = javaFiles + scalaFiles
+
+	cmdCompile = ["/usr/bin/scalac", "-cp", ":".join(jarFiles), "-d", "build/"] + srcFiles
+	print(" ".join(cmdCompile))
+	run(cmdCompile)
+
+	cmdCompile = ["/usr/bin/javac", "-cp", "/usr/share/scala/lib/scala-library.jar:" + ":".join(jarFiles) + ":build/", "-d", "build/"] + javaFiles
 	print(" ".join(cmdCompile))
 	run(cmdCompile)
 
