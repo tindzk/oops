@@ -6,12 +6,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 /**
@@ -43,8 +38,18 @@ class SyntaxAnalysis {
 
 			msg += " with rule stack " + stack;
 
+			Token offendingToken = (Token) offendingSymbol;
+			CommonTokenStream tokens = (CommonTokenStream) recognizer
+					.getInputStream();
+			String input = tokens.getTokenSource().getInputStream().toString();
+
+			/* Collect information for underlining the error. */
+			String errorLine = input.split("\n")[line - 1];
+			int start = offendingToken.getStartIndex();
+			int stop = offendingToken.getStopIndex();
+
 			this.syntax.err = new CompileException(msg, new Position(line,
-					charPositionInLine));
+					charPositionInLine), errorLine, start, stop);
 		}
 	}
 
