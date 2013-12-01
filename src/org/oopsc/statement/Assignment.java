@@ -41,10 +41,6 @@ public class Assignment extends Statement {
 					this.leftOperand.position());
 		}
 
-        System.out.println("lo = " + this.leftOperand);
-        System.out.println("lot = " + this.leftOperand.type());
-        System.out.println("ro = " + this.rightOperand);
-
 		this.rightOperand.type().check(sem, this.leftOperand.type(),
 				this.rightOperand.position());
 	}

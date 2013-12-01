@@ -406,7 +406,6 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
     // if not in this class, check just the superclass chain
     superClass match {
       case Some(c) =>
-        println(c.identifier.name)
         c.declaration match {
           case Some(s) => s.resolveMember(name)
           case None => None
