@@ -27,16 +27,18 @@ class AccessExpression(leftOperand: Expression, rightOperand: VarOrCall) extends
 
     /* The scope of the right operand consists of the result type of the left
      * operand. */
-    this.rightOperand.scope = this.leftOperand.`type`
+    this.rightOperand.scope = this.leftOperand.resolvedType()
     this.rightOperand.refPass(sem)
 
     /* The type of this expression is always the type of the right operand. */
-    this.`type` = this.rightOperand.`type`
     this.lValue = this.rightOperand.lValue
   }
 
+  override def resolvedType() =
+    this.rightOperand.resolvedType()
+
   def print(tree: TreeStream) {
-    tree.println("PERIOD" + (if (this.`type` == null) "" else " : " + (if (this.lValue) "REF " else "") + this.`type`.name))
+    tree.println("PERIOD" + (if (this.lValue) "REF " else "") + this.resolvedType().name)
     tree.indent
     this.leftOperand.print(tree)
     this.rightOperand.print(tree)

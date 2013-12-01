@@ -6,10 +6,12 @@ import org.oopsc.symbol._
 /**
  * Represents a literal in the syntax tree.
  */
-class LiteralExpression(var value: Int, `type`: ClassSymbol, position: Position) extends Expression(position, `type`) {
+class LiteralExpression(var value: Int, `type`: ClassSymbol, position: Position) extends Expression(position) {
   def print(tree: TreeStream) {
     tree.println(this.value + " : " + this.`type`.name)
   }
+
+  override def resolvedType() : ClassSymbol = `type`
 
   def generateCode(code: CodeStream) {
     code.println("; " + this.value + " : " + this.`type`.name)

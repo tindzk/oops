@@ -39,7 +39,7 @@ public class IfStatement extends Statement {
 		this.condition.refPass(sem);
 
 		/* this.condition.type is either boolType or boolClass. Enforce boolType via unboxing. */
-		this.condition.type().check(sem, Types.boolType(),
+		this.condition.resolvedType().check(sem, Types.boolType(),
 				this.condition.position());
 
 		for (Statement s : this.thenStatements) {
@@ -52,7 +52,7 @@ public class IfStatement extends Statement {
 
 			if (cond != null) {
 				cond.refPass(sem);
-				cond.type().check(sem, Types.boolType(), cond.position());
+				cond.resolvedType().check(sem, Types.boolType(), cond.position());
 			}
 
 			for (Statement s : entry.getValue()) {

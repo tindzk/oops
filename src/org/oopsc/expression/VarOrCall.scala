@@ -59,17 +59,11 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
       }
     }
 
-    /* Propagate resolved type. */
     if (this.ref.declaration.get.isInstanceOf[VariableSymbol]) {
-      val `var` = this.ref.declaration.get.asInstanceOf[VariableSymbol]
-      this.`type` = `var`.getResolvedType
       this.lValue = true
     } else if (this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
-      val method = this.ref.declaration.get.asInstanceOf[MethodSymbol]
-      this.`type` = method.getResolvedReturnType
-
       /* Verify that the passed arguments match the expected parameters. */
-      val decl: MethodSymbol = this.ref.declaration.get.asInstanceOf[MethodSymbol]
+      val decl = this.ref.declaration.get.asInstanceOf[MethodSymbol]
 
       if (this.arguments.size != decl.parameters.size) {
         throw new CompileException(s"Parameter count mismatch: ${decl.parameters.size} expected, ${this.arguments.size} given.", this.ref.identifier.position)
@@ -85,17 +79,30 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
 
         arg.refPass(sem)
 
-        if (!arg.`type`.isA(sem, param.getResolvedType)) {
-          throw new CompileException(s"Argument ${num} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.`type`.name} given.", this.ref.identifier.position)
+        if (!arg.resolvedType().isA(sem, param.getResolvedType)) {
+          throw new CompileException(s"Argument ${num} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.resolvedType().name} given.", this.ref.identifier.position)
         }
 
-        num += 1;
+        num += 1
       }
     }
   }
 
+  override def resolvedType() : ClassSymbol = {
+    /* Propagate resolved type. */
+    if (this.ref.declaration.get.isInstanceOf[VariableSymbol]) {
+      val `var` = this.ref.declaration.get.asInstanceOf[VariableSymbol]
+      return `var`.getResolvedType
+    } else if (this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
+      val method = this.ref.declaration.get.asInstanceOf[MethodSymbol]
+      return method.getResolvedReturnType
+    }
+
+    return super.resolvedType()
+  }
+
   def print(tree: TreeStream) {
-    tree.println(this.ref.identifier.name + (if (this.`type` == null) "" else " : " + (if (this.lValue) "REF " else "") + this.`type`.name))
+    tree.println(this.ref.identifier.name + " : " + (if (this.lValue) "REF " else "") + this.resolvedType().name)
   }
 
   protected def _generateContextCode(code: CodeStream) {

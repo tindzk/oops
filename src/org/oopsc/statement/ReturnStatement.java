@@ -56,7 +56,7 @@ public class ReturnStatement extends Statement {
 						this.value.position());
 			}
 
-			this.value.type().check(sem, retType, this.value.position());
+			this.value.resolvedType().check(sem, retType, this.value.position());
 		}
 	}
 

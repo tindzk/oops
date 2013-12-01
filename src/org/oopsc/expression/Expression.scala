@@ -10,7 +10,11 @@ import java.io.{ UnsupportedEncodingException, ByteArrayOutputStream }
  * Methoden zur Erzeugung neuer Ausdrücke für das Boxing und Unboxing von
  * Ausdrücken sowie das Dereferenzieren.
  */
-abstract class Expression(var position: Position, var `type`: ClassSymbol = null) {
+abstract class Expression(var position: Position) {
+  def resolvedType() : ClassSymbol = {
+    throw new CompileException("Type was not resolved.", position)
+  }
+
   /**
    * Ist dieser Ausdruck ein L-Wert, d.h. eine Referenz auf eine Variable?
    * Die meisten Ausdrücke sind keine L-Werte.
@@ -74,7 +78,7 @@ abstract class Expression(var position: Position, var `type`: ClassSymbol = null
   }
 
   protected def generateUnBoxCode(code: CodeStream) {
-    code.println("; UNBOX type = " + this.`type`.identifier.name)
+    code.println("; UNBOX type = " + this.resolvedType().identifier.name)
     code.println("MRM R5, (R2) ; Objektreferenz vom Stapel lesen")
     code.println("MRI R6, " + ClassSymbol.HEADERSIZE)
     code.println("ADD R5, R6 ; Adresse des Werts bestimmen")
@@ -83,10 +87,10 @@ abstract class Expression(var position: Position, var `type`: ClassSymbol = null
   }
 
   def generateCode(code: CodeStream, box: Boolean) {
-    if (box && ((this.`type` eq Types.intType) || (this.`type` eq Types.boolType))) {
+    if (box && ((this.resolvedType() eq Types.intType) || (this.resolvedType() eq Types.boolType))) {
       var newType: NewExpression = null
 
-      if (this.`type` eq Types.intType) {
+      if (this.resolvedType() eq Types.intType) {
         newType = new NewExpression(new ResolvableClassSymbol(Types.intClass.identifier))
         newType.newType.declaration = Some(Types.intClass)
       } else {
@@ -105,7 +109,7 @@ abstract class Expression(var position: Position, var `type`: ClassSymbol = null
         this.generateDeRefCode(code)
       }
 
-      if (!box && ((this.`type` eq Types.boolClass) || (this.`type` eq Types.intClass))) {
+      if (!box && ((this.resolvedType() eq Types.boolClass) || (this.resolvedType() eq Types.intClass))) {
         this.generateUnBoxCode(code)
       }
     }

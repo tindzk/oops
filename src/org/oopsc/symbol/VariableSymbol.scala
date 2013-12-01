@@ -38,6 +38,6 @@ class VariableSymbol(ident: Identifier, typeName: Identifier) extends Symbol(ide
 
   def print(tree: TreeStream) {
     tree.println(this.identifier.name +  " (" + this.offset + ")" + " : " + (
-      if (this.resolvedType.isEmpty) "<unresolved>" else ": " + this.resolvedType.get.name()))
+      if (this.resolvedType.isEmpty) "<unresolved>" else this.resolvedType.get.name()))
   }
 }

@@ -131,8 +131,8 @@ public class TestSuite {
 
 		try {
 			this.p = new SyntaxAnalysis(this.path, false).parse();
-			this.p.printTree();
 			this.p.semanticAnalysis();
+			this.p.printTree();
 
 			/* Test code generation. */
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();

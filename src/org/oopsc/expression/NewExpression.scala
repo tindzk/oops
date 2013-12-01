@@ -10,11 +10,12 @@ import scala.Some
 class NewExpression(var newType: ResolvableClassSymbol) extends Expression(newType.identifier.position) {
   override def refPass(sem: SemanticAnalysis) {
     this.newType.declaration = Some(sem.currentScope.get.resolveClass(this.newType.identifier))
-    this.`type` = this.newType.declaration.get
   }
 
+  override def resolvedType() : ClassSymbol = this.newType.declaration.get
+
   def print(tree: TreeStream) {
-    tree.println("NEW " + this.newType.identifier.name + (if (this.`type` == null) "" else " : " + this.`type`.name))
+    tree.println("NEW " + this.newType.identifier.name + " : " + this.resolvedType().name)
   }
 
   def generateCode(code: CodeStream) {

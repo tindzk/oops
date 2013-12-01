@@ -41,7 +41,7 @@ public class Assignment extends Statement {
 					this.leftOperand.position());
 		}
 
-		this.rightOperand.type().check(sem, this.leftOperand.type(),
+		this.rightOperand.resolvedType().check(sem, this.leftOperand.resolvedType(),
 				this.rightOperand.position());
 	}
 

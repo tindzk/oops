@@ -1,6 +1,7 @@
 package org.oopsc.expression
 
 import org.oopsc._
+import org.oopsc.symbol.ClassSymbol
 
 object UnaryExpression extends Enumeration {
   type Operator = Value
@@ -18,17 +19,17 @@ class UnaryExpression(var operator: UnaryExpression.Operator, var operand: Expre
 
     this.operator match {
       case NOT =>
-        this.operand.`type`.check(sem, Types.boolType, this.operand.position)
+        this.operand.resolvedType().check(sem, Types.boolType, this.operand.position)
 
       case MINUS =>
-        this.operand.`type`.check(sem, Types.intType, this.operand.position)
+        this.operand.resolvedType().check(sem, Types.intType, this.operand.position)
     }
-
-    this.`type` = this.operand.`type`
   }
 
+  override def resolvedType() : ClassSymbol = this.operand.resolvedType()
+
   def print(tree: TreeStream) {
-    tree.println(this.operator.toString + (if (this.`type` == null) "" else " : " + this.`type`.name))
+    tree.println(this.operator.toString + " : " + this.resolvedType().name)
     tree.indent
     this.operand.print(tree)
     tree.unindent

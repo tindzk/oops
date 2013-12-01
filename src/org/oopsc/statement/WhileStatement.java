@@ -30,7 +30,7 @@ public class WhileStatement extends Statement {
 	@Override
 	public void refPass(SemanticAnalysis sem) throws CompileException {
 		this.condition.refPass(sem);
-		this.condition.type().check(sem, Types.boolType(),
+		this.condition.resolvedType().check(sem, Types.boolType(),
 				this.condition.position());
 
 		for (Statement s : this.statements) {

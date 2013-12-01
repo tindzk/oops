@@ -14,37 +14,41 @@ object BinaryExpression extends Enumeration {
 class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpression.Operator, var rightOperand: Expression) extends Expression(leftOperand.position) {
   import BinaryExpression._
 
+  var t: ClassSymbol = null
+
   override def refPass(sem: SemanticAnalysis) {
     this.leftOperand.refPass(sem)
     this.rightOperand.refPass(sem)
 
     this.operator match {
       case AND | OR =>
-        this.leftOperand.`type`.check(sem, Types.boolType, this.leftOperand.position)
-        this.rightOperand.`type`.check(sem, Types.boolType, this.rightOperand.position)
-        this.`type` = Types.boolType
+        this.leftOperand.resolvedType().check(sem, Types.boolType, this.leftOperand.position)
+        this.rightOperand.resolvedType().check(sem, Types.boolType, this.rightOperand.position)
+        this.t = Types.boolType
 
       case PLUS | MINUS | MUL | DIV | MOD =>
-        this.leftOperand.`type`.check(sem, Types.intType, this.leftOperand.position)
-        this.rightOperand.`type`.check(sem, Types.intType, this.rightOperand.position)
-        this.`type` = Types.intType
+        this.leftOperand.resolvedType().check(sem, Types.intType, this.leftOperand.position)
+        this.rightOperand.resolvedType().check(sem, Types.intType, this.rightOperand.position)
+        this.t = Types.intType
 
       case GT | GTEQ | LT | LTEQ =>
-        this.leftOperand.`type`.check(sem, Types.intType, this.leftOperand.position)
-        this.rightOperand.`type`.check(sem, Types.intType, this.rightOperand.position)
-        this.`type` = Types.boolType
+        this.leftOperand.resolvedType().check(sem, Types.intType, this.leftOperand.position)
+        this.rightOperand.resolvedType().check(sem, Types.intType, this.rightOperand.position)
+        this.t = Types.boolType
 
       case EQ | NEQ =>
-        if (!this.leftOperand.`type`.isA(sem, this.rightOperand.`type`) && !this.rightOperand.`type`.isA(sem, this.leftOperand.`type`)) {
-          ClassSymbol.typeError(this.leftOperand.`type`, this.rightOperand.`type`, this.rightOperand.position)
+        if (!this.leftOperand.resolvedType().isA(sem, this.rightOperand.resolvedType()) && !this.rightOperand.resolvedType().isA(sem, this.leftOperand.resolvedType())) {
+          ClassSymbol.typeError(this.leftOperand.resolvedType(), this.rightOperand.resolvedType(), this.rightOperand.position)
         }
 
-        this.`type` = Types.boolType
+        this.t = Types.boolType
     }
   }
 
+  override def resolvedType() = t
+
   def print(tree: TreeStream) {
-    tree.println(this.operator.toString + (if (this.`type` == null) "" else " : " + this.`type`.name))
+    tree.println(this.operator.toString + " : " + this.resolvedType().name)
     tree.indent
     this.leftOperand.print(tree)
     this.rightOperand.print(tree)
@@ -54,8 +58,8 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
   def generateCode(code: CodeStream) {
     /* If one of the operands is NULL, then the other one must be an object.
      * Box the value if this is the case. */
-    this.leftOperand.generateCode(code, (this.leftOperand.`type` eq Types.nullType))
-    this.rightOperand.generateCode(code, (this.rightOperand.`type` eq Types.nullType))
+    this.leftOperand.generateCode(code, (this.leftOperand.resolvedType() eq Types.nullType))
+    this.rightOperand.generateCode(code, (this.rightOperand.resolvedType() eq Types.nullType))
 
     code.println("; " + this.operator)
 
