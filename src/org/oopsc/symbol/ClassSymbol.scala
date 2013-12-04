@@ -135,6 +135,11 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
   var first = true
 
   override def defPass(sem: SemanticAnalysis) {
+    /* Reset object size as defPass() and refPass() may be called multiple times on
+     * internal types.
+     */
+    this.objectSize = ClassSymbol.HEADERSIZE
+
     sem.defineSymbol(this)
     sem.enter(this)
 
