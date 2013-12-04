@@ -235,7 +235,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
 
     code.println("; END METHOD " + this.identifier.name)
 
-    if (this.hasReturnValue && terminates) {
+    if (!(this.hasReturnValue) && terminates) {
       /* If we encounter a `return' or `throw' in the normal control flow of the
        * method, we do not need to generate the epilogue twice.
        */
