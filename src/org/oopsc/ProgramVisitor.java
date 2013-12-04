@@ -104,10 +104,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 			this.varDecl(var, this.m.locals(), false);
 		}
 
-		for (Statement stmt : this.getStatements(ctx.statements())) {
-			this.m.statements().$plus$eq(stmt);
-		}
-
+		this.m.statements_$eq(this.getStatements(ctx.statements()));
 		return this.visitChildren(ctx);
 	}
 
@@ -372,10 +369,9 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.WhileStatementContext) {
 			WhileStatement w = new WhileStatement(
 					this.getExpression(((GrammarParser.WhileStatementContext) rctx)
-							.expression()));
-			w.statements = this
-					.getStatements(((GrammarParser.WhileStatementContext) rctx)
-							.statements());
+							.expression()),
+					this.getStatements(((GrammarParser.WhileStatementContext) rctx)
+							.statements()));
 			return w;
 		} else if (rctx instanceof GrammarParser.ReadStatementContext) {
 			return new ReadStatement(
@@ -388,11 +384,12 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		} else if (rctx instanceof GrammarParser.ReturnStatementContext) {
 			if (((GrammarParser.ReturnStatementContext) rctx).expression() != null) {
 				return new ReturnStatement(
+						pos,
 						this.getExpression(((GrammarParser.ReturnStatementContext) rctx)
-								.expression()), pos);
+								.expression()));
 			}
 
-			return new ReturnStatement(pos);
+			return new ReturnStatement(pos, null);
 		} else if (rctx instanceof GrammarParser.ThrowStatementContext) {
 			return new ThrowStatement(
 					this.getExpression(((GrammarParser.ThrowStatementContext) rctx)
@@ -412,12 +409,12 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 		return null;
 	}
 
-	public LinkedList<Statement> getStatements(
+	public ListBuffer<Statement> getStatements(
 			GrammarParser.StatementsContext ctx) {
-		LinkedList<Statement> stmts = new LinkedList<>();
+		ListBuffer<Statement> stmts = new ListBuffer<>();
 
 		for (GrammarParser.StatementContext stmt : ctx.statement()) {
-			stmts.add(this.getStatement(stmt));
+			stmts.$plus$eq(this.getStatement(stmt));
 		}
 
 		return stmts;

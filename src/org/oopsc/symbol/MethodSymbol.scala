@@ -219,17 +219,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     code.println("")
   }
 
-  /**
-   * Generiert den Assembler-Code für diese Methode. Dabei wird davon ausgegangen,
-   * dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
-   *
-   * @param code
-   * Der Strom, in den die Ausgabe erfolgt.
-   * @param contexts
-   * Current stack of contexts, may be used to inject instructions for
-   * unwinding the stack (as needed for RETURN statements in TRY blocks).
-   */
-  def generateCode(code: CodeStream, contexts: util.Stack[Statement.Context]) {
+  def generateCode(code: CodeStream, tryContexts: Int) {
     code.println("; METHOD " + this.identifier.name)
     this.generateMethodPrologue(code)
 
@@ -239,7 +229,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
 
     for (s <- this.statements) {
       code.println("; Statement: " + s.getClass.getName)
-      s.generateCode(code, contexts)
+      s.generateCode(code, tryContexts)
       code.println("")
     }
 

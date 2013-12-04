@@ -250,12 +250,9 @@ class Program {
 		code.println("MRI R6, _uncaughtException");
 		code.println("MMR (R5), R6");
 
-		Stack<Statement.Context> contexts = new Stack<>();
-		contexts.add(Statement.Context.Default);
-
 		/* Generate code for initialisation statements. */
 		for (Statement stmt : this.init) {
-			stmt.generateCode(code, contexts);
+			stmt.generateCode(code, 0);
 		}
 
 		code.println("MRI R0, _end ; Programm beenden");

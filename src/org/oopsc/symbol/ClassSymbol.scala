@@ -279,9 +279,7 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
     code.println("; CLASS " + this.identifier.name)
 
     for (m <- this.methods) {
-      val contexts = new java.util.Stack[Statement.Context]
-      contexts.add(Statement.Context.Default)
-      m.generateCode(code, contexts)
+      m.generateCode(code, 0)
     }
 
     code.println("; END CLASS " + this.identifier.name)
