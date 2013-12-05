@@ -30,9 +30,10 @@ if not os.path.exists("build/"):
 
 for app in ["oopsc", "oopsvm"]:
 	javaFiles = matchFiles('src/org/' + app, '*.java')
-	javaFiles = [file for file in javaFiles if "TestSuite.java" not in file]
 
 	scalaFiles = matchFiles('src/org/' + app, '*.scala')
+	scalaFiles = [file for file in scalaFiles if "TestSuite.scala" not in file]
+
 	srcFiles = javaFiles + scalaFiles
 
 	cmdCompile = ["/usr/bin/scalac", "-cp", ":".join(jarFiles), "-d", "build/"] + srcFiles
