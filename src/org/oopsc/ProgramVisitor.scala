@@ -24,9 +24,6 @@ import scala.Some
 import scala.collection.mutable.ListBuffer
 
 class ProgramVisitor(var p: Program) extends GrammarBaseVisitor[Void] {
-  private var c: ClassSymbol = null
-  private var m: MethodSymbol = null
-
   def identifierFromToken(t: Token): Identifier =
     new Identifier(t.getText, new Position(t.getLine, t.getStartIndex))
 
@@ -36,21 +33,38 @@ class ProgramVisitor(var p: Program) extends GrammarBaseVisitor[Void] {
   def resolvableClassIdentifierFromToken(t: Token): ResolvableClassSymbol =
     new ResolvableClassSymbol(new Identifier(t.getText, new Position(t.getLine, t.getStartIndex)))
 
-  override def visitClassDeclaration(ctx: GrammarParser.ClassDeclarationContext): Void = {
-    var baseType: ResolvableClassSymbol = null
-
-    if (ctx.extendsClass == null) {
-      this.c = new ClassSymbol(this.identifierFromToken(ctx.name))
-    } else {
-      baseType = this.resolvableClassIdentifierFromToken(ctx.extendsClass)
-      this.c = new ClassSymbol(this.identifierFromToken(ctx.name), new Some[ResolvableClassSymbol](baseType))
+  override def visitProgram(ctx: GrammarParser.ProgramContext): Void = {
+    import scala.collection.JavaConversions._
+    for (c <- ctx.classDeclaration()) {
+      this.p.addClass(this.getClassDeclaration(c))
     }
 
-    this.p.addClass(this.c)
-    return this.visitChildren(ctx)
+    return null
   }
 
-  def varDecl(ctx: GrammarParser.VariableDeclarationContext, vars: ListBuffer[VariableSymbol], attr: Boolean) {
+  def getClassDeclaration(ctx: GrammarParser.ClassDeclarationContext): ClassSymbol = {
+    var c: ClassSymbol = null
+
+    if (ctx.extendsClass == null) {
+      c = new ClassSymbol(this.identifierFromToken(ctx.name))
+    } else {
+      val baseType = this.resolvableClassIdentifierFromToken(ctx.extendsClass)
+      c = new ClassSymbol(this.identifierFromToken(ctx.name), new Some[ResolvableClassSymbol](baseType))
+    }
+
+    import scala.collection.JavaConversions._
+    for (m <- ctx.memberDeclaration()) {
+      if (m.memberVariableDeclaration() != null) {
+        memberVariableDeclaration(m.memberVariableDeclaration(), c)
+      } else if (m.methodDeclaration() != null) {
+        methodDeclaration(m.methodDeclaration(), c)
+      }
+    }
+
+    c
+  }
+
+  def variableDeclaration(ctx: GrammarParser.VariableDeclarationContext, vars: ListBuffer[VariableSymbol], attr: Boolean) {
     val `type` = this.identifierFromToken(ctx.`type`.start)
 
     import scala.collection.JavaConversions._
@@ -60,69 +74,68 @@ class ProgramVisitor(var p: Program) extends GrammarBaseVisitor[Void] {
     }
   }
 
-  override def visitMemberVariableDeclaration(ctx: GrammarParser.MemberVariableDeclarationContext): Void = {
-    this.varDecl(ctx.variableDeclaration, this.c.attributes, true)
-    return this.visitChildren(ctx)
+  def memberVariableDeclaration(ctx: GrammarParser.MemberVariableDeclarationContext, c: ClassSymbol) {
+    this.variableDeclaration(ctx.variableDeclaration, c.attributes, true)
   }
 
-  override def visitMethodBody(ctx: GrammarParser.MethodBodyContext): Void = {
+  def methodBody(ctx: GrammarParser.MethodBodyContext, m: MethodSymbol) {
     import scala.collection.JavaConversions._
     for (variable <- ctx.variableDeclaration) {
-      this.varDecl(variable, this.m.locals, false)
+      this.variableDeclaration(variable, m.locals, false)
     }
 
-    this.m.statements = this.getStatements(ctx.statements)
-    return this.visitChildren(ctx)
+    m.statements = this.getStatements(ctx.statements)
   }
 
-  override def visitMethodDeclaration(ctx: GrammarParser.MethodDeclarationContext): Void = {
-    this.m = new MethodSymbol(this.identifierFromToken(ctx.name))
-    this.c.methods += this.m
+  def methodDeclaration(ctx: GrammarParser.MethodDeclarationContext, c: ClassSymbol) = {
+    var m = new MethodSymbol(this.identifierFromToken(ctx.name))
+    c.methods += m
 
     import scala.collection.JavaConversions._
     for (variable <- ctx.variableDeclaration) {
-      this.varDecl(variable, this.m.parameters, false)
+      this.variableDeclaration(variable, m.parameters, false)
     }
 
     if (ctx.`type` != null) {
       val retType = this.identifierFromToken(ctx.`type`.start)
-      this.m.retType = retType
+      m.retType = retType
     }
 
-    return this.visitChildren(ctx)
+    methodBody(ctx.methodBody(), m)
+    m
   }
 
   def getLiteral(ctx: GrammarParser.LiteralContext): LiteralExpression = {
     val rctx: RuleContext = ctx.getRuleContext
     val pos = new Position(ctx.start.getLine, ctx.start.getStartIndex)
 
-    if (rctx.isInstanceOf[GrammarParser.IntegerLiteralContext]) {
-      return new LiteralExpression(Integer.parseInt(ctx.getText), Types.intType, pos)
-    } else if (rctx.isInstanceOf[GrammarParser.CharacterLiteralContext]) {
-      val value: String = ctx.getText.substring(1, ctx.getText.length - 1)
-      if (value == "\\n") {
-        return new LiteralExpression('\n', Types.intType, pos)
-      } else if (value == "\\\\") {
-        return new LiteralExpression('\\', Types.intType, pos)
-      } else if (value.length != 1) {
-        /* Unsupported character. */
-        assert(false)
-      } else {
-        return new LiteralExpression(value.charAt(0), Types.intType, pos)
-      }
-    } else if (rctx.isInstanceOf[GrammarParser.StringLiteralContext]) {
-      /* TODO Implement ClassDeclaration.stringType. */
-    } else if (rctx.isInstanceOf[GrammarParser.BooleanLiteralContext]) {
-      if ((rctx.asInstanceOf[GrammarParser.BooleanLiteralContext]).value.getType == GrammarParser.TRUE) {
-        return new LiteralExpression(1, Types.boolType, pos)
-      }
+    rctx match {
+      case l: GrammarParser.IntegerLiteralContext =>
+        new LiteralExpression(Integer.parseInt(ctx.getText), Types.intType, pos)
+      case l: GrammarParser.CharacterLiteralContext =>
+        val value = ctx.getText.substring(1, ctx.getText.length - 1)
 
-      return new LiteralExpression(0, Types.boolType, pos)
-    } else if (rctx.isInstanceOf[GrammarParser.NullLiteralContext]) {
-      return new LiteralExpression(0, Types.nullType, pos)
+        if (value == "\\n") {
+          new LiteralExpression('\n', Types.intType, pos)
+        } else if (value == "\\\\") {
+          new LiteralExpression('\\', Types.intType, pos)
+        } else if (value.length != 1) {
+          throw new CompileException("Unsupported character in literal.", pos)
+        } else {
+          new LiteralExpression(value.charAt(0), Types.intType, pos)
+        }
+      case l: GrammarParser.StringLiteralContext =>
+        /* TODO Implement ClassDeclaration.stringType. */
+        null
+      case l: GrammarParser.BooleanLiteralContext =>
+        if (l.value.getType == GrammarParser.TRUE) {
+          new LiteralExpression(1, Types.boolType, pos)
+        } else {
+          new LiteralExpression(0, Types.boolType, pos)
+        }
+      case l: GrammarParser.NullLiteralContext =>
+        new LiteralExpression(0, Types.nullType, pos)
     }
-
-    return null
   }
 
   def getCall(ctx: GrammarParser.CallContext): VarOrCall = {
