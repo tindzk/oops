@@ -18,25 +18,7 @@ import org.junit.runners.Parameterized.Parameters
 import org.oopsvm.Assembler
 import org.oopsvm.VirtualMachine
 
-@RunWith(classOf[Parameterized]) object TestSuite {
-  def readFile(path: String, encoding: Charset): String = {
-    val encoded = Files.readAllBytes(Paths.get(path))
-    return encoding.decode(ByteBuffer.wrap(encoded)).toString
-  }
-
-  def recursiveListFiles(f: File): Array[File] = {
-    val these = f.listFiles
-    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
-  }
-
-  @Parameters(name = "{0}")
-  def data: Collection[Array[AnyRef]] = {
-    val files = recursiveListFiles(new File("tests/")).map(_.toString).filter(_.endsWith(".oops")).sorted.map(Array[AnyRef](_))
-    return scala.collection.JavaConversions.mutableSeqAsJavaList(files)
-  }
-}
-
-@RunWith(classOf[Parameterized])
+@RunWith(value = classOf[Parameterized])
 class TestSuite(var path: String) {
   private var p: Program = null
 
@@ -70,32 +52,11 @@ class TestSuite(var path: String) {
     }
   }
 
-  @Test
-  def testVisitor {
-    val supposedToFail = this.path.contains("_se")
-
-    if (supposedToFail) {
-      /* Skip as we cannot use the visitor on malformed code samples. */
-      return
-    }
-
-    val stream = new FileInputStream(this.path)
-    val input = new ANTLRInputStream(stream)
-    val lexer = new GrammarLexer(input)
-    val tokens = new CommonTokenStream(lexer)
-    val parser = new GrammarParser(tokens)
-
-    val tree = parser.program
-
-    val visitor = new ProgramVisitor(new Program)
-    visitor.visit(tree)
-  }
-
   /**
-   * Performs syntax and context analysis. Also tests the code generation.
+   * Performs syntax as well as contextual analysis. Also tests the code generation.
    */
   @Test
-  def testFile {
+  def testEverything {
     val supposedToFail = this.path.contains("_se")
     val pathExpected = this.path.substring(0, this.path.length - 5) + ".out"
     val expected =
@@ -135,5 +96,23 @@ class TestSuite(var path: String) {
     if (supposedToFail) {
       fail
     }
+  }
+}
+
+object TestSuite {
+  def readFile(path: String, encoding: Charset): String = {
+    val encoded = Files.readAllBytes(Paths.get(path))
+    return encoding.decode(ByteBuffer.wrap(encoded)).toString
+  }
+
+  def recursiveListFiles(f: File): Array[File] = {
+    val these = f.listFiles
+    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
+  }
+
+  @Parameters(name = "{0}")
+  def data: Collection[Array[AnyRef]] = {
+    val files = recursiveListFiles(new File("tests/")).map(_.toString).filter(_.endsWith(".oops")).sorted.map(Array[AnyRef](_))
+    return scala.collection.JavaConversions.mutableSeqAsJavaList(files)
   }
 }
