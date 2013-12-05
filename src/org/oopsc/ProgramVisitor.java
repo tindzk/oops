@@ -1,8 +1,5 @@
 package org.oopsc;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -38,7 +35,7 @@ public class ProgramVisitor extends GrammarBaseVisitor<Void> {
 
 	public ProgramVisitor(Program p) {
 		this.p = p;
-		this.sem = p.sem;
+		this.sem = p.sem();
 	}
 
 	public Identifier identifierFromToken(Token t) {
