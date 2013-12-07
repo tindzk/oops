@@ -145,12 +145,12 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
 
     for ((expr, stmts) <- this.catchStatements) {
       /* An exception was thrown. */
-      code.println("; CATCH " + expr.value)
+      code.println("; CATCH " + expr.intValue)
       code.println(catchLabel + ":")
       catchLabel = code.nextLabel
 
       /* When an exception is thrown, the associated error code is stored in R7. */
-      code.println("MRI R5, " + expr.value)
+      code.println("MRI R5, " + expr.intValue)
       code.println("SUB R5, R7")
 
       /* If entry.getKey().value != error code, jump to the next `catch' branch. */

@@ -3,21 +3,12 @@ package org.oopsc.expression
 import org.oopsc._
 import org.oopsc.symbol._
 
-/**
- * Represents a literal in the syntax tree.
- */
-class LiteralExpression(var value: Int, `type`: ClassSymbol, position: Position) extends Expression(position) {
-  def print(tree: TreeStream) {
-    tree.println(this.value + " : " + this.`type`.name)
-  }
-
+abstract class LiteralExpression(`type`: ClassSymbol, position: Position) extends Expression(position) {
   override def resolvedType() : ClassSymbol = `type`
 
-  def generateCode(code: CodeStream) {
-    code.println("; " + this.value + " : " + this.`type`.name)
-
+  def _generateIntCode(value: Int, code: CodeStream) {
     /* Load value into R5. */
-    code.println("MRI R5, " + this.value)
+    code.println("MRI R5, " + value)
 
     /* Allocate space on the stack. */
     code.println("ADD R2, R1")
@@ -26,7 +17,56 @@ class LiteralExpression(var value: Int, `type`: ClassSymbol, position: Position)
     code.println("MMR (R2), R5")
   }
 
-  override def isAlwaysTrue(sem: SemanticAnalysis): Boolean = {
-    return this.value == 1 && (this.`type`.isA(sem, Types.intType) || this.`type`.isA(sem, Types.boolType))
+  /* For compatibility purposes only. Needed as exceptions can be thrown with integers or characters. */
+  @deprecated
+  def intValue: Int = throw new CompileException("Literal does not have a compatible value.")
+}
+
+case class BooleanLiteralExpression(value: Boolean, var _position: Position) extends LiteralExpression(Types.boolType, _position) {
+  def print(tree: TreeStream) {
+    tree.println(this.value)
+  }
+
+  def generateCode(code: CodeStream) {
+    code.println("; " + this.value)
+    _generateIntCode(if (value) 1 else 0, code)
+  }
+}
+
+case class IntegerLiteralExpression(value: Int, var _position: Position) extends LiteralExpression(Types.intType, _position) {
+  def print(tree: TreeStream) {
+    tree.println(this.value)
+  }
+
+  def generateCode(code: CodeStream) {
+    code.println("; " + this.value)
+    _generateIntCode(value, code)
+  }
+
+  override def intValue: Int = value
+}
+
+/* TODO Should use Types.charType */
+case class CharacterLiteralExpression(value: Char, var _position: Position) extends LiteralExpression(Types.intType, _position) {
+  def print(tree: TreeStream) {
+    tree.println(this.value)
+  }
+
+  def generateCode(code: CodeStream) {
+    code.println("; " + this.value)
+    _generateIntCode(value, code)
+  }
+
+  override def intValue: Int = value.asInstanceOf[Int]
+}
+
+case class NullLiteralExpression(var _position: Position) extends LiteralExpression(Types.nullType, _position) {
+  def print(tree: TreeStream) {
+    tree.println("NULL")
+  }
+
+  def generateCode(code: CodeStream) {
+    code.println("; NULL")
+    _generateIntCode(0, code)
   }
 }

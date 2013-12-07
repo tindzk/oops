@@ -123,30 +123,26 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
 
     rctx match {
       case l: GrammarParser.IntegerLiteralContext =>
-        new LiteralExpression(Integer.parseInt(ctx.getText), Types.intType, pos)
+        IntegerLiteralExpression(Integer.parseInt(ctx.getText), pos)
       case l: GrammarParser.CharacterLiteralContext =>
         val value = ctx.getText.substring(1, ctx.getText.length - 1)
 
         if (value == "\\n") {
-          new LiteralExpression('\n', Types.intType, pos)
+          CharacterLiteralExpression('\n', pos)
         } else if (value == "\\\\") {
-          new LiteralExpression('\\', Types.intType, pos)
+          CharacterLiteralExpression('\\', pos)
         } else if (value.length != 1) {
           throw new CompileException("Unsupported character in literal.", pos)
         } else {
-          new LiteralExpression(value.charAt(0), Types.intType, pos)
+          CharacterLiteralExpression(value.charAt(0), pos)
         }
       case l: GrammarParser.StringLiteralContext =>
         /* TODO Implement ClassDeclaration.stringType. */
         null
       case l: GrammarParser.BooleanLiteralContext =>
-        if (l.value.getType == GrammarParser.TRUE) {
-          new LiteralExpression(1, Types.boolType, pos)
-        } else {
-          new LiteralExpression(0, Types.boolType, pos)
-        }
+        BooleanLiteralExpression((l.value.getType == GrammarParser.TRUE), pos)
       case l: GrammarParser.NullLiteralContext =>
-        new LiteralExpression(0, Types.nullType, pos)
+        NullLiteralExpression(pos)
     }
   }
 

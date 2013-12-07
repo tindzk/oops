@@ -1,7 +1,7 @@
 package org.oopsc.statement
 
 import org.oopsc.{CodeStream, TreeStream, SemanticAnalysis, Types}
-import org.oopsc.expression.Expression
+import org.oopsc.expression.{BooleanLiteralExpression, Expression}
 import scala.collection.mutable.ListBuffer
 
 class IfStatement(_condition: Expression, _thenStatements: ListBuffer[Statement]) extends Statement {
@@ -23,11 +23,20 @@ class IfStatement(_condition: Expression, _thenStatements: ListBuffer[Statement]
   override def optimPass() : Statement = {
     this.branches = this.branches.map(b => (b._1.optimPass(), b._2.map(_.optimPass())))
 
-    /* TODO Delete all branches that always evaluate to `false'. */
+    /* Delete all branches that always evaluate to `false'. */
+    for ((cond, stmts) <- this.branches) {
+      cond match {
+        case BooleanLiteralExpression(false, _) =>
+          this.branches -= ((cond, stmts))
+        case _ =>
+      }
+    }
+
     this.elseBranch = this.elseBranch.map(_.optimPass())
 
     /* If no branches left, return NullStatement. */
     if (this.branches.isEmpty && this.elseBranch.isEmpty) {
+      /* TODO this.elseBranch may contain a NullStatement. */
       return new NullStatement
     }
 

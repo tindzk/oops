@@ -46,48 +46,60 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
   }
 
   override def optimPass() : Expression = {
+    /* TODO Better handling for EQ, NEQ. */
+
     (this.leftOperand.optimPass(), this.rightOperand.optimPass()) match {
-      case (l: LiteralExpression, r: LiteralExpression) =>
+      case (l: BooleanLiteralExpression, r: BooleanLiteralExpression) =>
         this.operator match {
           case AND =>
-            val value = if (l.value == r.value == 1) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value && r.value
+            return BooleanLiteralExpression(value, this.position)
           case OR =>
-            val value = if (l.value == 1 || r.value == 1) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value || r.value
+            return BooleanLiteralExpression(value, this.position)
+          case EQ =>
+            val value = l.value == r.value
+            return BooleanLiteralExpression(value, this.position)
+          case NEQ =>
+            val value = l.value != r.value
+            return BooleanLiteralExpression(value, this.position)
+        }
+
+      case (l: IntegerLiteralExpression, r: IntegerLiteralExpression) =>
+        this.operator match {
           case PLUS =>
             val value = l.value + r.value
-            return new LiteralExpression(value, Types.intType, this.position)
+            return IntegerLiteralExpression(value, this.position)
           case MINUS =>
             val value = l.value - r.value
-            return new LiteralExpression(value, Types.intType, this.position)
+            return IntegerLiteralExpression(value, this.position)
           case MUL =>
             val value = l.value * r.value
-            return new LiteralExpression(value, Types.intType, this.position)
+            return IntegerLiteralExpression(value, this.position)
           case DIV =>
             val value = l.value / r.value
-            return new LiteralExpression(value, Types.intType, this.position)
+            return IntegerLiteralExpression(value, this.position)
           case MOD =>
             val value = l.value % r.value
-            return new LiteralExpression(value, Types.intType, this.position)
+            return IntegerLiteralExpression(value, this.position)
           case GT =>
-            val value = if (l.value > r.value) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value > r.value
+            return BooleanLiteralExpression(value, this.position)
           case GTEQ =>
-            val value = if (l.value >= r.value) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value >= r.value
+            return BooleanLiteralExpression(value, this.position)
           case LT =>
-            val value = if (l.value < r.value) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value < r.value
+            return BooleanLiteralExpression(value, this.position)
           case LTEQ =>
-            val value = if (l.value <= r.value) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value <= r.value
+            return BooleanLiteralExpression(value, this.position)
           case EQ =>
-            val value = if (l.value == r.value) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value == r.value
+            return BooleanLiteralExpression(value, this.position)
           case NEQ =>
-            val value = if (l.value != r.value) 1 else 0
-            return new LiteralExpression(value, Types.boolType, this.position)
+            val value = l.value != r.value
+            return BooleanLiteralExpression(value, this.position)
         }
 
       case (l, r) =>

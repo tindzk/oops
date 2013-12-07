@@ -3,6 +3,7 @@ package org.oopsc
 import org.oopsc.statement._
 import org.oopsc.symbol.MethodSymbol
 import scala.collection.mutable.ListBuffer
+import org.oopsc.expression.BooleanLiteralExpression
 
 /**
  * @note The term `to terminate' may be misleading. Here, it is understood in
@@ -31,8 +32,12 @@ object BranchEvaluator {
 
             constructTree(sem, branchIf, stmts)
 
-            if (branchIf.terminates && cond.isAlwaysTrue(sem)) {
-              parent.terminates = true
+            if (branchIf.terminates) {
+              cond match {
+                case BooleanLiteralExpression(true, _) =>
+                  parent.terminates = true
+                case _ =>
+              }
             }
           }
 
@@ -48,10 +53,12 @@ object BranchEvaluator {
 
         case whileStmt: WhileStatement =>
           /* Only consider while statements if the condition is always true. */
-          if (whileStmt.condition.isAlwaysTrue(sem)) {
-            val branch = new Branch
-            parent.sub += branch
-            constructTree(sem, branch, whileStmt.statements)
+          whileStmt.condition match {
+            case BooleanLiteralExpression(true, _) =>
+              val branch = new Branch
+              parent.sub += branch
+              constructTree(sem, branch, whileStmt.statements)
+            case _ =>
           }
 
         case s: ReturnStatement =>

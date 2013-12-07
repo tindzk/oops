@@ -124,15 +124,4 @@ abstract class Expression(var position: Position) {
       }
     }
   }
-
-  /**
-   * If the condition is static, evaluate it to true or false. If the condition
-   * is not static, always return false.
-   *
-   * TODO Must also evaluate more sophisticated expression such as `x == x' to
-   * true.
-   */
-  def isAlwaysTrue(sem: SemanticAnalysis): Boolean = {
-    return false
-  }
 }
