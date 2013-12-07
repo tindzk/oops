@@ -6,9 +6,6 @@ import scala.collection.mutable.LinkedHashMap
 import org.oopsc.symbol.ClassSymbol
 
 trait Scope {
-  /** Only needed for compatibility with Java. */
-  def getThis: Scope = this
-
   /** Scope in which this scope defined. For global scope, it's None */
   var enclosingScope: Option[Scope] = None
 

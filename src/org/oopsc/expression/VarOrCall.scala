@@ -12,8 +12,8 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
   var scope: Scope = null
 
   protected var context: VariableSymbol = null
-  protected var isStaticContext: Boolean = false
-  protected var generateContextCode: Boolean = true
+  protected var isStaticContext = false
+  protected var generateContextCode = true
 
   var arguments = new ArrayBuffer[Expression]
 
@@ -38,13 +38,13 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
   }
 
   override def refPass(sem: SemanticAnalysis) {
-    val resolveScope: Scope = if (this.scope == null) sem.currentScope.get.getThis else this.scope
+    val resolveScope = if (this.scope == null) sem.currentScope.get else this.scope
 
     /* Resolve variable or method. */
     this.ref.declaration = Some(resolveScope.checkedResolve(this.ref.identifier))
 
     /* Check arguments. */
-    if (!(this.ref.declaration.get.isInstanceOf[MethodSymbol])) {
+    if (!this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
       if (this.arguments.size != 0) {
         throw new CompileException("Arguments cannot be passed to a variable.", this.ref.identifier.position)
       }
@@ -69,22 +69,13 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
         throw new CompileException(s"Parameter count mismatch: ${decl.parameters.size} expected, ${this.arguments.size} given.", this.ref.identifier.position)
       }
 
-      // TODO refactor
-      val args = this.arguments.iterator
-      val params = decl.parameters.iterator
-      var num: Int = 1
-
-      while (args.hasNext) {
-        val arg = args.next
-        val param = params.next
-
+      for (((arg, param), num) <- this.arguments.zip(decl.parameters).zipWithIndex) {
         arg.refPass(sem)
 
         if (!arg.resolvedType().isA(sem, param.getResolvedType)) {
-          throw new CompileException(s"Argument ${num} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.resolvedType().name} given.", this.ref.identifier.position)
+          throw new CompileException(
+            s"Argument ${num + 1} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.resolvedType().name} given.", this.ref.identifier.position)
         }
-
-        num += 1
       }
     }
   }
