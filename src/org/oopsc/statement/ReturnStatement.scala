@@ -26,6 +26,14 @@ class ReturnStatement(var position: Position, var value: Expression = null) exte
     }
   }
 
+  override def optimPass() : Statement = {
+    if (this.value != null) {
+      this.value = this.value.optimPass()
+    }
+
+    this
+  }
+
   override def print(tree: TreeStream) {
     tree.println("RETURN")
 

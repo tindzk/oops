@@ -45,6 +45,58 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
     }
   }
 
+  override def optimPass() : Expression = {
+    (this.leftOperand.optimPass(), this.rightOperand.optimPass()) match {
+      case (l: LiteralExpression, r: LiteralExpression) =>
+        this.operator match {
+          case AND =>
+            val value = if (l.value == r.value == 1) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case OR =>
+            val value = if (l.value == 1 || r.value == 1) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case PLUS =>
+            val value = l.value + r.value
+            return new LiteralExpression(value, Types.intType, this.position)
+          case MINUS =>
+            val value = l.value - r.value
+            return new LiteralExpression(value, Types.intType, this.position)
+          case MUL =>
+            val value = l.value * r.value
+            return new LiteralExpression(value, Types.intType, this.position)
+          case DIV =>
+            val value = l.value / r.value
+            return new LiteralExpression(value, Types.intType, this.position)
+          case MOD =>
+            val value = l.value % r.value
+            return new LiteralExpression(value, Types.intType, this.position)
+          case GT =>
+            val value = if (l.value > r.value) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case GTEQ =>
+            val value = if (l.value >= r.value) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case LT =>
+            val value = if (l.value < r.value) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case LTEQ =>
+            val value = if (l.value <= r.value) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case EQ =>
+            val value = if (l.value == r.value) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case NEQ =>
+            val value = if (l.value != r.value) 1 else 0
+            return new LiteralExpression(value, Types.boolType, this.position)
+        }
+
+      case (l, r) =>
+        this.leftOperand = l
+        this.rightOperand = r
+        return this
+    }
+  }
+
   override def resolvedType() = t
 
   def print(tree: TreeStream) {

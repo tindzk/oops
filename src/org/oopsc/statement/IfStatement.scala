@@ -13,9 +13,7 @@ class IfStatement(var condition: Expression, var thenStatements: ListBuffer[Stat
     this.condition.refPass(sem)
     this.condition.resolvedType.check(sem, Types.boolType, this.condition.position)
 
-    for (s <- this.thenStatements) {
-      s.refPass(sem)
-    }
+    this.thenStatements.foreach(_.refPass(sem))
 
     for ((cond, stmts) <- this.elseStatements) {
       if (cond != null) {
@@ -23,10 +21,17 @@ class IfStatement(var condition: Expression, var thenStatements: ListBuffer[Stat
         cond.resolvedType.check(sem, Types.boolType, cond.position)
       }
 
-      for (s <- stmts) {
-        s.refPass(sem)
-      }
+      stmts.foreach(_.refPass(sem))
     }
+  }
+
+  override def optimPass() : Statement = {
+    /* TODO Delete all branches that always evaluate to `false'.
+     * If no branches left, return NullStatement. */
+    this.condition = this.condition.optimPass()
+    //this.elseStatements.map(p => (if (p._1 != null) p._1.optimPass else null, p._1.optimPass))
+    this.thenStatements = this.thenStatements.map(_.optimPass())
+    this
   }
 
   def addIfElse(condition: Expression, stmts: ListBuffer[Statement]) {

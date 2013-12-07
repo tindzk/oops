@@ -22,25 +22,20 @@ abstract class Expression(var position: Position) {
   var lValue: Boolean = false
 
   /**
-   * Die Methode führt die Kontextanalyse für diesen Ausdruck durch.
-   * Sie ist nicht abstrakt, da es einige abgeleitete Klassen gibt,
-   * die sie nicht implementieren, weil sie dort nicht benötigt wird.
-   * Da im Rahmen der Kontextanalyse auch neue Ausdrücke erzeugt werden
-   * können, sollte diese Methode immer in der Form "a = a.contextAnalysis(...)"
-   * aufgerufen werden, damit ein neuer Ausdruck auch im Baum gespeichert wird.
+   * Performs the reference pass of the semantic analysis.
    *
-   * @param sem
-   * Die an dieser Stelle gültigen Deklarationen.
-   * @return Dieser Ausdruck oder ein neuer Ausdruck, falls ein Boxing,
-   *         Unboxing oder eine Dereferenzierung in den Baum eingefügt
-   *         wurden.
-   * @throws CompileException
-   * Während der Kontextanylyse wurde ein Fehler
-   * gefunden.
+   * @param sem Context of the semantic analysis.
    */
   def refPass(sem: SemanticAnalysis) {
 
   }
+
+  /**
+   * Performs the optimisation pass.
+   *
+   * @return Optimised expression.
+   */
+  def optimPass() = this
 
   /**
    * Die Methode gibt diesen Ausdruck in einer Baumstruktur aus.

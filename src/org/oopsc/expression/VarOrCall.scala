@@ -69,6 +69,7 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
         throw new CompileException(s"Parameter count mismatch: ${decl.parameters.size} expected, ${this.arguments.size} given.", this.ref.identifier.position)
       }
 
+      // TODO refactor
       val args = this.arguments.iterator
       val params = decl.parameters.iterator
       var num: Int = 1
@@ -146,7 +147,6 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
 
           /* Push arguments on the stack. */
           var i: Int = 1
-          import scala.collection.JavaConversions._
           for (e <- this.arguments) {
             code.println("; Argument " + i)
             code.println("; " + e.getClass)

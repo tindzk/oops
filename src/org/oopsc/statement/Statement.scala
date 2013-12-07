@@ -6,17 +6,20 @@ import org.oopsc.TreeStream
 
 abstract class Statement {
   /**
-   * Die Methode führt die Kontextanalyse für diese Anweisung durch.
+   * Performs the definition pass of the semantic analysis.
    *
-   * @param sem
-   * Die an dieser Stelle gültigen Deklarationen.
-   * @throws CompileException
-   * Während der Kontextanalyse wurde ein Fehler
-   * gefunden.
+   * @param sem Context of the semantic analysis.
    */
   def refPass(sem: SemanticAnalysis) {
 
   }
+
+  /**
+   * Performs the optimisation pass.
+   *
+   * @return Optimised statement.
+   */
+  def optimPass() = this
 
   /**
    * Die Methode gibt diese Anweisung in einer Baumstruktur aus.

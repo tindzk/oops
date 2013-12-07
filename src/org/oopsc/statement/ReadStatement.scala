@@ -22,6 +22,11 @@ class ReadStatement(var operand: Expression) extends Statement {
     this.newInt.refPass(sem)
   }
 
+  override def optimPass() : Statement = {
+    this.operand = this.operand.optimPass()
+    this
+  }
+
   override def print(tree: TreeStream) {
     tree.println("READ")
     tree.indent

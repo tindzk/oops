@@ -69,6 +69,9 @@ class TestSuite(var path: String) {
     try {
       this.p = new SyntaxAnalysis(this.path, false).parse
       this.p.semanticAnalysis
+
+      this.p.printTree
+      this.p.optimise
       this.p.printTree
 
       /* Test code generation. */

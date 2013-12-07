@@ -12,6 +12,11 @@ class WriteStatement(var operand: Expression) extends Statement {
     this.operand.resolvedType.check(sem, Types.intType, this.operand.position)
   }
 
+  override def optimPass() : Statement = {
+    this.operand = this.operand.optimPass()
+    this
+  }
+
   override def print(tree: TreeStream) {
     tree.println("WRITE")
     tree.indent

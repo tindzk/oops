@@ -26,6 +26,22 @@ class UnaryExpression(var operator: UnaryExpression.Operator, var operand: Expre
     }
   }
 
+  override def optimPass() : Expression = {
+    this.operand.optimPass() match {
+      case o: LiteralExpression =>
+        this.operator match {
+          case NOT =>
+            val value = if (o.value == 1) 0 else 1
+            return new LiteralExpression(value, Types.boolType, this.position)
+          case MINUS =>
+            val value = -o.value
+            return new LiteralExpression(value, Types.intType, this.position)
+        }
+
+      case _ => return this
+    }
+  }
+
   override def resolvedType() : ClassSymbol = this.operand.resolvedType()
 
   def print(tree: TreeStream) {

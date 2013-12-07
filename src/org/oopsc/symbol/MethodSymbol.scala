@@ -118,15 +118,9 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   override def refPass(sem: SemanticAnalysis) {
     sem.enter(this)
 
-    /* Resolve types of all parameters. */
-    for (v <- this.parameters) {
-      v.refPass(sem)
-    }
-
-    /* Resolve types of all variables. */
-    for (v <- this.locals) {
-      v.refPass(sem)
-    }
+    /* Resolve types of all parameters and variables. */
+    this.parameters.foreach(_.refPass(sem))
+    this.locals.foreach(_.refPass(sem))
 
     this.hasReturnValue = this.getResolvedReturnType ne Types.voidType
     this.terminates = BranchEvaluator.terminates(sem, this)
@@ -136,11 +130,13 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     }
 
     /* Reference pass for all statements. */
-    for (s <- this.statements) {
-      s.refPass(sem)
-    }
+    this.statements.foreach(_.refPass(sem))
 
     sem.leave()
+  }
+
+  def optimPass() {
+    this.statements = this.statements.map(_.optimPass())
   }
 
   def print(tree: TreeStream) {

@@ -18,6 +18,12 @@ class Assignment(var leftOperand: Expression, var rightOperand: Expression) exte
     this.rightOperand.resolvedType.check(sem, this.leftOperand.resolvedType, this.rightOperand.position)
   }
 
+  override def optimPass() : Statement = {
+    this.leftOperand = this.leftOperand.optimPass()
+    this.rightOperand = this.rightOperand.optimPass()
+    this
+  }
+
   override def print(tree: TreeStream) {
     tree.println("ASSIGNMENT")
     tree.indent

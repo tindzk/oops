@@ -41,7 +41,7 @@ object TryStatement {
 /**
  * Implements a TRY statement which is used for exception handling.
  */
-class TryStatement(tryStatements: ListBuffer[Statement], position: Position) extends Statement {
+class TryStatement(var tryStatements: ListBuffer[Statement], position: Position) extends Statement {
   /**
    * CATCH branches assigning a statement block to a value that needs to be caught in order for
    * the statements to be executed.
@@ -49,9 +49,7 @@ class TryStatement(tryStatements: ListBuffer[Statement], position: Position) ext
   var catchStatements = Map.empty[LiteralExpression, ListBuffer[Statement]]
 
   override def refPass(sem: SemanticAnalysis) {
-    for (s <- this.tryStatements) {
-      s.refPass(sem)
-    }
+    this.tryStatements.foreach(_.refPass(sem))
 
     for ((expr, stmts) <- this.catchStatements) {
       expr.resolvedType.check(sem, Types.intType, expr.position)
@@ -64,6 +62,11 @@ class TryStatement(tryStatements: ListBuffer[Statement], position: Position) ext
     if (this.catchStatements.isEmpty) {
       throw new CompileException("At least one catch block is required in a TRY statement.", this.position)
     }
+  }
+
+  override def optimPass() : Statement = {
+    this.tryStatements = this.tryStatements.map(_.optimPass())
+    this
   }
 
   def addCatchBlock(condition: LiteralExpression, stmts: ListBuffer[Statement]) {

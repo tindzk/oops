@@ -8,10 +8,15 @@ class WhileStatement(var condition: Expression, var statements: ListBuffer[State
   override def refPass(sem: SemanticAnalysis) {
     this.condition.refPass(sem)
     this.condition.resolvedType.check(sem, Types.boolType, this.condition.position)
+    this.statements.foreach(_.refPass(sem))
+  }
 
-    for (s <- this.statements) {
-      s.refPass(sem)
-    }
+  override def optimPass() : Statement = {
+    this.condition = this.condition.optimPass()
+    this.statements = this.statements.map(_.optimPass())
+    /* TODO If condition evaluates to false, return NullStatement.
+     * If condition evaluates to true, return BlockStatement. */
+    this
   }
 
   override def print(tree: TreeStream) {

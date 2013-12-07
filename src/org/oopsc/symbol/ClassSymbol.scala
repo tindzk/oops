@@ -153,13 +153,8 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
     }
 
     if (first) {
-      for (a <- this.attributes) {
-        a.defPass(sem)
-      }
-
-      for (m <- this.methods) {
-        m.defPass(sem)
-      }
+      this.attributes.foreach(_.defPass(sem))
+      this.methods.foreach(_.defPass(sem))
     }
 
     sem.leave
@@ -254,11 +249,13 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
       this.objectSize += 1
     }
 
-    for (m <- this.methods) {
-      m.refPass(sem)
-    }
+    this.methods.foreach(_.refPass(sem))
 
     sem.leave
+  }
+
+  def optimPass() {
+    this.methods.foreach(_.optimPass())
   }
 
   /**

@@ -134,11 +134,7 @@ class Program {
   }
 
   /**
-   * Die Methode führt die semantische Analyse für das Programm durch.
-   *
-   * @throws CompileException
-	 * Während der Kontextanylyse wurde ein Fehler
-   * gefunden.
+   * Performs the semantic analysis for the whole program.
    */
   def semanticAnalysis {
     /* Add predeclared classes. */
@@ -169,6 +165,10 @@ class Program {
     }
 
     this.checkCycles(this.classes)
+  }
+
+  def optimise {
+    this.classes.foreach(_.optimPass())
   }
 
   /**

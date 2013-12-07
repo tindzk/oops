@@ -17,15 +17,17 @@ object OOPSC {
 	 * Die Kommandozeilenargumente. Diese sind im Quelltext der Methode { @link #usage usage}
    *                                                                          nachzulesen.
    */
+  // TODO refactor
   def main(args: Array[String]) {
     var inFile: String = null
     var outFile: String = null
-    var showContext: Boolean = false
-    var showSymbols: Boolean = false
-    var showSyntax: Boolean = false
-    var debug: Boolean = false
-    var heapSize: Int = 100
-    var stackSize: Int = 100
+    var showContext = false
+    var showSymbols = false
+    var showSyntax = false
+    var debug = false
+    var optimisations = false
+    var heapSize = 100
+    var stackSize = 100
 
     var i = 0
     while (i < args.length) {
@@ -46,6 +48,8 @@ object OOPSC {
         }
       } else if (arg == "-d") {
         debug = true
+      } else if (arg == "-o") {
+        optimisations = true
       } else if (arg == "-l") {
         showSymbols = true
       } else if (arg == "-s") {
@@ -90,6 +94,10 @@ object OOPSC {
 
       p.semanticAnalysis
 
+      if (optimisations) {
+        p.optimise
+      }
+
       if (showContext) {
         p.printTree
       }
@@ -118,10 +126,11 @@ object OOPSC {
    * Die Methode gibt eine Hilfe auf der Konsole aus.
    */
   private def usage {
-    System.out.println("java -jar OOPSC.jar [-c] [-h] [-hs <n>] [-i] [-l] [-s] [-ss <n>] <quelldatei> [<ausgabedatei>]")
+    System.out.println("java -jar OOPSC.jar [-c] [-h] [-hs <n>] [-o] [-i] [-l] [-s] [-ss <n>] <quelldatei> [<ausgabedatei>]")
     System.out.println("    -c       Zeige das Ergebnis der Kontextanalyse")
     System.out.println("    -h       Zeige diese Hilfe")
     System.out.println("    -hs <n>  Reserviere <n> Worte fuer den Heap (Standard ist 100)")
+    System.out.println("    -o       Perform some basic optimisations")
     System.out.println("    -l       Zeige das Ergebnis der lexikalischen Analyse")
     System.out.println("    -s       Zeige das Ergebnis der syntaktischen Analyse")
     System.out.println("    -ss <n>  Reserviere <n> Worte fuer den Stapel (Standard ist 100)")

@@ -26,6 +26,11 @@ class ThrowStatement(var value: Expression, var position: Position) extends Stat
     this.value.resolvedType.check(sem, Types.intType, this.value.position)
   }
 
+  override def optimPass() : Statement = {
+    this.value = this.value.optimPass()
+    this
+  }
+
   override def print(tree: TreeStream) {
     tree.println("THROW")
     tree.indent
