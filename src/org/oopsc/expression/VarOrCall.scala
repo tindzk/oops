@@ -130,19 +130,17 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
         code.println("MMR (R2), R5")
 
       case m: MethodSymbol =>
-        val returnLabel: String = code.nextLabel
+        val returnLabel = code.nextLabel
         if (this.context != null && this.isStaticContext) {
           code.println("; Static method call: " + this.ref.identifier.name)
           code.println("; Arguments")
           code.println("")
 
           /* Push arguments on the stack. */
-          var i: Int = 1
-          for (e <- this.arguments) {
+          for ((e, i) <- this.arguments.zipWithIndex) {
             code.println("; Argument " + i)
             code.println("; " + e.getClass)
             e.generateCode(code, true)
-            i += 1
           }
 
           /* Push return address on the stack. */
@@ -160,12 +158,10 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
           code.println("")
 
           /* Push arguments on the stack. */
-          var i: Int = 1
-          for (e <- this.arguments) {
+          for ((e, i) <- this.arguments.zipWithIndex) {
             code.println("; Argument " + i)
             code.println("; " + e.getClass)
             e.generateCode(code, true)
-            i += 1
           }
 
           /* Push return address on the stack. */

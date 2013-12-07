@@ -25,25 +25,25 @@ object BranchEvaluator {
     for (stmt <- stmts) {
       stmt match {
         case ifStmt: IfStatement =>
-          val branchIf = new Branch
-          parent.sub += branchIf
+          for ((cond, stmts) <- ifStmt.branches) {
+            val branchIf = new Branch
+            parent.sub += branchIf
 
-          constructTree(sem, branchIf, ifStmt.thenStatements)
+            constructTree(sem, branchIf, stmts)
 
-          if (branchIf.terminates && ifStmt.condition.isAlwaysTrue(sem)) {
-            parent.terminates = true
+            if (branchIf.terminates && cond.isAlwaysTrue(sem)) {
+              parent.terminates = true
+            }
           }
 
           /* Requires that elseStatements always contains an entry for the else-block
            * even if it is empty. */
-          for ((expr, stmts) <- ifStmt.elseStatements) {
-            val branch = new Branch
-            parent.sub += branch
-            constructTree(sem, branch, stmts)
+          val branch = new Branch
+          parent.sub += branch
+          constructTree(sem, branch, ifStmt.elseBranch)
 
-            if (branch.terminates && (expr == null || expr.isAlwaysTrue(sem))) {
-              parent.terminates = true
-            }
+          if (branch.terminates) {
+            parent.terminates = true
           }
 
         case whileStmt: WhileStatement =>
@@ -88,7 +88,7 @@ object BranchEvaluator {
    * terminating. The method returns true if the root node terminates.
    */
   def terminates(sem: SemanticAnalysis, method: MethodSymbol): Boolean = {
-    val root: Branch = new Branch
+    val root = new Branch
     constructTree(sem, root, method.statements)
     return root.terminates
   }
