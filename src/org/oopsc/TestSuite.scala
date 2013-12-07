@@ -80,7 +80,7 @@ class TestSuite(var path: String) {
       System.err.println(asm)
 
       /* Run the VM twice with different inputs. */
-      val output = this.runVM(asm, "abc") + this.runVM(asm, "xyz")
+      val output = this.runVM(asm, "abc\n") + this.runVM(asm, "xyz\n")
       assertEquals(expected, output)
     } catch {
       case e: CompileException => {
