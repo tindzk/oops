@@ -32,17 +32,28 @@ class UnaryExpression(var operator: UnaryExpression.Operator, var operand: Expre
         this.operator match {
           case NOT =>
             val value = !o.value
-            return new BooleanLiteralExpression(value, this.position)
+            BooleanLiteralExpression(value, this.position)
         }
 
       case o: IntegerLiteralExpression =>
         this.operator match {
           case MINUS =>
             val value = -o.value
-            return new IntegerLiteralExpression(value, this.position)
+            IntegerLiteralExpression(value, this.position)
         }
 
-      case _ => return this
+      case o: UnaryExpression =>
+        if (o.operator == this.operator == MINUS) {
+          /* -(-x) → x */
+          o.operand
+        } else if (o.operator == this.operator == NOT) {
+          /* NOT (NOT x) → x */
+          o.operand
+        } else {
+          o
+        }
+
+      case o => o
     }
   }
 

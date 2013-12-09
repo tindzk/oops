@@ -48,7 +48,10 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
   override def optimPass() : Expression = {
     /* TODO Better handling for EQ, NEQ. */
 
-    (this.leftOperand.optimPass(), this.rightOperand.optimPass()) match {
+    this.leftOperand = this.leftOperand.optimPass()
+    this.rightOperand = this.rightOperand.optimPass()
+
+    (this.leftOperand, this.rightOperand) match {
       case (l: BooleanLiteralExpression, r: BooleanLiteralExpression) =>
         this.operator match {
           case AND =>
@@ -65,6 +68,34 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
             return BooleanLiteralExpression(value, this.position)
         }
 
+      case (l: Expression, r @ BooleanLiteralExpression(false, _)) =>
+        if (this.operator == AND) {
+          return r
+        } else if (this.operator == OR) {
+          return l
+        }
+
+      case (l: Expression, r @ BooleanLiteralExpression(true, _)) =>
+        if (this.operator == AND) {
+          return l
+        } else if (this.operator == OR) {
+          return r
+        }
+
+      case (l @ BooleanLiteralExpression(false, _), r: Expression) =>
+        if (this.operator == AND) {
+          return l
+        } else if (this.operator == OR) {
+          return r
+        }
+
+      case (l @ BooleanLiteralExpression(true, _), r: Expression) =>
+        if (this.operator == AND) {
+          return r
+        } else if (this.operator == OR) {
+          return l
+        }
+
       case (l: IntegerLiteralExpression, r: IntegerLiteralExpression) =>
         this.operator match {
           case PLUS =>
@@ -77,6 +108,9 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
             val value = l.value * r.value
             return IntegerLiteralExpression(value, this.position)
           case DIV =>
+            if (r.value == 0) {
+              throw new CompileException("Division by zero.", this.position)
+            }
             val value = l.value / r.value
             return IntegerLiteralExpression(value, this.position)
           case MOD =>
@@ -102,11 +136,119 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
             return BooleanLiteralExpression(value, this.position)
         }
 
-      case (l, r) =>
-        this.leftOperand = l
-        this.rightOperand = r
-        return this
+      case (IntegerLiteralExpression(0, _), r: Expression) =>
+        this.operator match {
+          case PLUS =>
+            return r
+          case MINUS =>
+            return new UnaryExpression(UnaryExpression.MINUS, r, this.position)
+          case MUL =>
+            /* TODO Use logging library. */
+            println("Warning: Expression short-circuits to zero. The right operand is never evaluated.")
+            return IntegerLiteralExpression(0, this.position)
+          case DIV =>
+            return IntegerLiteralExpression(0, this.position)
+          case _ =>
+        }
+
+      case (IntegerLiteralExpression(1, _), r: Expression) =>
+        this.operator match {
+          case MUL =>
+            return r
+          case _ =>
+        }
+
+      case (l: Expression, IntegerLiteralExpression(1, _)) =>
+        this.operator match {
+          case MUL =>
+            return l
+          case DIV =>
+            return l
+          case _ =>
+        }
+
+      case (l: Expression, IntegerLiteralExpression(0, _)) =>
+        this.operator match {
+          case PLUS =>
+            return l
+          case MINUS =>
+            return l
+          case MUL =>
+            println("Warning: Expression short-circuits to zero. The left operand is never evaluated.")
+            return IntegerLiteralExpression(0, this.position)
+          case DIV =>
+            throw new CompileException("Division by zero.", this.position)
+          case _ =>
+        }
+
+      case (l @ IntegerLiteralExpression(value, _), r: UnaryExpression) =>
+        /* c * (-x) → -c * x */
+        if (this.operator == MUL && r.operator == UnaryExpression.MINUS) {
+          l.value = -l.value
+          this.rightOperand = r.operand
+        } else if (this.operator == DIV && r.operator == UnaryExpression.MINUS) {
+          /* c / -x → -c / x */
+          l.value = -l.value
+          this.rightOperand = r.operand
+        }
+
+      case (l: UnaryExpression, r @ IntegerLiteralExpression(value, _)) =>
+        if (this.operator == MUL && l.operator == UnaryExpression.MINUS) {
+          /* -x * c → x * (-c) */
+          r.value = -r.value
+          this.leftOperand = l.operand
+        } else if (this.operator == DIV && l.operator == UnaryExpression.MINUS) {
+          /* -x / c → x / (-c) */
+          r.value = -r.value
+          this.leftOperand = l.operand
+        }
+
+      case (l: UnaryExpression, r: UnaryExpression) =>
+        if (this.operator == MUL && l.operator == r.operator == UnaryExpression.MINUS) {
+          /* -x * (-y) → x * y */
+          return new BinaryExpression(l.operand, BinaryExpression.MUL, r.operand)
+        } else if (this.operator == DIV && l.operator == r.operator == UnaryExpression.MINUS) {
+          /* -x / (-y) → x / y */
+          return new BinaryExpression(l.operand, BinaryExpression.DIV, r.operand)
+        }
+
+      case (l: UnaryExpression, r: Expression) =>
+        if (this.operator == MUL && l.operator == UnaryExpression.MINUS) {
+          /* -x * y → -(x * y) */
+          return new UnaryExpression(UnaryExpression.MINUS,
+            new BinaryExpression(l.operand, BinaryExpression.MUL, r), this.position)
+        } else if (this.operator == DIV && l.operator == UnaryExpression.MINUS) {
+          /* -x / y → -(x / y) */
+          return new UnaryExpression(UnaryExpression.MINUS,
+            new BinaryExpression(l.operand, BinaryExpression.DIV, r), this.position)
+        }
+
+      case (l: Expression, r: UnaryExpression) =>
+        if (this.operator == MUL && r.operator == UnaryExpression.MINUS) {
+          /* x * (-y) → -(x * y) */
+          return new UnaryExpression(UnaryExpression.MINUS,
+            new BinaryExpression(l, BinaryExpression.MUL, r.operand), this.position)
+        } else if (this.operator == DIV && r.operator == UnaryExpression.MINUS) {
+          /* x / (-y) → -(x / y) */
+          return new UnaryExpression(UnaryExpression.MINUS,
+            new BinaryExpression(l, BinaryExpression.DIV, r.operand), this.position)
+        }
+
+      case (l: Expression, r: UnaryExpression) =>
+        if (this.operator == PLUS && r.operator == UnaryExpression.MINUS) {
+          /* x + (-y) → x - y */
+          this.operator = MINUS
+          this.rightOperand = r.operand
+        } else if (this.operator == MINUS && r.operator == UnaryExpression.MINUS) {
+          /* x - (-y) → x + y */
+          this.operator = PLUS
+          this.rightOperand = r.operand
+        }
+
+      case _ =>
     }
+
+    return this
   }
 
   override def resolvedType() = t

@@ -33,7 +33,7 @@ case class BooleanLiteralExpression(value: Boolean, var _position: Position) ext
   }
 }
 
-case class IntegerLiteralExpression(value: Int, var _position: Position) extends LiteralExpression(Types.intType, _position) {
+case class IntegerLiteralExpression(var value: Int, var _position: Position) extends LiteralExpression(Types.intType, _position) {
   def print(tree: TreeStream) {
     tree.println(this.value)
   }
