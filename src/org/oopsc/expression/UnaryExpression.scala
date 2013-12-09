@@ -11,7 +11,7 @@ object UnaryExpression extends Enumeration {
 /**
  * Represents an expression with an unary operator in the syntax tree.
  */
-class UnaryExpression(var operator: UnaryExpression.Operator, var operand: Expression, position: Position) extends Expression(position) {
+case class UnaryExpression(var operator: UnaryExpression.Operator, var operand: Expression, _position: Position) extends Expression(_position) {
   import UnaryExpression._
 
   override def refPass(sem: SemanticAnalysis) {

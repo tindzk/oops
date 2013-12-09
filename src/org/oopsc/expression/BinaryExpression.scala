@@ -47,8 +47,6 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
   }
 
   override def optimPass(): Expression = {
-    /* TODO Better handling for EQ, NEQ. */
-
     this.leftOperand = this.leftOperand.optimPass()
     this.rightOperand = this.rightOperand.optimPass()
 
@@ -142,76 +140,52 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
         return IntegerLiteralExpression(0, this.position)
       case (l: Expression, IntegerLiteralExpression(0, _), DIV) =>
         throw new CompileException("Division by zero.", this.position)
-      case (l@IntegerLiteralExpression(value, _), r: UnaryExpression, MUL) =>
-        if (r.operator == UnaryExpression.MINUS) {
+      case (l@IntegerLiteralExpression(value, _), r@UnaryExpression(UnaryExpression.MINUS, _, _), MUL) =>
           /* c * (-x) → -c * x */
           l.value = -l.value
           this.rightOperand = r.operand
-        }
-      case (l@IntegerLiteralExpression(value, _), r: UnaryExpression, DIV) =>
-        if (r.operator == UnaryExpression.MINUS) {
-          /* c / -x → -c / x */
-          l.value = -l.value
-          this.rightOperand = r.operand
-        }
-      case (l: UnaryExpression, r@IntegerLiteralExpression(value, _), MUL) =>
-        if (l.operator == UnaryExpression.MINUS) {
-          /* -x * c → x * (-c) */
-          r.value = -r.value
-          this.leftOperand = l.operand
-        }
-      case (l: UnaryExpression, r@IntegerLiteralExpression(value, _), DIV) =>
-        if (l.operator == UnaryExpression.MINUS) {
-          /* -x / c → x / (-c) */
-          r.value = -r.value
-          this.leftOperand = l.operand
-        }
-      case (l: UnaryExpression, r: UnaryExpression, MUL) =>
-        if (l.operator == r.operator == UnaryExpression.MINUS) {
-          /* -x * (-y) → x * y */
-          return new BinaryExpression(l.operand, BinaryExpression.MUL, r.operand)
-        }
-      case (l: UnaryExpression, r: UnaryExpression, DIV) =>
-        if (l.operator == r.operator == UnaryExpression.MINUS) {
-          /* -x / (-y) → x / y */
-          return new BinaryExpression(l.operand, BinaryExpression.DIV, r.operand)
-        }
-      case (l: UnaryExpression, r: Expression, MUL) =>
-        if (l.operator == UnaryExpression.MINUS) {
-          /* -x * y → -(x * y) */
-          return new UnaryExpression(UnaryExpression.MINUS,
-            new BinaryExpression(l.operand, BinaryExpression.MUL, r), this.position)
-        }
-      case (l: UnaryExpression, r: Expression, DIV) =>
-        if (l.operator == UnaryExpression.MINUS) {
-          /* -x / y → -(x / y) */
-          return new UnaryExpression(UnaryExpression.MINUS,
-            new BinaryExpression(l.operand, BinaryExpression.DIV, r), this.position)
-        }
-      case (l: Expression, r: UnaryExpression, MUL) =>
-        if (r.operator == UnaryExpression.MINUS) {
-          /* x * (-y) → -(x * y) */
-          return new UnaryExpression(UnaryExpression.MINUS,
-            new BinaryExpression(l, BinaryExpression.MUL, r.operand), this.position)
-        }
-      case (l: Expression, r: UnaryExpression, DIV) =>
-        if (r.operator == UnaryExpression.MINUS) {
-          /* x / (-y) → -(x / y) */
-          return new UnaryExpression(UnaryExpression.MINUS,
-            new BinaryExpression(l, BinaryExpression.DIV, r.operand), this.position)
-        }
-      case (l: Expression, r: UnaryExpression, PLUS) =>
-        if (r.operator == UnaryExpression.MINUS) {
-          /* x + (-y) → x - y */
-          this.operator = MINUS
-          this.rightOperand = r.operand
-        }
-      case (l: Expression, r: UnaryExpression, MINUS) =>
-        if (r.operator == UnaryExpression.MINUS) {
-          /* x - (-y) → x + y */
-          this.operator = PLUS
-          this.rightOperand = r.operand
-        }
+      case (l@IntegerLiteralExpression(value, _), r@UnaryExpression(UnaryExpression.MINUS, _, _), DIV) =>
+        /* c / -x → -c / x */
+        l.value = -l.value
+        this.rightOperand = r.operand
+      case (l@UnaryExpression(UnaryExpression.MINUS, _, _), r@IntegerLiteralExpression(value, _), MUL) =>
+        /* -x * c → x * (-c) */
+        r.value = -r.value
+        this.leftOperand = l.operand
+      case (l@UnaryExpression(UnaryExpression.MINUS, _, _), r@IntegerLiteralExpression(value, _), DIV) =>
+        /* -x / c → x / (-c) */
+        r.value = -r.value
+        this.leftOperand = l.operand
+      case (l@UnaryExpression(UnaryExpression.MINUS, _, _), r@UnaryExpression(UnaryExpression.MINUS, _, _), MUL) =>
+        /* -x * (-y) → x * y */
+        return new BinaryExpression(l.operand, BinaryExpression.MUL, r.operand)
+      case (l@UnaryExpression(UnaryExpression.MINUS, _, _), r@UnaryExpression(UnaryExpression.MINUS, _, _), DIV) =>
+        /* -x / (-y) → x / y */
+        return new BinaryExpression(l.operand, BinaryExpression.DIV, r.operand)
+      case (l@UnaryExpression(UnaryExpression.MINUS, _, _), r: Expression, MUL) =>
+        /* -x * y → -(x * y) */
+        return new UnaryExpression(UnaryExpression.MINUS,
+          new BinaryExpression(l.operand, BinaryExpression.MUL, r), this.position)
+      case (l@UnaryExpression(UnaryExpression.MINUS, _, _), r: Expression, DIV) =>
+        /* -x / y → -(x / y) */
+        return new UnaryExpression(UnaryExpression.MINUS,
+          new BinaryExpression(l.operand, BinaryExpression.DIV, r), this.position)
+      case (l: Expression, r@UnaryExpression(UnaryExpression.MINUS, _, _), MUL) =>
+        /* x * (-y) → -(x * y) */
+        return new UnaryExpression(UnaryExpression.MINUS,
+          new BinaryExpression(l, BinaryExpression.MUL, r.operand), this.position)
+      case (l: Expression, r@UnaryExpression(UnaryExpression.MINUS, _, _), DIV) =>
+        /* x / (-y) → -(x / y) */
+        return new UnaryExpression(UnaryExpression.MINUS,
+          new BinaryExpression(l, BinaryExpression.DIV, r.operand), this.position)
+      case (l: Expression, r@UnaryExpression(UnaryExpression.MINUS, _, _), PLUS) =>
+        /* x + (-y) → x - y */
+        this.operator = MINUS
+        this.rightOperand = r.operand
+      case (l: Expression, r@UnaryExpression(UnaryExpression.MINUS, _, _), MINUS) =>
+        /* x - (-y) → x + y */
+        this.operator = PLUS
+        this.rightOperand = r.operand
 
       case _ =>
     }
