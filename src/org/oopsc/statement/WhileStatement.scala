@@ -1,7 +1,7 @@
 package org.oopsc.statement
 
 import org.oopsc._
-import org.oopsc.expression.Expression
+import org.oopsc.expression.{BooleanLiteralExpression, Expression}
 import scala.collection.mutable.ListBuffer
 
 class WhileStatement(var condition: Expression, var statements: ListBuffer[Statement]) extends Statement {
@@ -13,9 +13,16 @@ class WhileStatement(var condition: Expression, var statements: ListBuffer[State
 
   override def optimPass() : Statement = {
     this.condition = this.condition.optimPass()
+
+    this.condition match {
+      case BooleanLiteralExpression(false, _) =>
+        /* If the condition evaluates to false, return a NullStatement. */
+        return new NullStatement
+
+      case _ =>
+    }
+
     this.statements = this.statements.map(_.optimPass())
-    /* TODO If condition evaluates to false, return NullStatement.
-     * If condition evaluates to true, return BlockStatement. */
     this
   }
 
@@ -44,12 +51,19 @@ class WhileStatement(var condition: Expression, var statements: ListBuffer[State
 
     code.println("; WHILE")
     code.println(whileLabel + ":")
-    this.condition.generateCode(code, false)
 
-    code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen")
-    code.println("SUB R2, R1")
-    code.println("ISZ R5, R5 ; Wenn 0, dann")
-    code.println("JPC R5, " + endLabel + " ; Schleife verlassen")
+    this.condition match {
+      case BooleanLiteralExpression(true, _) =>
+        /* Minor optimisation: No need to generate evaluation code for the true literal. */
+      case _ =>
+        this.condition.generateCode(code, false)
+
+        code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen")
+        code.println("SUB R2, R1")
+        code.println("ISZ R5, R5 ; Wenn 0, dann")
+        code.println("JPC R5, " + endLabel + " ; Schleife verlassen")
+    }
+
     code.println("; DO")
 
     for (s <- this.statements) {

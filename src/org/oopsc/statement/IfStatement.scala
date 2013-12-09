@@ -23,15 +23,24 @@ class IfStatement(_condition: Expression, _thenStatements: ListBuffer[Statement]
   override def optimPass() : Statement = {
     this.branches = this.branches.map(b => (b._1.optimPass(), b._2.map(_.optimPass())))
 
+    var newBranches = new ListBuffer[(Expression, ListBuffer[Statement])]
+
     /* Delete all branches that always evaluate to `false'. */
-    for ((cond, stmts) <- this.branches) {
+    var skipRest = false
+    for ((cond, stmts) <- this.branches if !skipRest) {
       cond match {
         case BooleanLiteralExpression(false, _) =>
-          this.branches -= ((cond, stmts))
+          /* Skip branch. */
+        case BooleanLiteralExpression(true, _) =>
+          newBranches += (cond -> stmts)
+          /* Skip all other branches. */
+          skipRest = true
         case _ =>
+          newBranches += (cond -> stmts)
       }
     }
 
+    this.branches = newBranches
     this.elseBranch = this.elseBranch.map(_.optimPass())
 
     /* If no branches left, return NullStatement. */
@@ -86,12 +95,18 @@ class IfStatement(_condition: Expression, _thenStatements: ListBuffer[Statement]
   }
 
   private def generateCode(code: CodeStream, tryContexts: Int, condition: Expression, stmts: ListBuffer[Statement], nextLabel: String, endLabel: String) {
-    condition.generateCode(code, false)
-    code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen")
-    code.println("SUB R2, R1")
-    code.println("ISZ R5, R5 ; Wenn 0, dann")
-    code.println("JPC R5, " + nextLabel + " ; Sprung zu END IF bzw. nächstem ELSEIF/ELSE")
-    code.println("; THEN")
+    condition match {
+      case BooleanLiteralExpression(true, _) =>
+        /* Minor optimisation: No need to generate evaluation code for the true literal. */
+      case _ =>
+        condition.generateCode(code, false)
+        code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen")
+        code.println("SUB R2, R1")
+        code.println("ISZ R5, R5 ; Wenn 0, dann")
+        code.println("JPC R5, " + nextLabel + " ; Sprung zu END IF bzw. nächstem ELSEIF/ELSE")
+        code.println("; THEN")
+    }
+
     stmts.foreach(_.generateCode(code, tryContexts))
     code.println("MRI R0, " + endLabel + " ; Sprung zu END IF")
   }
