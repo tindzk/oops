@@ -46,17 +46,14 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
    * CATCH branches assigning a statement block to a value that needs to be caught in order for
    * the statements to be executed.
    */
-  var catchStatements = Map.empty[LiteralExpression, ListBuffer[Statement]]
+  var catchStatements = new ListBuffer[(LiteralExpression, ListBuffer[Statement])]
 
   override def refPass(sem: SemanticAnalysis) {
     this.tryStatements.foreach(_.refPass(sem))
 
     for ((expr, stmts) <- this.catchStatements) {
       expr.resolvedType.check(sem, Types.intType, expr.position)
-
-      for (s <- stmts) {
-        s.refPass(sem)
-      }
+      stmts.foreach(_.refPass(sem))
     }
 
     if (this.catchStatements.isEmpty) {
@@ -66,6 +63,7 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
 
   override def optimPass() : Statement = {
     this.tryStatements = this.tryStatements.map(_.optimPass())
+    this.catchStatements = this.catchStatements.map(b => (b._1, b._2.map(_.optimPass())))
     this
   }
 
@@ -78,24 +76,15 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
 
     if (!this.tryStatements.isEmpty) {
       tree.indent
-
-      for (s <- this.tryStatements) {
-        s.print(tree)
-      }
-
+      this.tryStatements.foreach(_.print(tree))
       tree.unindent
     }
 
     for ((expr, stmts) <- this.catchStatements) {
       tree.println("CATCH")
       tree.indent
-
       expr.print(tree)
-
-      for (s <- stmts) {
-        s.print(tree)
-      }
-
+      stmts.foreach(_.print(tree))
       tree.unindent
     }
   }
@@ -136,9 +125,7 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
 
     val endLabel = code.nextLabel
 
-    for (s <- this.tryStatements) {
-      s.generateCode(code, tryContexts + 1)
-    }
+    this.tryStatements.foreach(_.generateCode(code, tryContexts + 1))
 
     /* This instruction is only reached if no exception was thrown. */
     code.println("MRI R0, " + endLabel)
@@ -162,9 +149,7 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
        * before executing the statements. */
       TryStatement.popException(code, true)
 
-      for (stmt <- stmts) {
-        stmt.generateCode(code, tryContexts)
-      }
+      stmts.foreach(_.generateCode(code, tryContexts))
 
       /* Jump to the end of the TRY block. */
       code.println("MRI R0, " + endLabel)
