@@ -52,6 +52,30 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
     this.rightOperand = this.rightOperand.optimPass()
 
     (this.leftOperand, this.rightOperand, this.operator) match {
+      case (IntegerLiteralExpression(0, _), r: Expression, PLUS) =>
+        return r
+      case (IntegerLiteralExpression(0, _), r: Expression, MINUS) =>
+        return new UnaryExpression(UnaryExpression.MINUS, r, this.position)
+      case (IntegerLiteralExpression(0, _), r: Expression, MUL) =>
+        logger.warn(s"${this.position}: Expression short-circuits to zero. The right operand is never evaluated.")
+        return IntegerLiteralExpression(0, this.position)
+      case (IntegerLiteralExpression(0, _), r: Expression, DIV) =>
+        return IntegerLiteralExpression(0, this.position)
+      case (IntegerLiteralExpression(1, _), r: Expression, MUL) =>
+        return r
+      case (l: Expression, IntegerLiteralExpression(1, _), MUL) =>
+        return l
+      case (l: Expression, IntegerLiteralExpression(1, _), DIV) =>
+        return l
+      case (l: Expression, IntegerLiteralExpression(0, _), PLUS) =>
+        return l
+      case (l: Expression, IntegerLiteralExpression(0, _), MINUS) =>
+        return l
+      case (l: Expression, IntegerLiteralExpression(0, _), MUL) =>
+        logger.warn(s"${this.position}: Expression short-circuits to zero. The left operand is never evaluated.")
+        return IntegerLiteralExpression(0, this.position)
+      case (l: Expression, IntegerLiteralExpression(0, _), DIV) =>
+        throw new CompileException("Division by zero.", this.position)
       case (l: BooleanLiteralExpression, r: BooleanLiteralExpression, AND) =>
         val value = l.value && r.value
         return BooleanLiteralExpression(value, this.position)
@@ -116,30 +140,6 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
       case (l: IntegerLiteralExpression, r: IntegerLiteralExpression, NEQ) =>
         val value = l.value != r.value
         return BooleanLiteralExpression(value, this.position)
-      case (IntegerLiteralExpression(0, _), r: Expression, PLUS) =>
-        return r
-      case (IntegerLiteralExpression(0, _), r: Expression, MINUS) =>
-        return new UnaryExpression(UnaryExpression.MINUS, r, this.position)
-      case (IntegerLiteralExpression(0, _), r: Expression, MUL) =>
-        logger.warn(s"${this.position}: Expression short-circuits to zero. The right operand is never evaluated.")
-        return IntegerLiteralExpression(0, this.position)
-      case (IntegerLiteralExpression(0, _), r: Expression, DIV) =>
-        return IntegerLiteralExpression(0, this.position)
-      case (IntegerLiteralExpression(1, _), r: Expression, MUL) =>
-        return r
-      case (l: Expression, IntegerLiteralExpression(1, _), MUL) =>
-        return l
-      case (l: Expression, IntegerLiteralExpression(1, _), DIV) =>
-        return l
-      case (l: Expression, IntegerLiteralExpression(0, _), PLUS) =>
-        return l
-      case (l: Expression, IntegerLiteralExpression(0, _), MINUS) =>
-        return l
-      case (l: Expression, IntegerLiteralExpression(0, _), MUL) =>
-        logger.warn(s"${this.position}: Expression short-circuits to zero. The left operand is never evaluated.")
-        return IntegerLiteralExpression(0, this.position)
-      case (l: Expression, IntegerLiteralExpression(0, _), DIV) =>
-        throw new CompileException("Division by zero.", this.position)
       case (l@IntegerLiteralExpression(value, _), r@UnaryExpression(UnaryExpression.MINUS, _, _), MUL) =>
           /* c * (-x) → -c * x */
           l.value = -l.value
