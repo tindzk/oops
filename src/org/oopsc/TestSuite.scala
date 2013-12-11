@@ -17,9 +17,10 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 import org.oopsvm.Assembler
 import org.oopsvm.VirtualMachine
+import com.typesafe.scalalogging.slf4j.Logging
 
 @RunWith(value = classOf[Parameterized])
-class TestSuite(var path: String) {
+class TestSuite(var path: String) extends Logging {
   private var p: Program = null
 
   def runVM(asm: String, input: String): String = {
@@ -80,7 +81,7 @@ class TestSuite(var path: String) {
       this.p.generateCode(code, 1000, 1000)
       val asm = stream.toString("UTF-8")
 
-      System.err.println(asm)
+      logger.debug(asm)
 
       /* Run the VM twice with different inputs. */
       val output = this.runVM(asm, "abc\n") + this.runVM(asm, "xyz\n")
@@ -88,7 +89,7 @@ class TestSuite(var path: String) {
     } catch {
       case e: CompileException => {
         if (supposedToFail) {
-          System.err.println(e.getMessage)
+          logger.error(e.getMessage)
           return
         }
 

@@ -1,11 +1,13 @@
 package org.oopsc
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 /**
  * Diese Klasse stellt die Hauptmethode des Übersetzers für OOPS
  * dar. Sie wertet die Kommandozeilen-Optionen aus und bietet
  * eine Hilfe an, falls diese falsch sind.
  */
-object OOPSC {
+object OOPSC extends Logging {
   /**
    * Die Hauptmethode des Übersetzers.
    * Sie wertet die Kommandozeilen-Optionen aus und bietet eine Hilfe an, falls diese falsch sind.
@@ -111,7 +113,7 @@ object OOPSC {
       }
     } catch {
       case e: CompileException => {
-        System.out.println(e.getMessage)
+        logger.error(e.getMessage)
 
         if (debug) {
           e.printStackTrace
@@ -126,7 +128,7 @@ object OOPSC {
    * Die Methode gibt eine Hilfe auf der Konsole aus.
    */
   private def usage {
-    System.out.println("java -jar OOPSC.jar [-c] [-h] [-hs <n>] [-o] [-i] [-l] [-s] [-ss <n>] <quelldatei> [<ausgabedatei>]")
+    System.out.println("java -jar oopsc.jar [-c] [-h] [-hs <n>] [-o] [-i] [-l] [-s] [-ss <n>] <quelldatei> [<ausgabedatei>]")
     System.out.println("    -c       Zeige das Ergebnis der Kontextanalyse")
     System.out.println("    -h       Zeige diese Hilfe")
     System.out.println("    -hs <n>  Reserviere <n> Worte fuer den Heap (Standard ist 100)")

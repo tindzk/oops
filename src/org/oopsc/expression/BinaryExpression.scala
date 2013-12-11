@@ -2,6 +2,7 @@ package org.oopsc.expression
 
 import org.oopsc._
 import org.oopsc.symbol.ClassSymbol
+import com.typesafe.scalalogging.slf4j.Logging
 
 object BinaryExpression extends Enumeration {
   type Operator = Value
@@ -11,7 +12,7 @@ object BinaryExpression extends Enumeration {
 /**
  * Represents an expression with a binary operator in the syntax tree.
  */
-class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpression.Operator, var rightOperand: Expression) extends Expression(leftOperand.position) {
+class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpression.Operator, var rightOperand: Expression) extends Expression(leftOperand.position) with Logging {
 
   import BinaryExpression._
 
@@ -120,8 +121,7 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
       case (IntegerLiteralExpression(0, _), r: Expression, MINUS) =>
         return new UnaryExpression(UnaryExpression.MINUS, r, this.position)
       case (IntegerLiteralExpression(0, _), r: Expression, MUL) =>
-        /* TODO Use logging library. */
-        println("Warning: Expression short-circuits to zero. The right operand is never evaluated.")
+        logger.warn(s"${this.position}: Expression short-circuits to zero. The right operand is never evaluated.")
         return IntegerLiteralExpression(0, this.position)
       case (IntegerLiteralExpression(0, _), r: Expression, DIV) =>
         return IntegerLiteralExpression(0, this.position)
@@ -136,7 +136,7 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
       case (l: Expression, IntegerLiteralExpression(0, _), MINUS) =>
         return l
       case (l: Expression, IntegerLiteralExpression(0, _), MUL) =>
-        println("Warning: Expression short-circuits to zero. The left operand is never evaluated.")
+        logger.warn(s"${this.position}: Expression short-circuits to zero. The left operand is never evaluated.")
         return IntegerLiteralExpression(0, this.position)
       case (l: Expression, IntegerLiteralExpression(0, _), DIV) =>
         throw new CompileException("Division by zero.", this.position)
