@@ -23,7 +23,7 @@ object CompileException {
  * Sie wird in der Hauptmethode {@link OOPSC#main(String[]) OOPSC.main} gefangen und
  * ausgegeben.
  */
-class CompileException(message: String) extends Exception("Error: " + message) {
+class CompileException(message: String) extends Exception(message) {
   /**
    * Konstruktor.
    *
@@ -36,9 +36,9 @@ class CompileException(message: String) extends Exception("Error: " + message) {
    *       Dieser Parameter kann auch null sein, wenn die Stelle nicht
    *       zugeordnet werden kann.
    */
-  def this(message: String, position: Position) = this("Error in " + position + ": " + message)
+  def this(message: String, position: Position) = this(s"$position: $message")
 
   def this(message: String, position: Position, errorLine: String, errorStart: Int, errorEnd: Int) = {
-    this("Error in " + position + ": " + message + "\n" + CompileException.formatError(position, errorLine, errorStart, errorEnd))
+    this(s"$position: $message\n" + CompileException.formatError(position, errorLine, errorStart, errorEnd))
   }
 }
