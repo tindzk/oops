@@ -10,7 +10,7 @@ import org.oopsc.statement._
 
 class CustomErrorListener(var syntax: SyntaxAnalysis) extends BaseErrorListener {
   override def syntaxError(recognizer: Recognizer[_, _], offendingSymbol: AnyRef, line: Int, charPositionInLine: Int, msg: String, e: RecognitionException) {
-    val stack = (recognizer.asInstanceOf[Parser]).getRuleInvocationStack
+    val stack = recognizer.asInstanceOf[Parser].getRuleInvocationStack
     Collections.reverse(stack)
 
     val message = s"$msg with rule stack $stack"
@@ -24,7 +24,7 @@ class CustomErrorListener(var syntax: SyntaxAnalysis) extends BaseErrorListener 
     val start = offendingToken.getStartIndex
     val stop = offendingToken.getStopIndex
 
-    this.syntax.err = new CompileException(message, new Position(line, charPositionInLine), errorLine, start, stop)
+    throw new CompileException(message, new Position(line, charPositionInLine), errorLine, start, stop)
   }
 }
 
@@ -33,8 +33,6 @@ class CustomErrorListener(var syntax: SyntaxAnalysis) extends BaseErrorListener 
  */
 class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
   private final val file = new FileInputStream(fileName)
-
-  var err: CompileException = null
 
   private def identifierFromToken(t: Token): Identifier =
     new Identifier(t.getText, new Position(t.getLine, t.getStartIndex))
@@ -55,12 +53,12 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
   private def getClassDeclaration(ctx: GrammarParser.ClassDeclarationContext): ClassSymbol = {
     var c: ClassSymbol = null
 
-    if (ctx.extendsClass == null) {
-      c = new ClassSymbol(this.identifierFromToken(ctx.name))
-    } else {
-      val baseType = this.resolvableClassIdentifierFromToken(ctx.extendsClass)
-      c = new ClassSymbol(this.identifierFromToken(ctx.name), Some(baseType))
+    val baseType = ctx.extendsClass match {
+      case null => None
+      case e => Some(this.resolvableClassIdentifierFromToken(e))
     }
+
+    c = new ClassSymbol(this.identifierFromToken(ctx.name), baseType)
 
     import scala.collection.JavaConversions._
     for (m <- ctx.memberDeclaration()) {
@@ -157,7 +155,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
 
   private def getExpression(ctx: GrammarParser.ExpressionContext): Expression = {
     val rctx: RuleContext = ctx.getRuleContext
-    val pos: Position = new Position(ctx.start.getLine, ctx.start.getStartIndex)
+    val pos = new Position(ctx.start.getLine, ctx.start.getStartIndex)
 
     rctx match {
       case e: GrammarParser.BracketsExpressionContext =>
@@ -217,11 +215,11 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
   }
 
   private def getIfStatement(ctx: GrammarParser.IfStatementContext): Statement = {
-    val s: IfStatement = new IfStatement(this.getExpression(ctx.expression(0)), this.getStatements(ctx.statements(0)))
+    val s = new IfStatement(this.getExpression(ctx.expression(0)), this.getStatements(ctx.statements(0)))
 
     var i = 1
 
-    while (i < ctx.expression().size()) {
+    while (i < ctx.expression.size) {
       s.addIfElse(this.getExpression(ctx.expression(i)), this.getStatements(ctx.statements(i)))
       i += 1
     }
@@ -230,7 +228,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
       s.setElse(this.getStatements(ctx.statements(i)))
     }
 
-    return s
+    s
   }
 
   private def getTryStatement(ctx: GrammarParser.TryStatementContext): Statement = {
@@ -241,7 +239,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
       s.addCatchBlock(this.getLiteral(ctx.literal(i)), this.getStatements(ctx.statements(i + 1)))
     }
 
-    return s
+    s
   }
 
   private def getStatement(ctx: GrammarParser.StatementContext): Statement = {
@@ -274,7 +272,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     }
   }
 
-  private def getStatements(ctx: GrammarParser.StatementsContext): ListBuffer[Statement] = {
+  private def getStatements(ctx: GrammarParser.StatementsContext) = {
     val stmts = scala.collection.JavaConversions.collectionAsScalaIterable(ctx.statement())
     stmts.map(this.getStatement(_)).to[ListBuffer]
   }
@@ -289,15 +287,10 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     parser.removeErrorListeners
     parser.addErrorListener(new CustomErrorListener(this))
 
-    this.err = null
     val tree = parser.program
 
     if (this.printSymbols) {
       println(tree.toStringTree(parser))
-    }
-
-    if (this.err != null) {
-      throw this.err
     }
 
     val p = new Program
