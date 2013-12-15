@@ -46,7 +46,8 @@ case class IntegerLiteralExpression(var value: Int, var _position: Position) ext
   override def intValue: Int = value
 }
 
-/* TODO Should use Types.charType */
+/* TODO For compatibility purposes, Types.intType is used. In fact, a separate type
+ * should be introduced for characters. */
 case class CharacterLiteralExpression(value: Char, var _position: Position) extends LiteralExpression(Types.intType, _position) {
   def print(tree: TreeStream) {
     tree.println(this.value)
