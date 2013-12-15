@@ -40,7 +40,7 @@ for app in ["oopsc", "oopsvm"]:
 	print(" ".join(cmdCompile))
 	run(cmdCompile)
 
-	cmdCompile = ["/usr/bin/javac", "-cp", "/usr/share/scala/lib/scala-library.jar:" + ":".join(jarFiles) + ":build/", "-d", "build/"] + javaFiles
+	cmdCompile = ["/usr/bin/javac", "-cp", "/usr/share/scala/lib/scala-library.jar:/usr/share/scala/lib/scala-reflect.jar:" + ":".join(jarFiles) + ":build/", "-d", "build/"] + javaFiles
 	print(" ".join(cmdCompile))
 	run(cmdCompile)
 

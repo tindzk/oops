@@ -1,140 +1,69 @@
 package org.oopsc
 
 import com.typesafe.scalalogging.slf4j.Logging
+import org.rogach.scallop._
 
-/**
- * Diese Klasse stellt die Hauptmethode des Übersetzers für OOPS
- * dar. Sie wertet die Kommandozeilen-Optionen aus und bietet
- * eine Hilfe an, falls diese falsch sind.
- */
+class Conf(args : Seq[String]) extends ScallopConf(args) {
+  version("oopsc 0.1 (c) 2013 Tim Nieradzik")
+  banner("""Usage: java -jar oopsc.jar [OPTION]... [input] [<output>]
+           |oopsc is an OOPS compiler.
+           |
+           |Options:
+           |""".stripMargin)
+
+  val symbols = opt[Boolean](descr = "show symbols from the syntax analysis")
+  val ast = opt[Boolean](descr = "print AST after contextual analysis")
+  val debug = opt[Boolean](descr = "enable debug mode")
+  val help = opt[Boolean](descr = "print help")
+  val optimisations = opt[Boolean]("optim", descr = "enable optimisations")
+  val heapSize = opt[Int](descr = "heap size", default = Some(100))
+  val stackSize = opt[Int](descr = "stack size", default = Some(100))
+  val inputFile = trailArg[String]("input", descr = "input file")
+  val outputFile = trailArg[String]("output", descr = "output file (default: stdout)", required = false)
+}
+
 object OOPSC extends Logging {
-  /**
-   * Die Hauptmethode des Übersetzers.
-   * Sie wertet die Kommandozeilen-Optionen aus und bietet eine Hilfe an, falls diese falsch sind.
-   * Sind sie gültig, wird zuerst die Syntaxanalyse durchgeführt. Diese erzeugt den
-   * Syntaxbaum des Programms, in dem dann die Kontextanalyse durchgeführt wird. Zum
-   * Schluss wird dann der Code generiert.
-   *
-   * @param args
-	 * Die Kommandozeilenargumente. Diese sind im Quelltext der Methode { @link #usage usage}
-   *                                                                          nachzulesen.
-   */
-  // TODO refactor
   def main(args: Array[String]) {
-    var inFile: String = null
-    var outFile: String = null
-    var showContext = false
-    var showSymbols = false
-    var showSyntax = false
-    var debug = false
-    var optimisations = false
-    var heapSize = 100
-    var stackSize = 100
+    val conf = new Conf(args)
 
-    var i = 0
-    while (i < args.length) {
-      val arg: String = args(i)
-
-      if (arg == "-c") {
-        showContext = true
-      } else if (arg == "-h") {
-        usage
-        return
-      } else if (arg == "-hs") {
-        i += 1
-        if (i < args.length) {
-          heapSize = Integer.parseInt(args(i))
-        } else {
-          System.out.println("Fehlendes Argument fuer " + arg)
-          usage
-        }
-      } else if (arg == "-d") {
-        debug = true
-      } else if (arg == "-o") {
-        optimisations = true
-      } else if (arg == "-l") {
-        showSymbols = true
-      } else if (arg == "-s") {
-        showSyntax = true
-      } else if (arg == "-ss") {
-        i += 1
-        if (i < args.length) {
-          stackSize = Integer.parseInt(args(i))
-        } else {
-          System.out.println("Fehlendes Argument fuer " + arg)
-          usage
-        }
-      } else if (arg.length > 0 && arg.charAt(0) == '-') {
-        System.out.println("Unbekannte Option " + arg)
-        usage
-        return
-      } else if (outFile != null) {
-        System.out.println("Nur zwei Dateinamen erlaubt")
-        usage
-        return
-      } else if (inFile != null) {
-        outFile = arg
-      } else {
-        inFile = arg
-      }
-
-      i += 1
-    }
-
-    if (inFile == null) {
-      System.out.println("Keine Quelldatei angegeben")
-      usage
+    if (conf.help.apply()) {
+      conf.printHelp()
       return
     }
 
     try {
-      val p = new SyntaxAnalysis(inFile, showSymbols).parse
-
-      if (showSyntax) {
-        p.printTree
-      }
+      val p = new SyntaxAnalysis(conf.inputFile.apply(), conf.symbols.apply()).parse
 
       p.semanticAnalysis
 
-      if (optimisations) {
+      if (conf.optimisations.apply()) {
         p.optimise
       }
 
-      if (showContext) {
+      if (conf.ast.apply()) {
         p.printTree
       }
 
-      val stream: CodeStream = if (outFile == null) CodeStream.apply else CodeStream.apply(outFile)
+      val stream = conf.outputFile.get match {
+        case Some(out) => CodeStream.apply(out)
+        case None => CodeStream.apply()
+      }
 
-      p.generateCode(stream, stackSize, heapSize)
+      p.generateCode(stream, conf.stackSize.apply(), conf.heapSize.apply())
 
-      if (outFile != null) {
+      if (conf.outputFile.isDefined) {
         stream.close
       }
     } catch {
       case e: CompileException => {
         logger.error(e.getMessage)
 
-        if (debug) {
+        if (conf.debug.apply()) {
           e.printStackTrace
         }
 
         System.exit(1)
       }
     }
-  }
-
-  /**
-   * Die Methode gibt eine Hilfe auf der Konsole aus.
-   */
-  private def usage {
-    System.out.println("java -jar oopsc.jar [-c] [-h] [-hs <n>] [-o] [-i] [-l] [-s] [-ss <n>] <quelldatei> [<ausgabedatei>]")
-    System.out.println("    -c       Zeige das Ergebnis der Kontextanalyse")
-    System.out.println("    -h       Zeige diese Hilfe")
-    System.out.println("    -hs <n>  Reserviere <n> Worte fuer den Heap (Standard ist 100)")
-    System.out.println("    -o       Perform some basic optimisations")
-    System.out.println("    -l       Zeige das Ergebnis der lexikalischen Analyse")
-    System.out.println("    -s       Zeige das Ergebnis der syntaktischen Analyse")
-    System.out.println("    -ss <n>  Reserviere <n> Worte fuer den Stapel (Standard ist 100)")
   }
 }

@@ -8,10 +8,6 @@ import scala.collection.mutable.ListBuffer
 import org.oopsc.expression._
 import org.oopsc.statement._
 
-/**
- * Die Klasse realisiert die syntaktische Analyse für die ANTLR4 OOPS Grammatik.
- * Daraus wird der Syntaxbaum aufgebaut, dessen Wurzel die Klasse {@link Program Program} ist.
- */
 class CustomErrorListener(var syntax: SyntaxAnalysis) extends BaseErrorListener {
   override def syntaxError(recognizer: Recognizer[_, _], offendingSymbol: AnyRef, line: Int, charPositionInLine: Int, msg: String, e: RecognitionException) {
     val stack = (recognizer.asInstanceOf[Parser]).getRuleInvocationStack
@@ -32,8 +28,10 @@ class CustomErrorListener(var syntax: SyntaxAnalysis) extends BaseErrorListener 
   }
 }
 
+/* Performs syntactic analysis using the ANTLR4 grammar for the OOPS language.
+ * Then constructs abstract syntax tree (AST).
+ */
 class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
-  /** Der Datenstrom, aus dem der Quelltext gelesen wird. */
   private final val file = new FileInputStream(fileName)
 
   var err: CompileException = null
@@ -295,7 +293,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     val tree = parser.program
 
     if (this.printSymbols) {
-      System.out.println(tree.toStringTree(parser))
+      println(tree.toStringTree(parser))
     }
 
     if (this.err != null) {
