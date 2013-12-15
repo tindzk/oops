@@ -233,8 +233,8 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     val pos = new Position(ctx.start.getLine, ctx.start.getStartIndex)
     val s = new TryStatement(this.getStatements(ctx.statements(0)), pos)
 
-    for (i <- 0 to ctx.literal().size() - 1) {
-      s.addCatchBlock(this.getLiteral(ctx.literal(i)), this.getStatements(ctx.statements(i + 1)))
+    for (i <- 0 to ctx.literals().size() - 1) {
+      s.addCatchBlock(this.getLiterals(ctx.literals(i)), this.getStatements(ctx.statements(i + 1)))
     }
 
     s
@@ -268,6 +268,11 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
       case s: GrammarParser.ExpressionStatementContext =>
         new CallStatement(this.getExpression(s.expression))
     }
+  }
+
+  private def getLiterals(ctx: GrammarParser.LiteralsContext) = {
+    val literals = scala.collection.JavaConversions.collectionAsScalaIterable(ctx.literal())
+    literals.map(this.getLiteral(_)).to[ListBuffer]
   }
 
   private def getStatements(ctx: GrammarParser.StatementsContext) = {

@@ -1,0 +1,15 @@
+CLASS Main IS
+    METHOD main IS BEGIN
+        TRY
+            THROW 1;
+        CATCH 1, 2 DO
+            WRITE 'Y';
+        END TRY
+
+        TRY
+            THROW 2;
+        CATCH 1, 2 DO
+            WRITE 'Y';
+        END TRY
+    END METHOD
+END CLASS

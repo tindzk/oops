@@ -58,6 +58,10 @@ type
   : Identifier
   ;
 
+literals
+  : literal (',' literal)*
+  ;
+
 statements
   : statement*
   ;
@@ -68,7 +72,7 @@ statement
     ('ELSE' statements)?
     'END IF'                       # ifStatement
   | 'TRY' statements
-    ('CATCH' literal 'DO' statements)+
+    ('CATCH' literals 'DO' statements)+
     'END TRY'                      # tryStatement
   | 'WHILE' expression
     'DO' statements

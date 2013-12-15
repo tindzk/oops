@@ -46,13 +46,13 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
    * CATCH branches assigning a statement block to a value that needs to be caught in order for
    * the statements to be executed.
    */
-  var catchStatements = new ListBuffer[(LiteralExpression, ListBuffer[Statement])]
+  var catchStatements = new ListBuffer[(ListBuffer[LiteralExpression], ListBuffer[Statement])]
 
   override def refPass(sem: SemanticAnalysis) {
     this.tryStatements.foreach(_.refPass(sem))
 
-    for ((expr, stmts) <- this.catchStatements) {
-      expr.resolvedType.check(sem, Types.intType, expr.position)
+    for ((exprs, stmts) <- this.catchStatements) {
+      exprs.foreach(expr => expr.resolvedType.check(sem, Types.intType, expr.position))
       stmts.foreach(_.refPass(sem))
     }
 
@@ -67,7 +67,7 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
     this
   }
 
-  def addCatchBlock(condition: LiteralExpression, stmts: ListBuffer[Statement]) {
+  def addCatchBlock(condition: ListBuffer[LiteralExpression], stmts: ListBuffer[Statement]) {
     this.catchStatements += (condition -> stmts)
   }
 
@@ -80,10 +80,10 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
       tree.unindent
     }
 
-    for ((expr, stmts) <- this.catchStatements) {
+    for ((exprs, stmts) <- this.catchStatements) {
       tree.println("CATCH")
       tree.indent
-      expr.print(tree)
+      exprs.foreach(_.print(tree))
       stmts.foreach(_.print(tree))
       tree.unindent
     }
@@ -130,20 +130,32 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
     /* This instruction is only reached if no exception was thrown. */
     code.println("MRI R0, " + endLabel)
 
-    for ((expr, stmts) <- this.catchStatements) {
+    for ((exprs, stmts) <- this.catchStatements) {
       /* An exception was thrown. */
-      code.println("; CATCH " + expr.intValue)
-      code.println(catchLabel + ":")
-      catchLabel = code.nextLabel
+      code.println("; CATCH [" + exprs.map(_.intValue).mkString(",") + "]")
 
-      /* When an exception is thrown, the associated error code is stored in R7. */
-      code.println("MRI R5, " + expr.intValue)
-      code.println("SUB R5, R7")
+      val catchStatementLabel = code.nextLabel
 
-      /* If entry.getKey().value != error code, jump to the next `catch' branch. */
-      code.println("ISZ R5, R5")
-      code.println("XOR R5, R1")
-      code.println("JPC R5, " + catchLabel)
+      for (expr <- exprs) {
+        code.println(catchLabel + ":")
+        catchLabel = code.nextLabel
+
+        /* When an exception is thrown, the associated error code is stored in R7. */
+        code.println("MRI R5, " + expr.intValue)
+        code.println("SUB R5, R7")
+
+        /* If entry.getKey().value == error code... */
+        code.println("ISZ R5, R5")
+        // code.println("XOR R5, R1")
+
+        /* ...then jump to the statement block of this catch branch. */
+        code.println("JPC R5, " + catchStatementLabel)
+
+        /* Otherwise jump to next catch. */
+        code.println("MRI R0, " + catchLabel)
+      }
+
+      code.println(catchStatementLabel + ":")
 
       /* The exception was caught. Therefore, pop the exception off the stack
        * before executing the statements. */
