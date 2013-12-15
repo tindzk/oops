@@ -74,9 +74,8 @@ case class UnaryExpression(var operator: UnaryExpression.Operator, var operand: 
 
     this.operator match {
       case NOT =>
-        code.println("MRI R6, 1")
-        code.println("SUB R6, R5")
-        code.println("MMR (R2), R6")
+        code.println("XOR R5, R1")
+        code.println("MMR (R2), R5")
 
       case MINUS =>
         code.println("MRI R6, 0")
