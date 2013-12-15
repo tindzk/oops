@@ -11,7 +11,7 @@ object ClassSymbol {
    * Konstante für die Größe der Verwaltungsinformation am Anfang eines jeden Objekts.
    * As of now, the header only contains an address to the VMT of the object.
    */
-  final val HEADERSIZE: Int = 1
+  final val HEADERSIZE = 1
 
   /**
    * Die Methode erzeugt eine Ausnahme für einen Typfehler. Sie wandelt dabei intern verwendete
@@ -33,7 +33,7 @@ object ClassSymbol {
  * superClass - This is the superclass not enclosingScope field. We still record
  *  the enclosing scope so we can push in and pop out of class defs.
  */
-class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbol] = None) extends ScopedSymbol(ident) {
+class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   /** List of all fields and methods. */
   var members = new LinkedHashMap[String, Symbol]()
 
@@ -43,11 +43,23 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
   /** Die Methoden dieser Klasse. */
   var methods = new ListBuffer[MethodSymbol]
 
+  var superClass: Option[ResolvableClassSymbol] = None
+
   /**
    * Die Größe eines Objekts dieser Klasse. Die Größe wird später bestimmt.
    * Default size for all objects.
    */
-  var objectSize: Int = ClassSymbol.HEADERSIZE
+  var objectSize = ClassSymbol.HEADERSIZE
+
+  def this(ident: Identifier, superClass: ClassSymbol) {
+    this(ident)
+    this.superClass = Some(new ResolvableClassSymbol(superClass.identifier))
+  }
+
+  def this(ident: Identifier, superClass: ResolvableClassSymbol) {
+    this(ident)
+    this.superClass = Some(superClass)
+  }
 
   /**
    * Recursively fill the VMT with the method declarations. Take into account
@@ -360,17 +372,17 @@ class ClassSymbol(ident: Identifier, var superClass: Option[ResolvableClassSymbo
 
     /* Type promotions for built-in types integer and boolean. */
     if ((this eq Types.intType) && (expected eq Types.intClass)) {
-      return true;
+      return true
     }
     if ((this eq Types.intClass) && (expected eq Types.intType)) {
-      return true;
+      return true
     }
 
     if ((this eq Types.boolType) && (expected eq Types.boolClass)) {
-      return true;
+      return true
     }
     if ((this eq Types.boolClass) && (expected eq Types.boolType)) {
-      return true;
+      return true
     }
 
     /* Compare wrt. base type. */

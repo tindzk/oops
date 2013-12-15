@@ -51,14 +51,12 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
   }
 
   private def getClassDeclaration(ctx: GrammarParser.ClassDeclarationContext): ClassSymbol = {
-    var c: ClassSymbol = null
-
-    val baseType = ctx.extendsClass match {
-      case null => None
-      case e => Some(this.resolvableClassIdentifierFromToken(e))
+    val c = ctx.extendsClass match {
+      case null =>
+        new ClassSymbol(this.identifierFromToken(ctx.name))
+      case e =>
+        new ClassSymbol(this.identifierFromToken(ctx.name), this.resolvableClassIdentifierFromToken(e))
     }
-
-    c = new ClassSymbol(this.identifierFromToken(ctx.name), baseType)
 
     import scala.collection.JavaConversions._
     for (m <- ctx.memberDeclaration()) {
@@ -78,7 +76,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     import scala.collection.JavaConversions._
     for (ident <- ctx.Identifier) {
       val name = this.identifierFromToken(ident.getSymbol)
-      vars += (if (attr) new AttributeSymbol(name, `type`) else new VariableSymbol(name, `type`))
+      vars += (if (attr) AttributeSymbol.apply(name, `type`) else new VariableSymbol(name, `type`))
     }
   }
 

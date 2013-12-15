@@ -7,10 +7,10 @@ import java.util
 
 class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   /** Local variable SELF. */
-  var self = new VariableSymbol(new Identifier("_self"), null)
+  var self: VariableSymbol = null
 
   /** Local variable BASE. */
-  var base = new VariableSymbol(new Identifier("_base"), null)
+  var base: VariableSymbol = null
 
   /** List of all parameters. */
   var parameters = new ListBuffer[VariableSymbol]()
@@ -62,18 +62,19 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     }
 
     /* SELF points to this class. */
-    this.self.resolvedType = new Some(sem.currentClass)
-
-    /* BASE represents the inherited class, may be None. */
-    this.base.resolvedType = sem.currentClass.getSuperClass()
-
-    /* Insert BASE if it is typed. */
-    if (this.base.resolvedType.isDefined) {
-      this.defineSymbol(this.base)
-    }
+    this.self = new VariableSymbol(new Identifier("_self"), sem.currentClass)
 
     /* Register SELF. */
     this.defineSymbol(this.self)
+
+    /* BASE represents the inherited class. Define symbol only if base class available. */
+    sem.currentClass.getSuperClass() match {
+      case Some(c) =>
+        this.base = new VariableSymbol(new Identifier("_base"), c)
+        this.defineSymbol(this.base)
+
+      case None =>
+    }
 
     /* Register all parameters. */
     for (v <- this.parameters) {
@@ -98,7 +99,9 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     /* BASE has the same address on the stack as SELF, however the type of BASE
      * corresponds to the base type.
      */
-    this.base.offset = offset
+    if (this.base != null) {
+      this.base.offset = offset
+    }
 
     /* Skip return address and old frame pointer. */
     offset = 1

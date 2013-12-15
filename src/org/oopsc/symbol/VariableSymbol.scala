@@ -4,8 +4,20 @@ import org.oopsc.scope._
 import org.oopsc._
 
 /* Variable declaration. Also used for method parameters. */
-class VariableSymbol(ident: Identifier, typeName: Identifier) extends Symbol(ident) {
+class VariableSymbol(ident: Identifier) extends Symbol(ident) {
+  var typeIdent: Identifier = null
   var resolvedType: Option[ClassSymbol] = None
+
+  def this(ident: Identifier, typeSymbol: ClassSymbol) {
+    this(ident)
+    this.resolvedType = Some(typeSymbol)
+    this.typeIdent = typeSymbol.identifier
+  }
+
+  def this(ident: Identifier, typeIdent: Identifier) {
+    this(ident)
+    this.typeIdent = typeIdent
+  }
 
   /**
    * Die Position der Variablen im Stapelrahmen bzw. des Attributs im Objekt.
@@ -21,7 +33,7 @@ class VariableSymbol(ident: Identifier, typeName: Identifier) extends Symbol(ide
    */
   def getResolvedType: ClassSymbol = {
     if (this.resolvedType.isEmpty) {
-      this.resolvedType = Some(this.scope.resolveClass(typeName))
+      this.resolvedType = Some(this.scope.resolveClass(typeIdent))
     }
 
     resolvedType.get

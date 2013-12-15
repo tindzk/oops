@@ -19,25 +19,15 @@ object Types {
   final val objectClass = new ClassSymbol(new Identifier("Object"))
 
   /** Die Klasse Integer. */
-  // TODO map to objectClass directly
-  final val intClass = new ClassSymbol(new Identifier("Integer"), Some(new ResolvableClassSymbol(new Identifier("Object"))))
+  final val intClass = new ClassSymbol(new Identifier("Integer"), objectClass)
 
   /** Die Klasse Boolean. */
-  final val boolClass = new ClassSymbol(new Identifier("Boolean"), Some(new ResolvableClassSymbol(new Identifier("Object"))))
+  final val boolClass = new ClassSymbol(new Identifier("Boolean"), objectClass)
 
   /* Do not set ClassDeclaration.(int|bool)Class.objectSize manually as this
    * value is going to be overwritten during the contextual analysis. The
    * attribute is required for boxing as it holds the actual value.
    */
-  intClass.attributes += {
-    val attr = new AttributeSymbol(new Identifier("_value"), intType.identifier)
-    attr.resolvedType = Some(intType)
-    attr
-  }
-
-  boolClass.attributes += {
-    val attr = new AttributeSymbol(new Identifier("_value"), boolType.identifier)
-    attr.resolvedType = Some(boolType)
-    attr
-  }
+  intClass.attributes += AttributeSymbol.apply(new Identifier("_value"), intType)
+  boolClass.attributes += AttributeSymbol.apply(new Identifier("_value"), boolType)
 }
