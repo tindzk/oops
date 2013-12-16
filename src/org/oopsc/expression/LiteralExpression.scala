@@ -3,7 +3,7 @@ package org.oopsc.expression
 import org.oopsc._
 import org.oopsc.symbol._
 
-abstract class LiteralExpression(`type`: ClassSymbol, position: Position) extends Expression(position) {
+abstract class LiteralExpression(`type`: ClassSymbol, position: Position = new Position()) extends Expression(position) {
   override def resolvedType() : ClassSymbol = `type`
 
   def _generateIntCode(value: Int, code: CodeStream) {
@@ -22,7 +22,7 @@ abstract class LiteralExpression(`type`: ClassSymbol, position: Position) extend
   def intValue: Int = throw new CompileException("Literal does not have a compatible value.")
 }
 
-case class BooleanLiteralExpression(value: Boolean, var _position: Position) extends LiteralExpression(Types.boolType, _position) {
+case class BooleanLiteralExpression(value: Boolean, var _position: Position = new Position()) extends LiteralExpression(Types.boolType, _position) {
   def print(tree: TreeStream) {
     tree.println(this.value)
   }
@@ -33,7 +33,7 @@ case class BooleanLiteralExpression(value: Boolean, var _position: Position) ext
   }
 }
 
-case class IntegerLiteralExpression(var value: Int, var _position: Position) extends LiteralExpression(Types.intType, _position) {
+case class IntegerLiteralExpression(var value: Int, var _position: Position = new Position()) extends LiteralExpression(Types.intType, _position) {
   def print(tree: TreeStream) {
     tree.println(this.value)
   }
@@ -48,7 +48,7 @@ case class IntegerLiteralExpression(var value: Int, var _position: Position) ext
 
 /* TODO For compatibility purposes, Types.intType is used. In fact, a separate type
  * should be introduced for characters. */
-case class CharacterLiteralExpression(value: Char, var _position: Position) extends LiteralExpression(Types.intType, _position) {
+case class CharacterLiteralExpression(value: Char, var _position: Position = new Position()) extends LiteralExpression(Types.intType, _position) {
   def print(tree: TreeStream) {
     tree.println(this.value)
   }
@@ -61,7 +61,7 @@ case class CharacterLiteralExpression(value: Char, var _position: Position) exte
   override def intValue: Int = value.asInstanceOf[Int]
 }
 
-case class NullLiteralExpression(var _position: Position) extends LiteralExpression(Types.nullType, _position) {
+case class NullLiteralExpression(var _position: Position = new Position()) extends LiteralExpression(Types.nullType, _position) {
   def print(tree: TreeStream) {
     tree.println("NULL")
   }

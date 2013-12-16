@@ -3,6 +3,7 @@ package org.oopsc.expression
 import org.oopsc._
 import org.oopsc.symbol._
 import java.io.{ UnsupportedEncodingException, ByteArrayOutputStream }
+import org.oopsc.statement.ThrowStatement
 
 /**
  * Die abstrakte Basisklasse für alle Ausdrücke im Syntaxbaum.
@@ -59,6 +60,13 @@ abstract class Expression(var position: Position) {
     code.println("; DEREF")
     code.println("MRM R5, (R2)")
     code.println("MRM R5, (R5)")
+
+    /* Throw an exception if the address is NULL. */
+    val nextLabel = code.nextLabel
+    code.println("JPC R5, " + nextLabel)
+    new ThrowStatement(new IntegerLiteralExpression(1)).generateCode(code)
+
+    code.println(nextLabel + ":")
     code.println("MMR (R2), R5")
   }
 

@@ -20,7 +20,7 @@ object ThrowStatement {
 /**
  * Statement for triggering an exception.
  */
-class ThrowStatement(var value: Expression, var position: Position) extends Statement {
+class ThrowStatement(var value: Expression, var position: Position = new Position()) extends Statement {
   override def refPass(sem: SemanticAnalysis) {
     this.value.refPass(sem)
     this.value.resolvedType.check(sem, Types.intType, this.value.position)
@@ -38,7 +38,7 @@ class ThrowStatement(var value: Expression, var position: Position) extends Stat
     tree.unindent
   }
 
-  override def generateCode(code: CodeStream, tryContexts: Int) {
+  override def generateCode(code: CodeStream, tryContexts: Int = -1) {
     code.println("; THROW")
 
     /* Push the exception code on the stack. */

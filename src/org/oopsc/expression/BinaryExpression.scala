@@ -1,6 +1,7 @@
 package org.oopsc.expression
 
 import org.oopsc._
+import org.oopsc.statement._
 import org.oopsc.symbol.ClassSymbol
 import com.typesafe.scalalogging.slf4j.Logging
 
@@ -13,7 +14,6 @@ object BinaryExpression extends Enumeration {
  * Represents an expression with a binary operator in the syntax tree.
  */
 class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpression.Operator, var rightOperand: Expression) extends Expression(leftOperand.position) with Logging {
-
   import BinaryExpression._
 
   var t: ClassSymbol = null
@@ -212,6 +212,15 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
     code.println("; " + this.operator)
 
     code.println("MRM R5, (R2)")
+
+    if (this.operator == DIV) {
+      /* For the DIV operator, throw an exception if the right operand is zero. */
+      val nextLabel = code.nextLabel
+      code.println("JPC R5, " + nextLabel)
+      new ThrowStatement(new IntegerLiteralExpression(0)).generateCode(code)
+      code.println(nextLabel + ":")
+    }
+
     code.println("SUB R2, R1")
     code.println("MRM R6, (R2)")
 
