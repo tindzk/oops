@@ -35,13 +35,13 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
   private final val file = new FileInputStream(fileName)
 
   private def identifierFromToken(t: Token): Identifier =
-    new Identifier(t.getText, new Position(t.getLine, t.getStartIndex))
+    new Identifier(t.getText, new Position(t.getLine, t.getCharPositionInLine))
 
   private def resolvableIdentifierFromToken(t: Token): ResolvableSymbol =
-    new ResolvableSymbol(new Identifier(t.getText, new Position(t.getLine, t.getStartIndex)))
+    new ResolvableSymbol(new Identifier(t.getText, new Position(t.getLine, t.getCharPositionInLine)))
 
   private def resolvableClassIdentifierFromToken(t: Token): ResolvableClassSymbol =
-    new ResolvableClassSymbol(new Identifier(t.getText, new Position(t.getLine, t.getStartIndex)))
+    new ResolvableClassSymbol(new Identifier(t.getText, new Position(t.getLine, t.getCharPositionInLine)))
 
   private def program(ctx: GrammarParser.ProgramContext, p: Program) {
     import scala.collection.JavaConversions._
@@ -113,7 +113,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
 
   private def getLiteral(ctx: GrammarParser.LiteralContext): LiteralExpression = {
     val rctx: RuleContext = ctx.getRuleContext
-    val pos = new Position(ctx.start.getLine, ctx.start.getStartIndex)
+    val pos = new Position(ctx.start.getLine, ctx.start.getCharPositionInLine)
 
     rctx match {
       case l: GrammarParser.IntegerLiteralContext =>
@@ -153,7 +153,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
 
   private def getExpression(ctx: GrammarParser.ExpressionContext): Expression = {
     val rctx: RuleContext = ctx.getRuleContext
-    val pos = new Position(ctx.start.getLine, ctx.start.getStartIndex)
+    val pos = new Position(ctx.start.getLine, ctx.start.getCharPositionInLine)
 
     rctx match {
       case e: GrammarParser.BracketsExpressionContext =>
@@ -230,7 +230,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
   }
 
   private def getTryStatement(ctx: GrammarParser.TryStatementContext): Statement = {
-    val pos = new Position(ctx.start.getLine, ctx.start.getStartIndex)
+    val pos = new Position(ctx.start.getLine, ctx.start.getCharPositionInLine)
     val s = new TryStatement(this.getStatements(ctx.statements(0)), pos)
 
     for (i <- 0 to ctx.literals().size() - 1) {
@@ -242,7 +242,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
 
   private def getStatement(ctx: GrammarParser.StatementContext): Statement = {
     val rctx: RuleContext = ctx.getRuleContext
-    val pos = new Position(ctx.start.getLine, ctx.start.getStartIndex)
+    val pos = new Position(ctx.start.getLine, ctx.start.getCharPositionInLine)
 
     rctx match {
       case s: GrammarParser.IfStatementContext =>
