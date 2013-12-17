@@ -7,6 +7,10 @@ CLASS Main IS
             WRITE x;
         CATCH 1 DO
             WRITE 'Y';
+        CATCH 2 DO
+            WRITE 'Y';
+        CATCH 1 DO
+            WRITE 'Y';
         END TRY
     END METHOD
 END CLASS

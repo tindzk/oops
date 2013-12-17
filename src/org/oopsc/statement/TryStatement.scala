@@ -51,6 +51,11 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
   override def refPass(sem: SemanticAnalysis) {
     this.tryStatements.foreach(_.refPass(sem))
 
+    val allExprs = this.catchStatements.map(b => b._1.map(_.intValue)).flatten
+    if (allExprs.size != allExprs.toSet.size) {
+      throw new CompileException(s"All CATCH expressions must be unique.", this.position)
+    }
+
     for ((exprs, stmts) <- this.catchStatements) {
       exprs.foreach(expr => expr.resolvedType.check(sem, Types.intType, expr.position))
       stmts.foreach(_.refPass(sem))
@@ -146,7 +151,6 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
 
         /* If entry.getKey().value == error code... */
         code.println("ISZ R5, R5")
-        // code.println("XOR R5, R1")
 
         /* ...then jump to the statement block of this catch branch. */
         code.println("JPC R5, " + catchStatementLabel)
