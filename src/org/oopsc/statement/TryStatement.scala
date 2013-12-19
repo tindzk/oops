@@ -57,7 +57,7 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
     }
 
     for ((exprs, stmts) <- this.catchStatements) {
-      exprs.foreach(expr => expr.resolvedType.check(sem, Types.intType, expr.position))
+      exprs.foreach(expr => expr.resolvedType.check(Types.intType, expr.position))
       stmts.foreach(_.refPass(sem))
     }
 

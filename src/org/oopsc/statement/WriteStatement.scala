@@ -9,7 +9,7 @@ import org.oopsc.expression.Expression
 class WriteStatement(var operand: Expression) extends Statement {
   override def refPass(sem: SemanticAnalysis) {
     this.operand.refPass(sem)
-    this.operand.resolvedType.check(sem, Types.intType, this.operand.position)
+    this.operand.resolvedType.check(Types.intType, this.operand.position)
   }
 
   override def optimPass() : Statement = {

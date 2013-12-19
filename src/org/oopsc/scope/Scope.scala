@@ -23,7 +23,7 @@ trait Scope {
   def getScopeName: String
 
   /** Define a symbol in the current scope. */
-  def defineSymbol(sym: Symbol) = {
+  def defineSymbol(sym: Symbol) {
     if (this.symbols.contains(sym.name())) {
       val pos = this.symbols.get(sym.name()).get.identifier.position
       throw new CompileException(s"Redeclaration of symbol ${sym.name()} (declared in ${pos.line}:${pos.column}).",
@@ -34,30 +34,37 @@ trait Scope {
   }
 
   /** Look up the passed identifier in this scope, or in parent scope if not declared here. */
-  def resolve(name: String): Option[Symbol] = {
+  protected def resolve(name: String, requestingClass: Option[ClassSymbol]): Option[Symbol] = {
     this.symbols.get(name) match {
-      case Some(sym) => return Some(sym)
+      case Some(sym) =>
+        if (!sym.availableFor(requestingClass)) {
+          if (requestingClass.isDefined) {
+            throw new CompileException(s"Symbol ${this.getScopeName}.${name} not accessible from within ${requestingClass.get.identifier.name}.")
+          } else {
+            throw new CompileException(s"Symbol ${this.getScopeName}.${name} not accessible.")
+          }
+        }
+
+        return Some(sym)
       case None => None
     }
 
     this.getParentScope match {
-      case Some(s) => s.resolve(name)
+      case Some(s) => s.resolve(name, requestingClass)
       case None => None
     }
   }
 
-  def checkedResolve(ident: Identifier): Symbol = {
-    return resolve(ident.name) match {
+  def resolveSymbol(ident: Identifier, requestingClass: Option[ClassSymbol]): Symbol =
+    resolve(ident.name, requestingClass) match {
       case Some(v) => v
       case None => throw new CompileException(s"Symbol ${ident.name} not found in scope '${this.getScopeName}'.", ident.position)
     }
-  }
 
-  def resolveClass(ident: Identifier): ClassSymbol = {
-    return resolve(ident.name) match {
+  def resolveClass(ident: Identifier): ClassSymbol =
+    resolve(ident.name, None) match {
       case Some(c: ClassSymbol) => c
       case Some(c) => throw new CompileException(s"${ident.name} is not a class.", ident.position)
       case _ => throw new CompileException(s"Class symbol ${ident.name} not found.", ident.position)
     }
-  }
 }

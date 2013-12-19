@@ -1,0 +1,24 @@
+CLASS Main IS
+
+  METHOD main IS BEGIN 
+      method;
+      method2;
+      method3;
+  END METHOD
+
+  PUBLIC METHOD method IS
+  BEGIN
+      WRITE 'M';
+  END METHOD
+
+  PROTECTED METHOD method2 IS
+  BEGIN
+      WRITE 'N';
+  END METHOD
+
+  PRIVATE METHOD method3 IS
+  BEGIN
+      WRITE 'O';
+  END METHOD
+    
+END CLASS

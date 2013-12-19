@@ -83,11 +83,12 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * Current index.
    * @return Highest VMT index.
    */
+  // TODO refactor
   protected def getLastVmtIndex(cur: Int): Int = {
     var ccur = cur
     if (this.superClass.isDefined) {
       val base = this.superClass.get.declaration.get
-      val tmp: Int = base.getLastVmtIndex(cur)
+      val tmp = base.getLastVmtIndex(cur)
       if (tmp > ccur) {
         ccur = tmp
       }
@@ -346,8 +347,8 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * @throws CompileException
    * Die Typen sind nicht kompatibel.
    */
-  def check(sem: SemanticAnalysis, expected: ClassSymbol, position: Position) {
-    if (!this.isA(sem, expected)) {
+  def check(expected: ClassSymbol, position: Position) {
+    if (!this.isA(expected)) {
       ClassSymbol.typeError(expected, this, position)
     }
   }
@@ -359,7 +360,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * Der Typ, mit dem verglichen wird.
    * @return Sind die beiden Typen sind kompatibel?
    */
-  def isA(sem: SemanticAnalysis, expected: ClassSymbol): Boolean = {
+  def isA(expected: ClassSymbol): Boolean = {
     // Spezialbehandlung für null, das mit allen Klassen kompatibel ist,
     // aber nicht mit den Basisdatentypen _Integer und _Boolean sowie auch nicht
     // an Stellen erlaubt ist, wo gar kein Wert erwartet wird.
@@ -408,14 +409,14 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
       case None => enclosingScope // globals
     }
 
-  /** For a.b, only look in a's class hierarchy to resolve b, not globals */
+  /** For a.b, only look in a's class hierarchy to resolve b. */
   def resolveMember(name: String): Option[Symbol] = {
     members.get(name) match {
       case Some(m) => return Some(m)
       case None => None
     }
 
-    // if not in this class, check just the superclass chain
+    /* If not in this class, check the superclass chain. */
     superClass match {
       case Some(c) =>
         c.declaration match {
@@ -427,9 +428,9 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     }
   }
 
-  override def resolve(name: String): Option[Symbol] =
+  override protected def resolve(name: String, requestingClass: Option[ClassSymbol]): Option[Symbol] =
     resolveMember(name) match {
       case Some(m) => Some(m)
-      case None => super.resolve(name)
+      case None => super.resolve(name, requestingClass)
     }
 }

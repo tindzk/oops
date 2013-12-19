@@ -13,7 +13,7 @@ class IfStatement(_condition: Expression, _thenStatements: ListBuffer[Statement]
   override def refPass(sem: SemanticAnalysis) {
     for ((cond, stmts) <- this.branches) {
       cond.refPass(sem)
-      cond.resolvedType.check(sem, Types.boolType, cond.position)
+      cond.resolvedType.check(Types.boolType, cond.position)
       stmts.foreach(_.refPass(sem))
     }
 

@@ -23,7 +23,7 @@ object ThrowStatement {
 class ThrowStatement(var value: Expression, var position: Position = new Position()) extends Statement {
   override def refPass(sem: SemanticAnalysis) {
     this.value.refPass(sem)
-    this.value.resolvedType.check(sem, Types.intType, this.value.position)
+    this.value.resolvedType.check(Types.intType, this.value.position)
   }
 
   override def optimPass() : Statement = {

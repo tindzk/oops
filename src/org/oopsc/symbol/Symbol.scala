@@ -3,6 +3,9 @@ package org.oopsc.symbol
 import org.oopsc._
 
 abstract class Symbol(var identifier: Identifier) {
+  var accessLevel = AccessLevel.Public
+  var declaringClass: Option[ClassSymbol] = None
+
   def name(): String = identifier.name
 
   /**
@@ -26,4 +29,12 @@ abstract class Symbol(var identifier: Identifier) {
    * Der Strom, in den die Ausgabe erfolgt.
    */
   def print(tree: TreeStream)
+
+  def availableFor(clazz: Option[ClassSymbol]) = {
+    ((this.accessLevel == AccessLevel.Private) &&
+      (clazz.isDefined && (this.declaringClass.get eq clazz.get))) ||
+      (this.accessLevel == AccessLevel.Protected &&
+        (clazz.isDefined && this.declaringClass.get.isA(clazz.get))) ||
+      (this.accessLevel == AccessLevel.Public)
+  }
 }

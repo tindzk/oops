@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 class WhileStatement(var condition: Expression, var statements: ListBuffer[Statement]) extends Statement {
   override def refPass(sem: SemanticAnalysis) {
     this.condition.refPass(sem)
-    this.condition.resolvedType.check(sem, Types.boolType, this.condition.position)
+    this.condition.resolvedType.check(Types.boolType, this.condition.position)
     this.statements.foreach(_.refPass(sem))
   }
 

@@ -7,6 +7,7 @@ import org.oopsc.symbol._
 import scala.collection.mutable.ListBuffer
 import org.oopsc.expression._
 import org.oopsc.statement._
+import org.oopsc.symbol.AccessLevel.AccessLevel
 
 class CustomErrorListener(var syntax: SyntaxAnalysis) extends BaseErrorListener {
   override def syntaxError(recognizer: Recognizer[_, _], offendingSymbol: AnyRef, line: Int, charPositionInLine: Int, msg: String, e: RecognitionException) {
@@ -70,24 +71,42 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     c
   }
 
-  private def variableDeclaration(ctx: GrammarParser.VariableDeclarationContext, vars: ListBuffer[VariableSymbol], attr: Boolean) {
+  private def variableDeclaration(ctx: GrammarParser.VariableDeclarationContext, vars: ListBuffer[VariableSymbol], attr: Boolean, accessLevel: AccessLevel) {
     val `type` = this.identifierFromToken(ctx.`type`.start)
 
     import scala.collection.JavaConversions._
     for (ident <- ctx.Identifier) {
       val name = this.identifierFromToken(ident.getSymbol)
-      vars += (if (attr) AttributeSymbol.apply(name, `type`) else new VariableSymbol(name, `type`))
+      vars += (if (attr) {
+        val sym = AttributeSymbol.apply(name, `type`)
+        sym.accessLevel = accessLevel
+        sym
+      } else {
+        new VariableSymbol(name, `type`)
+      })
     }
   }
 
+  private def accessLevel(ctx: GrammarParser.AccessLevelContext): AccessLevel = {
+    if (ctx != null) {
+      if (ctx.PRIVATE() != null) {
+        return AccessLevel.Private
+      } else if (ctx.PROTECTED() != null) {
+        return AccessLevel.Protected
+      }
+    }
+
+    AccessLevel.Public
+  }
+
   private def memberVariableDeclaration(ctx: GrammarParser.MemberVariableDeclarationContext, c: ClassSymbol) {
-    this.variableDeclaration(ctx.variableDeclaration, c.attributes, true)
+    this.variableDeclaration(ctx.variableDeclaration, c.attributes, true, this.accessLevel(ctx.accessLevel()))
   }
 
   private def methodBody(ctx: GrammarParser.MethodBodyContext, m: MethodSymbol) {
     import scala.collection.JavaConversions._
     for (variable <- ctx.variableDeclaration) {
-      this.variableDeclaration(variable, m.locals, false)
+      this.variableDeclaration(variable, m.locals, false, null)
     }
 
     m.statements = this.getStatements(ctx.statements)
@@ -95,11 +114,13 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
 
   private def methodDeclaration(ctx: GrammarParser.MethodDeclarationContext, c: ClassSymbol) = {
     var m = new MethodSymbol(this.identifierFromToken(ctx.name))
+    m.accessLevel = this.accessLevel(ctx.accessLevel())
+
     c.methods += m
 
     import scala.collection.JavaConversions._
     for (variable <- ctx.variableDeclaration) {
-      this.variableDeclaration(variable, m.parameters, false)
+      this.variableDeclaration(variable, m.parameters, false, null)
     }
 
     if (ctx.`type` != null) {

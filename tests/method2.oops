@@ -1,0 +1,38 @@
+CLASS Main IS
+  METHOD main IS
+    b: B;
+  BEGIN 
+    b := NEW B;
+    b.method;   
+  END METHOD
+END CLASS
+
+CLASS A IS
+  PUBLIC METHOD method IS
+  BEGIN
+      WRITE 'M';
+  END METHOD
+
+  PROTECTED METHOD method2 IS
+  BEGIN
+      WRITE 'N';
+  END METHOD
+
+  PRIVATE METHOD method3 IS
+  BEGIN
+      WRITE 'O';
+  END METHOD    
+END CLASS
+
+CLASS B EXTENDS A IS
+  PUBLIC METHOD method IS
+  BEGIN
+      WRITE 'P';
+      SELF.method2();
+  END METHOD
+
+  PROTECTED METHOD method2 IS
+  BEGIN
+      WRITE 'Q';
+  END METHOD
+END CLASS

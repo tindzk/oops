@@ -19,10 +19,10 @@ case class UnaryExpression(var operator: UnaryExpression.Operator, var operand: 
 
     this.operator match {
       case NOT =>
-        this.operand.resolvedType().check(sem, Types.boolType, this.operand.position)
+        this.operand.resolvedType().check(Types.boolType, this.operand.position)
 
       case MINUS =>
-        this.operand.resolvedType().check(sem, Types.intType, this.operand.position)
+        this.operand.resolvedType().check(Types.intType, this.operand.position)
     }
   }
 

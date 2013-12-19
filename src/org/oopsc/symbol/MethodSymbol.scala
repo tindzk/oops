@@ -39,13 +39,25 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   def resolveParameter(name: String): Option[Symbol] =
     parameters.find(_.name() == name)
 
-  override def resolve(name: String): Option[Symbol] =
+  override protected def resolve(name: String, requestingClass: Option[ClassSymbol]): Option[Symbol] =
     resolveParameter(name) match {
       case Some(m) => Some(m)
-      case None => super.resolve(name)
+      case None => super.resolve(name, requestingClass)
     }
 
   def defPass(sem: SemanticAnalysis) {
+    sem.currentClass.resolveMember(this.identifier.name) match {
+      case Some(m) =>
+        /* TODO Can private methods be overwritten by subclasses? */
+        if (m.accessLevel != this.accessLevel) {
+          throw new CompileException(
+            s"${this.identifier.name} overwrites method in superclass ${sem.currentClass.identifier.name} with different access level.",
+            this.identifier.position)
+        }
+
+      case _ =>
+    }
+
     sem.defineSymbol(this)
     sem.enter(this)
 
@@ -143,7 +155,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   def print(tree: TreeStream) {
-    /* TODO Print parameters and return type. */
+    /* TODO Print parameters, return type and access level. */
     tree.println("METHOD " + this.identifier.name)
     tree.indent
 

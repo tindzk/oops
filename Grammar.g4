@@ -16,9 +16,18 @@ EQ:  '=';
 NEQ: '#';
 TRUE: 'TRUE';
 FALSE: 'FALSE';
+PRIVATE: 'PRIVATE';
+PROTECTED: 'PROTECTED';
+PUBLIC: 'PUBLIC';
 
 program
   : classDeclaration*;
+
+accessLevel
+  : PRIVATE
+  | PROTECTED
+  | PUBLIC
+  ;
 
 classDeclaration
   : 'CLASS' name=Identifier
@@ -34,11 +43,11 @@ memberDeclaration
   ;
 
 memberVariableDeclaration
-  : variableDeclaration
+  : accessLevel? variableDeclaration
   ;
 
 methodDeclaration
-  : 'METHOD' name=Identifier
+  : accessLevel? 'METHOD' name=Identifier
     ('(' variableDeclaration (';' variableDeclaration)* ')')?
     (':' type)?
     'IS' methodBody

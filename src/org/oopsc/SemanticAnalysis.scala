@@ -41,6 +41,7 @@ class SemanticAnalysis {
   }
 
   def defineSymbol(sym: Symbol) = {
+    sym.declaringClass = Some(this.currentClass)
     this.currentScope.get.defineSymbol(sym)
   }
 }

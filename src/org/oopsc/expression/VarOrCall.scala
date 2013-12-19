@@ -41,7 +41,7 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
     val resolveScope = if (this.scope == null) sem.currentScope.get else this.scope
 
     /* Resolve variable or method. */
-    this.ref.declaration = Some(resolveScope.checkedResolve(this.ref.identifier))
+    this.ref.declaration = Some(resolveScope.resolveSymbol(this.ref.identifier, Some(sem.currentClass)))
 
     /* Check arguments. */
     if (!this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
@@ -72,7 +72,7 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
       for (((arg, param), num) <- this.arguments.zip(decl.parameters).zipWithIndex) {
         arg.refPass(sem)
 
-        if (!arg.resolvedType().isA(sem, param.getResolvedType)) {
+        if (!arg.resolvedType().isA(param.getResolvedType)) {
           throw new CompileException(
             s"Argument ${num + 1} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.resolvedType().name} given.", this.ref.identifier.position)
         }

@@ -22,7 +22,7 @@ class ReturnStatement(var position: Position, var value: Expression = null) exte
         throw new CompileException("No return value expected.", this.value.position)
       }
 
-      this.value.resolvedType.check(sem, retType, this.value.position)
+      this.value.resolvedType.check(retType, this.value.position)
     }
   }
 

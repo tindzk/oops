@@ -24,22 +24,22 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
 
     this.operator match {
       case AND | OR =>
-        this.leftOperand.resolvedType().check(sem, Types.boolType, this.leftOperand.position)
-        this.rightOperand.resolvedType().check(sem, Types.boolType, this.rightOperand.position)
+        this.leftOperand.resolvedType().check(Types.boolType, this.leftOperand.position)
+        this.rightOperand.resolvedType().check(Types.boolType, this.rightOperand.position)
         this.t = Types.boolType
 
       case PLUS | MINUS | MUL | DIV | MOD =>
-        this.leftOperand.resolvedType().check(sem, Types.intType, this.leftOperand.position)
-        this.rightOperand.resolvedType().check(sem, Types.intType, this.rightOperand.position)
+        this.leftOperand.resolvedType().check(Types.intType, this.leftOperand.position)
+        this.rightOperand.resolvedType().check(Types.intType, this.rightOperand.position)
         this.t = Types.intType
 
       case GT | GTEQ | LT | LTEQ =>
-        this.leftOperand.resolvedType().check(sem, Types.intType, this.leftOperand.position)
-        this.rightOperand.resolvedType().check(sem, Types.intType, this.rightOperand.position)
+        this.leftOperand.resolvedType().check(Types.intType, this.leftOperand.position)
+        this.rightOperand.resolvedType().check(Types.intType, this.rightOperand.position)
         this.t = Types.boolType
 
       case EQ | NEQ =>
-        if (!this.leftOperand.resolvedType().isA(sem, this.rightOperand.resolvedType()) && !this.rightOperand.resolvedType().isA(sem, this.leftOperand.resolvedType())) {
+        if (!this.leftOperand.resolvedType().isA(this.rightOperand.resolvedType()) && !this.rightOperand.resolvedType().isA(this.leftOperand.resolvedType())) {
           ClassSymbol.typeError(this.leftOperand.resolvedType(), this.rightOperand.resolvedType(), this.rightOperand.position)
         }
 

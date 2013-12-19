@@ -6,7 +6,7 @@ import org.oopsc.expression.Expression
 class CallStatement(var call: Expression) extends Statement {
   override def refPass(sem: SemanticAnalysis) {
     this.call.refPass(sem)
-    this.call.resolvedType.check(sem, Types.voidType, this.call.position)
+    this.call.resolvedType.check(Types.voidType, this.call.position)
   }
 
   override def print(tree: TreeStream) {

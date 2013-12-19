@@ -15,7 +15,7 @@ class Assignment(var leftOperand: Expression, var rightOperand: Expression) exte
       throw new CompileException("Lvalue expected", this.leftOperand.position)
     }
 
-    this.rightOperand.resolvedType.check(sem, this.leftOperand.resolvedType, this.rightOperand.position)
+    this.rightOperand.resolvedType.check(this.leftOperand.resolvedType, this.rightOperand.position)
   }
 
   override def optimPass() : Statement = {

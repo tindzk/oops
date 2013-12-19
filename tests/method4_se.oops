@@ -1,0 +1,15 @@
+CLASS Main IS
+  METHOD main IS
+    b: B;
+  BEGIN 
+    b := NEW B;
+    b.method;    
+  END METHOD
+END CLASS
+
+CLASS B IS
+  PRIVATE METHOD method IS
+  BEGIN
+      WRITE 'P';
+  END METHOD
+END CLASS
