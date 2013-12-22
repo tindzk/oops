@@ -14,6 +14,7 @@ class Conf(args : Seq[String]) extends ScallopConf(args) {
   val symbols = opt[Boolean](descr = "show symbols from the syntax analysis")
   val ast = opt[Boolean](descr = "print AST after contextual analysis")
   val debug = opt[Boolean](descr = "enable debug mode")
+  val generateCode = toggle(name = "code", descrYes = "enable code generation (default)", descrNo = "disable code generation", default = Some(true))
   val help = opt[Boolean](descr = "print help")
   val optimisations = opt[Boolean]("optim", descr = "enable optimisations")
   val heapSize = opt[Int](descr = "heap size", default = Some(100))
@@ -49,7 +50,9 @@ object OOPSC extends Logging {
         case None => CodeStream.apply()
       }
 
-      p.generateCode(stream, conf.stackSize.apply(), conf.heapSize.apply())
+      if (conf.generateCode.apply()) {
+        p.generateCode(stream, conf.stackSize.apply(), conf.heapSize.apply())
+      }
 
       if (conf.outputFile.isDefined) {
         stream.close
