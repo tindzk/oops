@@ -65,10 +65,10 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * Recursively collect all methods in the inheritance chain. Filter out
    * overridden methods.
    */
-  private def collectMethods: ListBuffer[MethodSymbol] = {
-    val overridden = this.methods.filter(_.overrides).map(_.vmtIndex)
+  private def collectMethods(overridden: List[MethodSymbol]): ListBuffer[MethodSymbol] = {
+    val _overridden = overridden ++ this.methods.filter(_.overrides.isDefined).map(_.overrides.get)
     this.methods ++ (this.superClass match {
-      case Some(c) => c.declaration.get.collectMethods.filterNot(cur => overridden.contains(cur.vmtIndex))
+      case Some(c) => c.declaration.get.collectMethods(_overridden).diff(_overridden)
       case None => ListBuffer[MethodSymbol]()
     })
   }
@@ -78,7 +78,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * that the contextual analysis was performed before.
    */
   def generateVMT: ListBuffer[MethodSymbol] =
-    this.collectMethods.sortBy(_.vmtIndex)
+    this.collectMethods(List.empty[MethodSymbol]).sortBy(_.vmtIndex)
 
   /**
    * Finds the declaration of the given method and return it in an assembly string.
@@ -97,7 +97,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     if (this.superClass.isEmpty) {
       return null
     }
-    val base: ClassSymbol = this.superClass.get.declaration.get
+    val base = this.superClass.get.declaration.get
 
     base.resolveAsmMethodName(name)
   }
@@ -198,7 +198,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
           base.getMethod(m.identifier.name) match {
             case Some(baseMethod) =>
               m.vmtIndex = baseMethod.vmtIndex
-              m.overrides = true
+              m.overrides = Some(baseMethod)
 
             case None =>
               m.vmtIndex = vmtIndex
