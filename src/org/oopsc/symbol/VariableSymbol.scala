@@ -23,7 +23,7 @@ class VariableSymbol(ident: Identifier) extends Symbol(ident) {
    * Die Position der Variablen im Stapelrahmen bzw. des Attributs im Objekt.
    * Dies wird während der semantischen Analyse eingetragen.
    */
-  var offset: Int = 0
+  var offset = 0
 
   var scope: Scope = null
 
@@ -49,7 +49,7 @@ class VariableSymbol(ident: Identifier) extends Symbol(ident) {
   }
 
   def print(tree: TreeStream) {
-    tree.println(this.identifier.name +  " (" + this.offset + ")" + " : " + (
-      if (this.resolvedType.isEmpty) "<unresolved>" else this.resolvedType.get.name()))
+    tree.println(s"${this.identifier.name} (${this.offset}): " +
+      this.resolvedType.map(_.name()).getOrElse("<unresolved>"))
   }
 }

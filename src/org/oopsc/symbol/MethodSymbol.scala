@@ -163,29 +163,28 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   def print(tree: TreeStream) {
-    /* TODO Print parameters, return type and access level. */
-    tree.println("METHOD " + this.identifier.name)
+    tree.println(s"${this.accessLevel} METHOD ${this.identifier.name}: " +
+      this.resolvedRetType.map(_.name()).getOrElse("<unresolved>"))
     tree.indent
+
+    if (!this.parameters.isEmpty) {
+      tree.println("PARAMETERS")
+      tree.indent
+      this.parameters.foreach(_.print(tree))
+      tree.unindent
+    }
 
     if (!this.locals.isEmpty) {
       tree.println("VARIABLES")
       tree.indent
-
-      for (v <- this.locals) {
-        v.print(tree)
-      }
-
+      this.locals.foreach(_.print(tree))
       tree.unindent
     }
 
     if (!this.statements.isEmpty) {
       tree.println("BEGIN")
       tree.indent
-
-      for (s <- this.statements) {
-        s.print(tree)
-      }
-
+      this.statements.foreach(_.print(tree))
       tree.unindent
     }
 
