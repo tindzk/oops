@@ -110,14 +110,8 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * @return
    */
   def generateVMT: ListBuffer[MethodSymbol] = {
-    val res = new ListBuffer[MethodSymbol]()
-
-    for (i <- 0 to this.getLastVmtIndex(-1)) {
-      res.append(null)
-    }
-
+    val res = ListBuffer[MethodSymbol]().padTo(this.getLastVmtIndex(-1) + 1, null)
     this.fillVMT(res)
-
     res
   }
 
