@@ -163,7 +163,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   def print(tree: TreeStream) {
-    tree.println(s"${this.accessLevel} METHOD ${this.identifier.name}: " +
+    tree.println(s"${this.accessLevel} METHOD ${this.identifier.name} (${this.vmtIndex}): " +
       this.resolvedRetType.map(_.name()).getOrElse("<unresolved>"))
     tree.indent
 
