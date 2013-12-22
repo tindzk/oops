@@ -28,6 +28,13 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   var vmtIndex = -1
   var overrides: Option[MethodSymbol] = None
 
+  /**
+   * Returns method name in an assembly string. By accessing the declaring class,
+   * it takes into account if a method was inherited.
+   */
+  def getAsmMethodName =
+    this.declaringClass.get.identifier.name + "_" + this.identifier.name
+
   def getResolvedReturnType: ClassSymbol = {
     /* Resolve return type if necessary. */
     if (this.resolvedRetType.isEmpty) {

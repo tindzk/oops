@@ -80,28 +80,6 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   def generateVMT: ListBuffer[MethodSymbol] =
     this.collectMethods(List.empty[MethodSymbol]).sortBy(_.vmtIndex)
 
-  /**
-   * Finds the declaration of the given method and return it in an assembly string.
-   * Takes into account if a method was inherited.
-   *
-   * @param name
-   * Method name.
-   * @return null if not found, <class>_<method> otherwise.
-   */
-  def resolveAsmMethodName(name: String): String = {
-    for (m <- this.methods) {
-      if (m.identifier.name == name) {
-        return this.identifier.name + "_" + name
-      }
-    }
-    if (this.superClass.isEmpty) {
-      return null
-    }
-    val base = this.superClass.get.declaration.get
-
-    base.resolveAsmMethodName(name)
-  }
-
   /* Needed so that the definition pass can be performed multiple times for built-in classes. */
   // TODO find a better solution
   var first = true
@@ -260,13 +238,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     code.println("; END CLASS " + this.identifier.name)
   }
 
-  /**
-   * Die Methode gibt diese Deklaration in einer Baumstruktur aus.
-   *
-   * @param tree
-   * Der Strom, in den die Ausgabe erfolgt.
-   */
-  def print(tree: TreeStream) {
+  override def print(tree: TreeStream) {
     tree.println("CLASS " + this.identifier.name)
     tree.indent
 

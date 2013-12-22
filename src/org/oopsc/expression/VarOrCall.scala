@@ -149,7 +149,7 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
           code.println("MMR (R2), R5 ; Save return address on the stack.")
 
           /* Jump to method by overwriting PC. */
-          code.println("MRI R0, " + this.context.resolvedType.get.resolveAsmMethodName(m.identifier.name))
+          code.println("MRI R0, " + m.getAsmMethodName)
         } else {
           this._generateContextCode(code)
           code.println("; Dynamic method call: " + this.ref.identifier.name)

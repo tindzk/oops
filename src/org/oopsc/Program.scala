@@ -229,7 +229,7 @@ class Program {
       code.println(c.identifier.name + ":")
 
       for (m <- c.generateVMT) {
-        code.println("DAT 1, " + c.resolveAsmMethodName(m.identifier.name))
+        code.println("DAT 1, " + m.getAsmMethodName)
       }
     }
 
