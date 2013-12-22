@@ -62,58 +62,23 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   /**
-   * Recursively fill the VMT with the method declarations. Take into account
+   * Recursively collect all methods in the inheritance chain. Filter out
    * overridden methods.
-   *
-   * @param res
-   * Result array.
    */
-  protected def fillVMT(res: ListBuffer[MethodSymbol]) {
-    if (this.superClass.isDefined) {
-      val base = this.superClass.get.declaration.get
-      base.fillVMT(res)
-    }
-    for (m <- this.methods) {
-      res.update(m.vmtIndex, m)
-    }
-  }
-
-  /**
-   * @param cur
-   * Current index.
-   * @return Highest VMT index.
-   */
-  // TODO refactor
-  protected def getLastVmtIndex(cur: Int): Int = {
-    var ccur = cur
-    if (this.superClass.isDefined) {
-      val base = this.superClass.get.declaration.get
-      val tmp = base.getLastVmtIndex(cur)
-      if (tmp > ccur) {
-        ccur = tmp
-      }
-    }
-    if (this.methods.size != 0) {
-      val last = this.methods.last
-      if (last.vmtIndex > cur) {
-        ccur = last.vmtIndex
-      }
-    }
-
-    ccur
+  private def collectMethods: ListBuffer[MethodSymbol] = {
+    val overridden = this.methods.filter(_.overrides).map(_.vmtIndex)
+    this.methods ++ (this.superClass match {
+      case Some(c) => c.declaration.get.collectMethods.filterNot(cur => overridden.contains(cur.vmtIndex))
+      case None => ListBuffer[MethodSymbol]()
+    })
   }
 
   /**
    * Generates a VMT for the current class, including its sub-classes. Requires
    * that the contextual analysis was performed before.
-   *
-   * @return
    */
-  def generateVMT: ListBuffer[MethodSymbol] = {
-    val res = ListBuffer[MethodSymbol]().padTo(this.getLastVmtIndex(-1) + 1, null)
-    this.fillVMT(res)
-    res
-  }
+  def generateVMT: ListBuffer[MethodSymbol] =
+    this.collectMethods.sortBy(_.vmtIndex)
 
   /**
    * Finds the declaration of the given method and return it in an assembly string.
@@ -226,13 +191,14 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
         }
 
         /* Set the VMT index for each method. */
-        var vmtIndex: Int = if (base.methods.isEmpty) 0 else base.methods.last.vmtIndex + 1
+        var vmtIndex = if (base.methods.isEmpty) 0 else base.methods.last.vmtIndex + 1
 
         for (m <- this.methods) {
           /* If the method is overridden, take the VMT index from its parent method. */
           base.getMethod(m.identifier.name) match {
             case Some(baseMethod) =>
               m.vmtIndex = baseMethod.vmtIndex
+              m.overrides = true
 
             case None =>
               m.vmtIndex = vmtIndex
@@ -242,7 +208,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
 
       case None =>
         /* Set the VMT index for each method. */
-        var vmtIndex: Int = 0
+        var vmtIndex = 0
         for (m <- this.methods) {
           m.vmtIndex = vmtIndex
           vmtIndex += 1

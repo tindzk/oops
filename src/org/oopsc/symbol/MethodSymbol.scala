@@ -25,7 +25,8 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   var retType: Identifier = null
   var resolvedRetType: Option[ClassSymbol] = None
 
-  var vmtIndex: Int = -1
+  var vmtIndex = -1
+  var overrides = false
 
   def getResolvedReturnType: ClassSymbol = {
     /* Resolve return type if necessary. */
