@@ -80,18 +80,15 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
     }
   }
 
-  override def resolvedType() : ClassSymbol = {
-    /* Propagate resolved type. */
-    if (this.ref.declaration.get.isInstanceOf[VariableSymbol]) {
-      val `var` = this.ref.declaration.get.asInstanceOf[VariableSymbol]
-      return `var`.getResolvedType
-    } else if (this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
-      val method = this.ref.declaration.get.asInstanceOf[MethodSymbol]
-      return method.getResolvedReturnType
+  /**
+   * Override to propagate the resolved type.
+   */
+  override def resolvedType(): ClassSymbol =
+    this.ref.declaration.get match {
+      case v: VariableSymbol => v.getResolvedType
+      case m: MethodSymbol => m.getResolvedReturnType
+      case _ => super.resolvedType()
     }
-
-    return super.resolvedType()
-  }
 
   def print(tree: TreeStream) {
     tree.println(this.ref.identifier.name + " : " + (if (this.lValue) "REF " else "") + this.resolvedType().name)
