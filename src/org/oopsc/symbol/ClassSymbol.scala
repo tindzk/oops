@@ -65,7 +65,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * Recursively collect all methods in the inheritance chain. Filter out
    * overridden methods.
    */
-  private def collectMethods(overridden: List[MethodSymbol]): ListBuffer[MethodSymbol] = {
+  private def collectMethods(overridden: List[MethodSymbol] = List.empty): ListBuffer[MethodSymbol] = {
     val _overridden = overridden ++ this.methods.filter(_.overrides.isDefined).map(_.overrides.get)
     this.methods ++ (this.superClass match {
       case Some(c) => c.declaration.get.collectMethods(_overridden).diff(_overridden)
@@ -77,8 +77,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
    * Generates a VMT for the current class, including its sub-classes. Requires
    * that the contextual analysis was performed before.
    */
-  def generateVMT: ListBuffer[MethodSymbol] =
-    this.collectMethods(List.empty[MethodSymbol]).sortBy(_.vmtIndex)
+  def generateVMT = this.collectMethods().sortBy(_.vmtIndex)
 
   /* Needed so that the definition pass can be performed multiple times for built-in classes. */
   // TODO find a better solution
@@ -126,8 +125,28 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     }
   }
 
+  /**
+   * Check whether the class dependencies represent an acyclic graph.
+   */
+  def checkForCycles(encounteredClasses: List[ClassSymbol] = List.empty) {
+    this.superClass match {
+      case Some(superClass) =>
+        val base = getSuperClass().get
+
+        if (encounteredClasses.contains(base)) {
+          throw new CompileException("Class hierarchy is not devoid of cycles.", this.identifier.position)
+        }
+
+        base.checkForCycles(this :: encounteredClasses)
+
+      case None =>
+    }
+  }
+
   override def refPass(sem: SemanticAnalysis) {
     sem.enter(this)
+
+    this.checkForCycles()
 
     this.superClass match {
       case Some(superClass) =>

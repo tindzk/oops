@@ -4,62 +4,7 @@ import org.oopsc.expression._
 import org.oopsc.scope._
 import org.oopsc.symbol._
 import org.oopsc.statement._
-import scala.collection.mutable.{ListBuffer, HashMap}
-
-object Vertex {
-  /** Visited state. */
-  object Visited extends Enumeration {
-    type Visited = Value
-    val NotVisited, BeingVisited, DoneVisited = Value
-  }
-}
-
-class Vertex(var classDeclaration: ClassSymbol = null) {
-  import Vertex._
-
-  /**
-   * By default, all vertexes are not visited.
-   */
-  var visited = Visited.NotVisited
-
-  /**
-   * The linked vertexes.
-   */
-  var edges = new ListBuffer[Vertex]
-
-  /**
-   * Adds edge to vertex.
-   *
-   * @param v Vertex
-   */
-  def addEdge(v: Vertex) {
-    this.edges += v
-  }
-
-  /**
-   * Recursively checks for cycles applying a depth-first search (DFS).
-   *
-   * @return true if vertex or its links contains cycles, false otherwise.
-   */
-  def hasCycles: Boolean = {
-    if (this.visited eq Visited.BeingVisited) {
-      return true
-    } else if (this.visited eq Visited.DoneVisited) {
-      return false
-    }
-
-    this.visited = Visited.BeingVisited
-
-    for (v <- this.edges) {
-      if (v.hasCycles) {
-        return true
-      }
-    }
-
-    this.visited = Visited.DoneVisited
-    return false
-  }
-}
+import scala.collection.mutable.ListBuffer
 
 /**
  * Die Klasse repräsentiert den Syntaxbaum des gesamten Programms.
@@ -94,47 +39,6 @@ class Program {
   }
 
   /**
-   * Check whether the class dependencies are an acyclic graph.
-   *
-   * @param classes
-   * @throws CompileException
-   */
-  def checkCycles(classes: ListBuffer[ClassSymbol]) {
-    /* TODO perform cycle checking directly in ClassSymbol */
-    val mapping = new HashMap[ClassSymbol, Vertex]
-
-    for (cls <- classes) {
-      mapping.put(cls, new Vertex(cls))
-    }
-
-    /* Dummy node facilitating traversal. */
-    val root = new Vertex
-    for (cls <- classes) {
-      cls.superClass match {
-        case Some(superCls) =>
-          mapping.get(superCls.declaration.get).get.addEdge(mapping.get(cls).get)
-
-        case None =>
-          /* Connect all classes without parents to the root node, effectively this is only
-           * the `Object' class. */
-          root.addEdge(mapping.get(cls).get)
-      }
-    }
-
-    if (root.hasCycles) {
-      throw new CompileException("Class hierarchy is not devoid of cycles.", root.classDeclaration.identifier.position)
-    }
-
-    /* Some classes may not be connected to the root node. Iterate over all
-     * vertexes that were not yet visited and check for cycles. */
-    for (v <- mapping.values) {
-      if ((v.visited eq Vertex.Visited.NotVisited) && v.hasCycles) {
-        throw new CompileException("Class hierarchy is not devoid of cycles.", v.classDeclaration.identifier.position)
-      }
-    }
-  }
-
-  /**
    * Performs the semantic analysis for the whole program.
    */
   def semanticAnalysis {
@@ -164,8 +68,6 @@ class Program {
     if (this.sem.currentScope.isDefined) {
       throw new CompileException("Current scope must be None after semantic analysis.")
     }
-
-    this.checkCycles(this.classes)
   }
 
   def optimise {
