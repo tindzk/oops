@@ -3,25 +3,28 @@ package org.oopsc
 import org.oopsc.symbol._
 
 object Types {
-  /** Ein interner Typ für das Ergebnis von Methoden. */
+  /** Internal type for methods without result. */
   final val voidType = new ClassSymbol(new Identifier("_Void"))
 
-  /** Ein interner Typ für null. Dieser Typ ist kompatibel zu allen Klassen. */
+  /** Internal type for null. Compatible to all classes. */
   final val nullType = new ClassSymbol(new Identifier("_Null"))
 
-  /** Der interne Basisdatentyp für Zahlen. */
+  /** Internal base type for numbers. */
   final val intType = new ClassSymbol(new Identifier("_Integer"))
 
-  /** Der interne Basisdatentyp für Wahrheitswerte. */
+  /** Internal base type for boolean values. */
   final val boolType = new ClassSymbol(new Identifier("_Boolean"))
 
-  /** Die Klasse Object. */
+  /** Internal base type for strings. */
+  final val stringType = new ClassSymbol(new Identifier("_String"))
+
+  /** Class `Object'. */
   final val objectClass = new ClassSymbol(new Identifier("Object"))
 
-  /** Die Klasse Integer. */
+  /** Class `Integer'. */
   final val intClass = new ClassSymbol(new Identifier("Integer"), objectClass)
 
-  /** Die Klasse Boolean. */
+  /** Class `Boolean'. */
   final val boolClass = new ClassSymbol(new Identifier("Boolean"), objectClass)
 
   /* Do not set ClassDeclaration.(int|bool)Class.objectSize manually as this

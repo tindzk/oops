@@ -1,0 +1,5 @@
+CLASS Main IS
+    METHOD main IS BEGIN
+        WRITE 'Hello World';
+    END METHOD
+END CLASS

@@ -61,6 +61,25 @@ case class CharacterLiteralExpression(value: Char, var _position: Position = new
   override def intValue: Int = value.asInstanceOf[Int]
 }
 
+case class StringLiteralExpression(value: String, var _position: Position = new Position()) extends LiteralExpression(Types.stringType, _position) {
+  private var offset = -1
+
+  override def refPass(sem: SemanticAnalysis) {
+    this.offset = sem.getRodataOffset(value)
+  }
+
+  def print(tree: TreeStream) {
+    tree.println(this.value)
+  }
+
+  def generateCode(code: CodeStream) {
+    code.println(s"; ${this.value}: String")
+    code.println(s"MRI R5, _rodata_${this.offset}")
+    code.println("ADD R2, R1")
+    code.println("MMR (R2), R5")
+  }
+}
+
 case class NullLiteralExpression(var _position: Position = new Position()) extends LiteralExpression(Types.nullType, _position) {
   def print(tree: TreeStream) {
     tree.println("NULL")

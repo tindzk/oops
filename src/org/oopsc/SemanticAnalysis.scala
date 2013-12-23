@@ -2,6 +2,7 @@ package org.oopsc
 
 import org.oopsc.scope._
 import org.oopsc.symbol._
+import scala.collection.mutable.ListBuffer
 
 /**
  * Semantic analysis is the phase in which the compiler adds semantic
@@ -21,6 +22,25 @@ class SemanticAnalysis {
   var currentScope: Option[Scope] = None
   var currentClass: ClassSymbol = null
   var currentMethod: MethodSymbol = null
+
+  /**
+   * Read-only data segment.
+   */
+  var strings = new ListBuffer[String]
+
+  /**
+   * Add string to the read-only data segment of the program.
+   * Returns the offset in the rodata segment.
+   */
+  def getRodataOffset(str: String) = {
+    val pos = strings.indexOf(str)
+    if (pos == -1) {
+      strings += str
+      strings.length - 1
+    } else {
+      pos
+    }
+  }
 
   def enter(scope: Scope) = {
     scope match {

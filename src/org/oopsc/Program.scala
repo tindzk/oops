@@ -73,6 +73,7 @@ class Program {
    * User-defined classes.
    */
   var classes = new ListBuffer[ClassSymbol]
+
   /**
    * Initialisation statements.
    */
@@ -235,10 +236,17 @@ class Program {
 
     /* Allocate space for the stack and the heap. */
     code.println("_stack: ; Hier fängt der Stapel an")
-    code.println("DAT " + stackSize + ", 0")
+    code.println(s"DAT $stackSize, 0")
 
     code.println("_heap: ; Hier fängt der Heap an")
-    code.println("DAT " + heapSize + ", 0")
+    code.println(s"DAT $heapSize, 0")
+
+    /* Print read-only data segment. */
+    for ((s, i) <- this.sem.strings.zipWithIndex) {
+      code.println(s"_rodata_$i: ; $s")
+      code.println(s"DAT 1, ${s.length}")
+      s.foreach(c => code.println(s"DAT 1, ${c.asInstanceOf[Int]}"))
+    }
 
     /* Function being jumped to when an exception could not be caught. */
     code.println("_uncaughtException:")

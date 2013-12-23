@@ -152,8 +152,8 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
           CharacterLiteralExpression(value.charAt(0), pos)
         }
       case l: GrammarParser.StringLiteralContext =>
-        /* TODO Implement ClassDeclaration.stringType. */
-        null
+        val value = ctx.getText.substring(1, ctx.getText.length - 1)
+        StringLiteralExpression(value.replaceAll("\\\\'", "'"), pos)
       case l: GrammarParser.BooleanLiteralContext =>
         BooleanLiteralExpression((l.value.getType == GrammarParser.TRUE), pos)
       case l: GrammarParser.NullLiteralContext =>
