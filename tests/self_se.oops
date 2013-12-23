@@ -1,0 +1,5 @@
+CLASS Main IS
+    METHOD main IS BEGIN
+    	SELF := NULL;
+    END METHOD
+END CLASS

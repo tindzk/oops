@@ -4,7 +4,8 @@ import org.oopsc.CodeStream
 import org.oopsc.CompileException
 import org.oopsc.SemanticAnalysis
 import org.oopsc.TreeStream
-import org.oopsc.expression.Expression
+import org.oopsc.expression.{EvaluateExpression, Expression}
+import org.oopsc.symbol.VariableSymbol
 
 class Assignment(var leftOperand: Expression, var rightOperand: Expression) extends Statement {
   override def refPass(sem: SemanticAnalysis) {
@@ -13,12 +14,24 @@ class Assignment(var leftOperand: Expression, var rightOperand: Expression) exte
 
     if (!this.leftOperand.lValue) {
       throw new CompileException("Lvalue expected", this.leftOperand.position)
+    } else {
+      this.leftOperand match {
+        case left: EvaluateExpression =>
+          /* TODO Find a better solution. Also don't refer to _base or _self directly as this may collide. */
+          if (left.ref.declaration.get.identifier.name == "_base" ||
+              left.ref.declaration.get.identifier.name == "_self")
+          {
+            throw new CompileException("Cannot assign to BASE or SELF.", this.leftOperand.position)
+          }
+
+        case _ =>
+      }
     }
 
     this.rightOperand.resolvedType.check(this.leftOperand.resolvedType, this.rightOperand.position)
   }
 
-  override def optimPass() : Statement = {
+  override def optimPass(): Statement = {
     this.leftOperand = this.leftOperand.optimPass()
     this.rightOperand = this.rightOperand.optimPass()
     this

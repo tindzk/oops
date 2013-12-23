@@ -18,6 +18,7 @@ class AccessExpression(var leftOperand: Expression, rightOperand: EvaluateExpres
     /* Deal with accesses to methods or attributes in the base class. */
     this.leftOperand match {
       case call: EvaluateExpression =>
+        /* TODO Accessing _base may collide. */
         if (call.ref.identifier.name == "_base") {
           this.rightOperand.generateContextCode(true)
           this.rightOperand.setContext(call.ref.declaration.get.asInstanceOf[VariableSymbol], true)
