@@ -26,7 +26,7 @@ class Program {
 
   /* Add a statement that instantiates the class `Main' and calls its method main().
    * Equivalent to NEW Main.main. */
-  this.init += new CallStatement(new AccessExpression(new NewExpression(new ResolvableClassSymbol(new Identifier("Main"))), new VarOrCall(new ResolvableSymbol(new Identifier("main")))))
+  this.init += new CallStatement(new AccessExpression(new NewExpression(new ResolvableClassSymbol(new Identifier("Main"))), new EvaluateExpression(new ResolvableSymbol(new Identifier("main")))))
 
   /**
    * Definiere Klasse.

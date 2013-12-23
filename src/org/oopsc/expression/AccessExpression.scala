@@ -7,7 +7,7 @@ import org.oopsc.{ CodeStream, TreeStream, SemanticAnalysis }
  * Represents an expression with an attribute or method access
  * operator (i.e. dot) in the syntax tree.
  */
-class AccessExpression(var leftOperand: Expression, rightOperand: VarOrCall) extends Expression(leftOperand.position) {
+class AccessExpression(var leftOperand: Expression, rightOperand: EvaluateExpression) extends Expression(leftOperand.position) {
   override def refPass(sem: SemanticAnalysis) {
     this.leftOperand.refPass(sem)
 
@@ -17,7 +17,7 @@ class AccessExpression(var leftOperand: Expression, rightOperand: VarOrCall) ext
 
     /* Deal with accesses to methods or attributes in the base class. */
     this.leftOperand match {
-      case call: VarOrCall =>
+      case call: EvaluateExpression =>
         if (call.ref.identifier.name == "_base") {
           this.rightOperand.generateContextCode(true)
           this.rightOperand.setContext(call.ref.declaration.get.asInstanceOf[VariableSymbol], true)

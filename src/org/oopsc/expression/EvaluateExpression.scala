@@ -8,7 +8,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Represents a variable/attribute access or method call expression in the syntax tree.
  */
-class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.position) {
+class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.identifier.position) {
   var scope: Scope = null
 
   protected var context: VariableSymbol = null
@@ -100,7 +100,7 @@ class VarOrCall(var ref: ResolvableSymbol) extends Expression(ref.identifier.pos
   protected def _generateContextCode(code: CodeStream) {
     if (this.context != null) {
       code.println("; Context: " + this.context.identifier.name)
-      val `var` = new VarOrCall(new ResolvableSymbol(this.context.identifier, new Some[Symbol](this.context)))
+      val `var` = new EvaluateExpression(new ResolvableSymbol(this.context.identifier, new Some[Symbol](this.context)))
       `var`.lValue = true
       `var`.generateCode(code, false)
       code.println("; End context.")

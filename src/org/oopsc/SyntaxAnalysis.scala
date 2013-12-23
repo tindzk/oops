@@ -161,8 +161,8 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     }
   }
 
-  private def getCall(ctx: GrammarParser.CallContext): VarOrCall = {
-    val call = new VarOrCall(this.resolvableIdentifierFromToken(ctx.Identifier.getSymbol))
+  private def getCall(ctx: GrammarParser.CallContext): EvaluateExpression = {
+    val call = new EvaluateExpression(this.resolvableIdentifierFromToken(ctx.Identifier.getSymbol))
 
     import scala.collection.JavaConversions._
     for (e <- ctx.expression) {
@@ -184,15 +184,15 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
       case e: GrammarParser.Call2ExpressionContext =>
         this.getCall(e.call)
       case e: GrammarParser.MemberAccessExpressionContext =>
-        new AccessExpression(this.getExpression(e.expression), new VarOrCall(this.resolvableIdentifierFromToken(e.Identifier.getSymbol)))
+        new AccessExpression(this.getExpression(e.expression), new EvaluateExpression(this.resolvableIdentifierFromToken(e.Identifier.getSymbol)))
       case e: GrammarParser.MemberAccess2ExpressionContext =>
-        new VarOrCall(this.resolvableIdentifierFromToken(e.Identifier.getSymbol))
+        new EvaluateExpression(this.resolvableIdentifierFromToken(e.Identifier.getSymbol))
       case e: GrammarParser.LiteralExpressionContext =>
         this.getLiteral(e.literal)
       case e: GrammarParser.SelfExpressionContext =>
-        new VarOrCall(new ResolvableSymbol(new Identifier("_self", pos)))
+        new EvaluateExpression(new ResolvableSymbol(new Identifier("_self", pos)))
       case e: GrammarParser.BaseExpressionContext =>
-        return new VarOrCall(new ResolvableSymbol(new Identifier("_base", pos)))
+        return new EvaluateExpression(new ResolvableSymbol(new Identifier("_base", pos)))
       case e: GrammarParser.MinusExpressionContext =>
         new UnaryExpression(UnaryExpression.MINUS, this.getExpression(e.expression), pos)
       case e: GrammarParser.NegateExpressionContext =>
