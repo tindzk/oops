@@ -20,7 +20,7 @@ abstract class Expression(var position: Position) {
    * Ist dieser Ausdruck ein L-Wert, d.h. eine Referenz auf eine Variable?
    * Die meisten Ausdrücke sind keine L-Werte.
    */
-  var lValue: Boolean = false
+  var lValue = false
 
   /**
    * Performs the reference pass of the semantic analysis.

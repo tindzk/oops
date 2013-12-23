@@ -59,24 +59,24 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
       }
     }
 
-    if (this.ref.declaration.get.isInstanceOf[VariableSymbol]) {
-      this.lValue = true
-    } else if (this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
-      /* Verify that the passed arguments match the expected parameters. */
-      val decl = this.ref.declaration.get.asInstanceOf[MethodSymbol]
+    this.ref.declaration.get match {
+      case sym: VariableSymbol =>
+        this.lValue = true
 
-      if (this.arguments.size != decl.parameters.size) {
-        throw new CompileException(s"Parameter count mismatch: ${decl.parameters.size} expected, ${this.arguments.size} given.", this.ref.identifier.position)
-      }
-
-      for (((arg, param), num) <- this.arguments.zip(decl.parameters).zipWithIndex) {
-        arg.refPass(sem)
-
-        if (!arg.resolvedType().isA(param.getResolvedType)) {
-          throw new CompileException(
-            s"Argument ${num + 1} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.resolvedType().name} given.", this.ref.identifier.position)
+      case decl: MethodSymbol =>
+        /* Verify that the passed arguments match the expected parameters. */
+        if (this.arguments.size != decl.parameters.size) {
+          throw new CompileException(s"Parameter count mismatch: ${decl.parameters.size} expected, ${this.arguments.size} given.", this.ref.identifier.position)
         }
-      }
+
+        for (((arg, param), num) <- this.arguments.zip(decl.parameters).zipWithIndex) {
+          arg.refPass(sem)
+
+          if (!arg.resolvedType().isA(param.getResolvedType)) {
+            throw new CompileException(
+              s"Argument ${num + 1} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.resolvedType().name} given.", this.ref.identifier.position)
+          }
+        }
     }
   }
 
