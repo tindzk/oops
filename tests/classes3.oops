@@ -1,0 +1,27 @@
+CLASS Main IS
+    METHOD main IS
+	    a: A;
+    BEGIN
+        a := NEW A;
+        a.init;
+        WRITE a.b.c;
+    END METHOD
+END CLASS
+
+CLASS A IS
+    b: B;
+
+    METHOD init IS BEGIN
+        b := NEW B;
+        b.init;
+    END METHOD
+END CLASS
+
+CLASS B IS
+    c: Integer;
+    
+    METHOD init IS
+    BEGIN
+    	c := 'O';
+    END METHOD
+END CLASS
