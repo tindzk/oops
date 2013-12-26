@@ -234,6 +234,10 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
       case e: GrammarParser.EqualityExpressionContext =>
         val op = if (e.EQ != null) BinaryExpression.EQ else BinaryExpression.NEQ
         new BinaryExpression(this.getExpression(e.expression(0)), op, this.getExpression(e.expression(1)))
+      case e: GrammarParser.TypeCheckExpressionContext =>
+        new TypeCheckExpression(
+          this.getExpression(e.expression()),
+          this.resolvableClassIdentifierFromToken(e.Identifier.getSymbol))
     }
   }
 

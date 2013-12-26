@@ -1,0 +1,53 @@
+CLASS A IS
+	METHOD a IS BEGIN END METHOD
+	METHOD b IS BEGIN END METHOD
+END CLASS
+
+CLASS B EXTENDS A IS
+	METHOD c IS BEGIN END METHOD
+	METHOD d IS BEGIN END METHOD
+END CLASS
+
+CLASS Main IS
+	METHOD main IS
+		self: Object;
+		a: Object;
+		b: Object;
+	BEGIN
+		self := SELF;
+		a := NEW A;
+		b := NEW B;
+
+		IF self ISA Object THEN
+			WRITE 'A';
+		END IF
+
+		IF NOT(self ISA A) THEN
+			WRITE 'B';
+		END IF
+
+		IF a ISA A THEN
+			WRITE 'C';
+		END IF
+
+		IF NOT(a ISA B) THEN
+			WRITE 'D';
+		END IF
+
+		IF b ISA Object THEN
+			WRITE 'E';
+		END IF
+
+		IF b ISA B THEN
+			WRITE 'F';
+		END IF
+
+		IF b ISA A THEN
+			WRITE 'G';
+		END IF
+
+		IF SELF ISA Main THEN
+			WRITE 'H';
+		END IF
+	END METHOD
+END CLASS

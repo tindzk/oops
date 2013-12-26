@@ -44,7 +44,11 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
     this.ref.declaration = Some(resolveScope.resolveSymbol(this.ref.identifier, Some(sem.currentClass)))
 
     /* Check arguments. */
-    if (!this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
+    if (this.ref.declaration.get.isInstanceOf[ClassSymbol]) {
+      if (this.arguments.size != 1) {
+        throw new CompileException("A type cast expects exactly one argument.", this.ref.identifier.position)
+      }
+    } else if (!this.ref.declaration.get.isInstanceOf[MethodSymbol]) {
       if (this.arguments.size != 0) {
         throw new CompileException("Arguments cannot be passed to a variable.", this.ref.identifier.position)
       }
@@ -77,6 +81,9 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
               s"Argument ${num + 1} mismatches: ${param.resolvedType.get.identifier.name} expected, ${arg.resolvedType().name} given.", this.ref.identifier.position)
           }
         }
+
+      case clazz: ClassSymbol =>
+        this.arguments(0).refPass(sem)
     }
   }
 
@@ -87,6 +94,7 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
     this.ref.declaration.get match {
       case v: VariableSymbol => v.getResolvedType
       case m: MethodSymbol => m.getResolvedReturnType
+      case c: ClassSymbol => c
       case _ => super.resolvedType()
     }
 
@@ -108,6 +116,38 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
 
   def generateCode(code: CodeStream) {
     this.ref.declaration.get match {
+      case sym: ClassSymbol =>
+        code.println("; CAST")
+        val arg = this.arguments(0)
+
+        arg.generateCode(code, true)
+
+        val endLabel = code.nextLabel
+        val nextLabel = code.nextLabel
+        val iterLabel = code.nextLabel
+
+        code.println("MRM R5, (R2)") // R5 = Evaluated value of this.oper.
+
+        /* TODO What is supposed to happen for Object(NULL) or Main(NULL)? */
+
+        code.println("MRM R5, (R5)") // R5 = dereferenced VMT.
+
+        code.println(s"$iterLabel:")
+        code.println("MRR R6, R5") // R6 = VMT of current class.
+        code.println("MRM R5, (R5)") // R5 = VMT address of super class (offset 0 in VMT).
+
+        code.println(s"MRI R7, ${sym.identifier.name}")
+        code.println("SUB R6, R7") // R6 is 0 if the class matches.
+        code.println(s"JPC R6, $nextLabel") // Jump to next label if the class does not match.
+        code.println(s"MRI R0, $endLabel") // Jump to the end without modifying the top of the stack (R2).
+
+        code.println(s"$nextLabel:")
+        code.println(s"JPC R5, $iterLabel") // Next iteration if the current class is not Object, i.e. R5 != 0.
+        code.println("MRI R5, 0") // Otherwise we found a type mismatch. Write NULL.
+        code.println("MMR (R2), R5")
+
+        code.println(s"$endLabel:")
+
       case sym: AttributeSymbol =>
         this._generateContextCode(code)
 

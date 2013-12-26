@@ -131,6 +131,15 @@ class Program {
     for (c <- this.classes) {
       code.println(c.identifier.name + ":")
 
+      /* Add an entry for the super class. */
+      c.getSuperClass() match {
+        case Some(p) =>
+          code.println(s"DAT 1, ${p.identifier.name}")
+        case None =>
+          /* c is Object. */
+          code.println(s"DAT 1, 0")
+      }
+
       for (m <- c.generateVMT) {
         code.println("DAT 1, " + m.getAsmMethodName)
       }

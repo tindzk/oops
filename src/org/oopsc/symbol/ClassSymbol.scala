@@ -187,8 +187,11 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
           }
         }
 
+        /* The VMT attributes start with the offset 1. The first entry in the VMT is reserved for the base class. */
+        val vmtAttrsOffset = 1
+
         /* Set the VMT index for each method. */
-        var vmtIndex = if (base.methods.isEmpty) 0 else base.methods.last.vmtIndex + 1
+        var vmtIndex = if (base.methods.isEmpty) vmtAttrsOffset else base.methods.last.vmtIndex + 1
 
         for (m <- this.methods) {
           /* If the method is overridden, take the VMT index from its parent method. */

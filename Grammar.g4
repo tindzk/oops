@@ -112,6 +112,7 @@ expression
     expression                                      # equalityExpression
   | expression AND expression                       # conjunctionExpression
   | expression OR expression                        # disjunctionExpression
+  | expression 'ISA' Identifier                     # typeCheckExpression
   ;
 
 arguments
