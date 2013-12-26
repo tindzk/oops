@@ -203,36 +203,23 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
         new UnaryExpression(UnaryExpression.NOT, this.getExpression(e.expression), pos)
       case e: GrammarParser.InstantiateExpressionContext =>
         new NewExpression(this.resolvableClassIdentifierFromToken(e.Identifier.getSymbol))
-      case e: GrammarParser.MulDivModExpressionContext =>
+      case e: GrammarParser.OpExpressionContext =>
         val op = e.op.getType match {
           case GrammarParser.MUL => BinaryExpression.MUL
           case GrammarParser.DIV => BinaryExpression.DIV
           case GrammarParser.MOD => BinaryExpression.MOD
-        }
-
-        new BinaryExpression(this.getExpression(e.expression(0)), op, this.getExpression(e.expression(1)))
-      case e: GrammarParser.AddSubExpressionContext =>
-        val op = e.op.getType match {
           case GrammarParser.ADD => BinaryExpression.PLUS
           case GrammarParser.SUB => BinaryExpression.MINUS
-        }
-
-        new BinaryExpression(this.getExpression(e.expression(0)), op, this.getExpression(e.expression(1)))
-      case e: GrammarParser.CompareExpressionContext =>
-        val op = e.op.getType match {
           case GrammarParser.LEQ => BinaryExpression.LTEQ
           case GrammarParser.GEQ => BinaryExpression.GTEQ
           case GrammarParser.LT  => BinaryExpression.LT
           case GrammarParser.GT  => BinaryExpression.GT
+          case GrammarParser.AND => BinaryExpression.AND
+          case GrammarParser.OR  => BinaryExpression.OR
+          case GrammarParser.EQ  => BinaryExpression.EQ
+          case GrammarParser.NEQ => BinaryExpression.NEQ
         }
 
-        new BinaryExpression(this.getExpression(e.expression(0)), op, this.getExpression(e.expression(1)))
-      case e: GrammarParser.ConjunctionExpressionContext =>
-        new BinaryExpression(this.getExpression(e.expression(0)), BinaryExpression.AND, this.getExpression(e.expression(1)))
-      case e: GrammarParser.DisjunctionExpressionContext =>
-        new BinaryExpression(this.getExpression(e.expression(0)), BinaryExpression.OR, this.getExpression(e.expression(1)))
-      case e: GrammarParser.EqualityExpressionContext =>
-        val op = if (e.EQ != null) BinaryExpression.EQ else BinaryExpression.NEQ
         new BinaryExpression(this.getExpression(e.expression(0)), op, this.getExpression(e.expression(1)))
       case e: GrammarParser.TypeCheckExpressionContext =>
         new TypeCheckExpression(

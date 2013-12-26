@@ -104,14 +104,14 @@ expression
   | '-' expression                                  # minusExpression
   | 'NOT' expression                                # negateExpression
   | 'NEW' Identifier                                # instantiateExpression
-  | expression op=(MUL | DIV | MOD) expression      # mulDivModExpression
-  | expression op=(ADD | SUB) expression            # addSubExpression
-  | expression op=(LEQ | GEQ | LT | GT) expression  # compareExpression
+  | expression op=(MUL | DIV | MOD) expression      # opExpression
+  | expression op=(ADD | SUB) expression            # opExpression
+  | expression op=(LEQ | GEQ | LT | GT) expression  # opExpression
   | expression
-    (EQ<assoc=right> | NEQ<assoc=right>)
-    expression                                      # equalityExpression
-  | expression AND expression                       # conjunctionExpression
-  | expression OR expression                        # disjunctionExpression
+    (op=EQ<assoc=right> | op=NEQ<assoc=right>)
+    expression                                      # opExpression
+  | expression op=AND expression                    # opExpression
+  | expression op=OR expression                     # opExpression
   | expression 'ISA' Identifier                     # typeCheckExpression
   ;
 
