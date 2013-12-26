@@ -96,10 +96,8 @@ statement
 
 expression
   : '(' expression ')'                              # bracketsExpression
-  | expression '.' call                             # callExpression
-  | call                                            # call2Expression
-  | expression '.' Identifier                       # memberAccessExpression
-  | Identifier                                      # memberAccess2Expression
+  | Identifier arguments?                           # memberAccessExpression
+  | expression '.' Identifier arguments?            # memberAccess2Expression
   | literal                                         # literalExpression
   | 'SELF'                                          # selfExpression
   | 'BASE'                                          # baseExpression
@@ -116,8 +114,8 @@ expression
   | expression OR expression                        # disjunctionExpression
   ;
 
-call
-  : Identifier '(' (expression (',' expression)*)? ')'
+arguments
+  : '(' (expression (',' expression)*)? ')'
   ;
 
 literal

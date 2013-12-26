@@ -161,15 +161,11 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     }
   }
 
-  private def getCall(ctx: GrammarParser.CallContext): EvaluateExpression = {
-    val call = new EvaluateExpression(this.resolvableIdentifierFromToken(ctx.Identifier.getSymbol))
-
+  private def getArguments(ctx: GrammarParser.ArgumentsContext, eval: EvaluateExpression) = {
     import scala.collection.JavaConversions._
-    for (e <- ctx.expression) {
-      call.addArgument(this.getExpression(e))
+    for (expr <- ctx.expression) {
+      eval.addArgument(this.getExpression(expr))
     }
-
-    return call
   }
 
   private def getExpression(ctx: GrammarParser.ExpressionContext): Expression = {
@@ -179,20 +175,28 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
     rctx match {
       case e: GrammarParser.BracketsExpressionContext =>
         this.getExpression(e.expression)
-      case e: GrammarParser.CallExpressionContext =>
-        new AccessExpression(this.getExpression(e.expression), this.getCall(e.call))
-      case e: GrammarParser.Call2ExpressionContext =>
-        this.getCall(e.call)
       case e: GrammarParser.MemberAccessExpressionContext =>
-        new AccessExpression(this.getExpression(e.expression), new EvaluateExpression(this.resolvableIdentifierFromToken(e.Identifier.getSymbol)))
+        val eval = new EvaluateExpression(this.resolvableIdentifierFromToken(e.Identifier.getSymbol))
+
+        if (e.arguments() != null) {
+          this.getArguments(e.arguments(), eval)
+        }
+
+        eval
       case e: GrammarParser.MemberAccess2ExpressionContext =>
-        new EvaluateExpression(this.resolvableIdentifierFromToken(e.Identifier.getSymbol))
+        val eval = new EvaluateExpression(this.resolvableIdentifierFromToken(e.Identifier.getSymbol))
+
+        if (e.arguments() != null) {
+          this.getArguments(e.arguments(), eval)
+        }
+
+        new AccessExpression(this.getExpression(e.expression), eval)
       case e: GrammarParser.LiteralExpressionContext =>
         this.getLiteral(e.literal)
       case e: GrammarParser.SelfExpressionContext =>
         new EvaluateExpression(new ResolvableSymbol(new Identifier("_self", pos)))
       case e: GrammarParser.BaseExpressionContext =>
-        return new EvaluateExpression(new ResolvableSymbol(new Identifier("_base", pos)))
+        new EvaluateExpression(new ResolvableSymbol(new Identifier("_base", pos)))
       case e: GrammarParser.MinusExpressionContext =>
         new UnaryExpression(UnaryExpression.MINUS, this.getExpression(e.expression), pos)
       case e: GrammarParser.NegateExpressionContext =>
@@ -213,7 +217,7 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
           case GrammarParser.SUB => BinaryExpression.MINUS
         }
 
-        return new BinaryExpression(this.getExpression(e.expression(0)), op, this.getExpression(e.expression(1)))
+        new BinaryExpression(this.getExpression(e.expression(0)), op, this.getExpression(e.expression(1)))
       case e: GrammarParser.CompareExpressionContext =>
         val op = e.op.getType match {
           case GrammarParser.LEQ => BinaryExpression.LTEQ
