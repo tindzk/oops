@@ -1,0 +1,16 @@
+CLASS A IS
+
+END CLASS
+
+CLASS Main IS
+    METHOD main IS
+   		a: A;
+    BEGIN
+    	| BASE is a class-internal keyword, not an attribute. Even if the
+    	| language supported reflection, BASE and SELF should not show up
+    	| as a class attribute.
+    	IF a.BASE != NULL THEN
+    		WRITE 'O';
+    	END IF
+    END METHOD
+END CLASS

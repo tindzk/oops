@@ -47,10 +47,10 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   def resolveParameter(name: String): Option[Symbol] =
     parameters.find(_.name() == name)
 
-  override protected def resolve(name: String, requestingClass: Option[ClassSymbol]): Option[Symbol] =
-    resolveParameter(name) match {
+  override protected def resolve(ident: Identifier, requestingClass: Option[ClassSymbol]): Option[Symbol] =
+    resolveParameter(ident.name) match {
       case Some(m) => Some(m)
-      case None => super.resolve(name, requestingClass)
+      case None => super.resolve(ident, requestingClass)
     }
 
   def defPass(sem: SemanticAnalysis) {
@@ -69,30 +69,28 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
       }
     }
 
-    /* SELF points to this class. */
-    this.self = new VariableSymbol(new Identifier("_self"), sem.currentClass)
-
-    /* Register SELF. */
+    /* Register variable SELF pointing to this class. */
+    this.self = new VariableSymbol(new Identifier("SELF"), sem.currentClass)
+    this.self.accessLevel = AccessLevel.Private
+    this.self.declaringClass = Some(sem.currentClass)
     this.defineSymbol(this.self)
 
-    /* BASE represents the inherited class. Define symbol only if base class available. */
+    /* BASE represents the inherited class. Define symbol for all classes except for Object. */
     sem.currentClass.getSuperClass() match {
-      case Some(c) =>
-        this.base = new VariableSymbol(new Identifier("_base"), c)
+      case Some(superClass) =>
+        this.base = new VariableSymbol(new Identifier("BASE"), superClass)
+        this.base.accessLevel = AccessLevel.Private
+        this.base.declaringClass = Some(sem.currentClass)
         this.defineSymbol(this.base)
 
       case None =>
     }
 
     /* Register all parameters. */
-    for (v <- this.parameters) {
-      v.defPass(sem)
-    }
+    this.parameters.foreach(_.defPass(sem))
 
     /* Register all local variables. */
-    for (v <- this.locals) {
-      v.defPass(sem)
-    }
+    this.locals.foreach(_.defPass(sem))
 
     /* Set offsets for parameters. They are right before the return address (-1) on the stack. */
     var offset = -2

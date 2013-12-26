@@ -194,9 +194,9 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
       case e: GrammarParser.LiteralExpressionContext =>
         this.getLiteral(e.literal)
       case e: GrammarParser.SelfExpressionContext =>
-        new EvaluateExpression(new ResolvableSymbol(new Identifier("_self", pos)))
+        new EvaluateExpression(new ResolvableSymbol(new Identifier("SELF", pos)))
       case e: GrammarParser.BaseExpressionContext =>
-        new EvaluateExpression(new ResolvableSymbol(new Identifier("_base", pos)))
+        new EvaluateExpression(new ResolvableSymbol(new Identifier("BASE", pos)))
       case e: GrammarParser.MinusExpressionContext =>
         new UnaryExpression(UnaryExpression.MINUS, this.getExpression(e.expression), pos)
       case e: GrammarParser.NegateExpressionContext =>

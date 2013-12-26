@@ -31,10 +31,19 @@ abstract class Symbol(var identifier: Identifier) {
   def print(tree: TreeStream)
 
   def availableFor(clazz: Option[ClassSymbol]) = {
-    ((this.accessLevel == AccessLevel.Private) &&
-      (clazz.isDefined && (this.declaringClass.get eq clazz.get))) ||
-      (this.accessLevel == AccessLevel.Protected &&
-        (clazz.isDefined && this.declaringClass.get.isA(clazz.get))) ||
-      (this.accessLevel == AccessLevel.Public)
+    this.accessLevel match {
+      case AccessLevel.Public => true
+      case AccessLevel.Private =>
+        (clazz, this.declaringClass) match {
+          case (Some(c), Some(c2)) => c eq c2
+          case _ => false
+        }
+      case AccessLevel.Protected =>
+        (clazz, this.declaringClass) match {
+          /* isA checks the class hierarchy (as opposed to a simple reference check with `eq'). */
+          case (Some(c), Some(c2)) => c.isA(c2)
+          case _ => false
+        }
+    }
   }
 }

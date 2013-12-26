@@ -34,14 +34,14 @@ trait Scope {
   }
 
   /** Look up the passed identifier in this scope, or in parent scope if not declared here. */
-  protected def resolve(name: String, requestingClass: Option[ClassSymbol]): Option[Symbol] = {
-    this.symbols.get(name) match {
+  protected def resolve(ident: Identifier, requestingClass: Option[ClassSymbol]): Option[Symbol] = {
+    this.symbols.get(ident.name) match {
       case Some(sym) =>
         if (!sym.availableFor(requestingClass)) {
           if (requestingClass.isDefined) {
-            throw new CompileException(s"Symbol ${this.getScopeName}.${name} not accessible from within ${requestingClass.get.identifier.name}.")
+            throw new CompileException(s"Symbol ${ident.name} not accessible from within ${requestingClass.get.identifier.name}.${this.getScopeName}.", ident.position)
           } else {
-            throw new CompileException(s"Symbol ${this.getScopeName}.${name} not accessible.")
+            throw new CompileException(s"Symbol ${ident.name} not accessible from within ${this.getScopeName}.", ident.position)
           }
         }
 
@@ -50,21 +50,22 @@ trait Scope {
     }
 
     this.getParentScope match {
-      case Some(s) => s.resolve(name, requestingClass)
+      case Some(s) => s.resolve(ident, requestingClass)
       case None => None
     }
   }
 
   def resolveSymbol(ident: Identifier, requestingClass: Option[ClassSymbol]): Symbol =
-    resolve(ident.name, requestingClass) match {
+    resolve(ident, requestingClass) match {
       case Some(v) => v
       case None => throw new CompileException(s"Symbol ${ident.name} not found in scope '${this.getScopeName}'.", ident.position)
     }
 
-  def resolveClass(ident: Identifier): ClassSymbol =
-    resolve(ident.name, None) match {
+  def resolveClass(ident: Identifier): ClassSymbol = {
+    resolve(ident, None) match {
       case Some(c: ClassSymbol) => c
       case Some(c) => throw new CompileException(s"${ident.name} is not a class.", ident.position)
       case _ => throw new CompileException(s"Class symbol ${ident.name} not found.", ident.position)
     }
+  }
 }

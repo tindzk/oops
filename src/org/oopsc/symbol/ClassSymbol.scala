@@ -379,9 +379,9 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     }
   }
 
-  override protected def resolve(name: String, requestingClass: Option[ClassSymbol]): Option[Symbol] =
-    resolveMember(name) match {
+  override protected def resolve(ident: Identifier, requestingClass: Option[ClassSymbol]): Option[Symbol] =
+    resolveMember(ident.name) match {
       case Some(m) => Some(m)
-      case None => super.resolve(name, requestingClass)
+      case None => super.resolve(ident, requestingClass)
     }
 }

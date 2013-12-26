@@ -17,9 +17,8 @@ class Assignment(var leftOperand: Expression, var rightOperand: Expression) exte
     } else {
       this.leftOperand match {
         case left: EvaluateExpression =>
-          /* TODO Find a better solution. Also don't refer to _base or _self directly as this may collide. */
-          if (left.ref.declaration.get.identifier.name == "_base" ||
-              left.ref.declaration.get.identifier.name == "_self")
+          if (left.ref.declaration.get.identifier.name == "BASE" ||
+              left.ref.declaration.get.identifier.name == "SELF")
           {
             throw new CompileException("Cannot assign to BASE or SELF.", this.leftOperand.position)
           }

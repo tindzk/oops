@@ -1,11 +1,11 @@
 CLASS Main IS
     METHOD main IS BEGIN
-    	| BASE must point to Object.
-    	IF BASE != NULL THEN
+    	IF SELF # NULL THEN
     		WRITE 'O';
     	END IF
 
-    	IF BASE.BASE == NULL THEN
+    	| BASE must point to Object.
+    	IF BASE # NULL THEN
     		WRITE 'K';
     	END IF
     END METHOD
