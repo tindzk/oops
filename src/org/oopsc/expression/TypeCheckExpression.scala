@@ -43,13 +43,11 @@ class TypeCheckExpression(var oper: Expression, className: ResolvableClassSymbol
       code.println(s"$beginLabel:")
     }
 
-    code.println("MRM R5, (R5)") // R5 = dereferenced VMT.
-
-    code.println("ADD R2, R1") // Allocate space on the stack.
+    /* Dereference VMT. */
+    code.println("MRM R5, (R5)") // R5 = VMT of current class.
 
     code.println(s"$iterLabel:")
     code.println("MRR R6, R5") // R6 = VMT of current class.
-    code.println("MRM R5, (R5)") // R5 = VMT address of super class (offset 0 in VMT).
 
     code.println(s"MRI R7, ${this.className.identifier.name}")
     code.println("SUB R6, R7") // R6 is 0 if the class matches.
@@ -58,9 +56,9 @@ class TypeCheckExpression(var oper: Expression, className: ResolvableClassSymbol
     code.println(s"MRI R0, $endLabel")
 
     code.println(s"$nextLabel:")
+    code.println("MRM R5, (R5)") // R5 = VMT address of super class (offset 0 in VMT).
     code.println(s"JPC R5, $iterLabel") // Next iteration if the current class is not Object, i.e. R5 != 0.
-    code.println("MRI R5, 0") // Otherwise we found a type mismatch. Write the result on the stack.
-    code.println("MMR (R2), R5")
+    code.println("MMR (R2), R5") // Otherwise we found a type mismatch. Write the result on the stack (R5 = 0).
 
     code.println(s"$endLabel:")
   }
