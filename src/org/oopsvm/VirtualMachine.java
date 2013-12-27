@@ -20,7 +20,7 @@ public class VirtualMachine {
 
 	/**
 	 * MRR reg1, reg2.
-	 * Diese Instruktion speichert den Inhalt von Register <i>reg1</i> im Register <i>reg2</i>.
+	 * Diese Instruktion speichert den Inhalt von Register <i>reg2</i> im Register <i>reg1</i>.
 	 */
 	private final int MRR = 1;
 
