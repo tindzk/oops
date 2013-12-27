@@ -26,7 +26,7 @@ class TypeCheckExpression(var oper: Expression, className: ResolvableClassSymbol
 
   def generateCode(code: CodeStream) {
     code.println("; ISA")
-    this.oper.generateCode(code, true)
+    this.oper.generateCode(code, false)
 
     val endLabel = code.nextLabel
     val nextLabel = code.nextLabel
@@ -43,7 +43,7 @@ class TypeCheckExpression(var oper: Expression, className: ResolvableClassSymbol
       code.println(s"$beginLabel:")
     }
 
-    /* Dereference VMT. */
+    /* Dereference the object to get the VMT (offset 0 of the object). */
     code.println("MRM R5, (R5)") // R5 = VMT of current class.
 
     code.println(s"MRI R7, ${this.className.identifier.name}")
