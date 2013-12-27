@@ -46,10 +46,11 @@ class TypeCheckExpression(var oper: Expression, className: ResolvableClassSymbol
     /* Dereference VMT. */
     code.println("MRM R5, (R5)") // R5 = VMT of current class.
 
+    code.println(s"MRI R7, ${this.className.identifier.name}")
+
     code.println(s"$iterLabel:")
     code.println("MRR R6, R5") // R6 = VMT of current class.
 
-    code.println(s"MRI R7, ${this.className.identifier.name}")
     code.println("SUB R6, R7") // R6 is 0 if the class matches.
     code.println(s"JPC R6, $nextLabel") // Jump to next label if the class does not match.
     code.println("MMR (R2), R1") // Write the result on the stack.
