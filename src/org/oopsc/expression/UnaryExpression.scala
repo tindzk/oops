@@ -27,7 +27,8 @@ case class UnaryExpression(var operator: UnaryExpression.Operator, var operand: 
   }
 
   override def optimPass() : Expression = {
-    this.operand.optimPass() match {
+    this.operand = this.operand.optimPass()
+    this.operand match {
       case o: BooleanLiteralExpression =>
         this.operator match {
           case NOT =>
@@ -50,10 +51,10 @@ case class UnaryExpression(var operator: UnaryExpression.Operator, var operand: 
           /* NOT (NOT x) → x */
           o.operand
         } else {
-          o
+          this
         }
 
-      case o => o
+      case _ => this
     }
   }
 
