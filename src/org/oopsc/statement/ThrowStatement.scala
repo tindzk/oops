@@ -50,7 +50,7 @@ class ThrowStatement(var value: Expression, var position: Position = new Positio
     /* Pop the exception code from the stack. */
     code.println("SUB R2, R1")
 
-    /* Pass the exception to the inner-most exception handler and propagate it if
+    /* Pass the exception to the latest exception handler and propagate it if
      * necessary. */
     ThrowStatement.throwException(code)
 
