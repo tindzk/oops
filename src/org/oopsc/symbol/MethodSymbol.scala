@@ -121,7 +121,6 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     sem.leave()
   }
 
-  var hasReturnValue = false
   var terminates = false
 
   override def refPass(sem: SemanticAnalysis) {
@@ -143,11 +142,11 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     this.parameters.foreach(_.refPass(sem))
     this.locals.foreach(_.refPass(sem))
 
-    this.hasReturnValue = this.getResolvedReturnType ne Types.voidType
+    val hasReturnValue = this.getResolvedReturnType ne Types.voidType
     this.terminates = BranchEvaluator.terminates(sem, this)
 
-    if (this.hasReturnValue && !this.terminates) {
-      throw new CompileException("Method needs a return statement that is always reachable.", this.retType.position)
+    if (hasReturnValue && !this.terminates) {
+      throw new CompileException("Method needs a return or throw statement that is always reachable.", this.retType.position)
     }
 
     /* Reference pass for all statements. */
@@ -212,7 +211,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     /* Calculate size of stack space occupied by this method and its call, +2 for old stack frame and
      * return address.
      */
-    val size: Int = this.locals.size + this.parameters.size + 2
+    val size = this.locals.size + this.parameters.size + 2
 
     /* Make R2 point to the same address as before the method was called. */
     code.println("MRI R5, " + (size + 1))
@@ -251,14 +250,12 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
 
     code.println("; END METHOD " + this.identifier.name)
 
-    if (!(this.hasReturnValue) && terminates) {
-      /* If we encounter a `return' or `throw' in the normal control flow of the
-       * method, we do not need to generate the epilogue twice.
-       */
-      return
+    /* If we encounter a `return' or `throw' in the normal control flow of the
+     * method, we do not need to generate the epilogue twice.
+     */
+    if (!terminates) {
+      this.generateMethodEpilogue(code, "")
     }
-
-    this.generateMethodEpilogue(code, "")
   }
 
   /**
