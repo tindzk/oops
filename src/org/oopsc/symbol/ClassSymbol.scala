@@ -126,7 +126,9 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   /**
-   * Check whether the class dependencies represent an acyclic graph.
+   * Check whether the class dependencies represent an acyclic graph. This is
+   * done by traversing the class hierarchy recursively. If a class occurs more
+   * than once, a cycle was found.
    */
   def checkForCycles(encounteredClasses: List[ClassSymbol] = List.empty) {
     this.superClass match {
