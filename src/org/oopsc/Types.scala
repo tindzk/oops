@@ -27,9 +27,9 @@ object Types {
   /** Class `Boolean'. */
   final val boolClass = new ClassSymbol(new Identifier("Boolean"), objectClass)
 
-  /* Do not set ClassDeclaration.(int|bool)Class.objectSize manually as this
-   * value is going to be overwritten during the contextual analysis. The
-   * attribute is required for boxing as it holds the actual value.
+  /* Do not set (int|bool)Class.objectSize manually as this value is going to be
+   * overwritten during the contextual analysis. The attribute is required for
+   * boxing as it holds the actual value.
    */
   intClass.attributes += AttributeSymbol.apply(new Identifier("_value"), intType)
   boolClass.attributes += AttributeSymbol.apply(new Identifier("_value"), boolType)
