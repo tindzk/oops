@@ -6,11 +6,16 @@ import scala.collection.mutable.ListBuffer
 import org.oopsc.expression.BooleanLiteralExpression
 
 /**
- * @note The term `to terminate' may be misleading. Here, it is understood in
- *       its static sense (during the compilation time). Therefore, considering a
- *       method, we are merely determining statically if it is always returning a
- *       value (a total function). However, a method identified as `terminating' by
- *       our algorithm may still never terminate during run-time.
+ * @note The term `termination' may be misleading. Here, it is understood in its
+ * static sense when analysing the code during compilation time. Therefore,
+ * considering a method, we are merely determining statically if at least one
+ * branch is reachable that is returning or throwing an exception (i.e., jumping
+ * out of the method). However, a method identified as `terminating' by our
+ * algorithm may still not terminate during run-time (if a branch is taken that
+ * leads to an endless loop).
+ *
+ * Knowing whether a method terminates in at least one branch allows further
+ * code optimisations.
  */
 class Branch {
   var terminates = false
