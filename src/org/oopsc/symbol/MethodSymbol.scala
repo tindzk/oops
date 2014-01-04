@@ -121,7 +121,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     sem.leave()
   }
 
-  var terminates = false
+  var needsEpilogue = false
 
   override def refPass(sem: SemanticAnalysis) {
     sem.enter(this)
@@ -143,11 +143,16 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     this.locals.foreach(_.refPass(sem))
 
     val hasReturnValue = this.getResolvedReturnType ne Types.voidType
-    this.terminates = BranchEvaluator.terminates(sem, this)
+    val terminates = BranchEvaluator.terminates(sem, this)
 
-    if (hasReturnValue && !this.terminates) {
+    if (hasReturnValue && !terminates) {
       throw new CompileException("Method needs a return or throw statement that is always reachable.", this.retType.position)
     }
+
+    /* If we encounter a `return' or `throw' in the normal control flow of a
+     * method with return value, we do not need to generate the epilogue twice.
+     */
+    this.needsEpilogue = !hasReturnValue && !terminates
 
     /* Reference pass for all statements. */
     this.statements.foreach(_.refPass(sem))
@@ -250,10 +255,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
 
     code.println("; END METHOD " + this.identifier.name)
 
-    /* If we encounter a `return' or `throw' in the normal control flow of the
-     * method, we do not need to generate the epilogue twice.
-     */
-    if (!terminates) {
+    if (this.needsEpilogue) {
       this.generateMethodEpilogue(code, "")
     }
   }
