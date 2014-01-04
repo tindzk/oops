@@ -197,10 +197,12 @@ class SyntaxAnalysis(fileName: String, var printSymbols: Boolean) {
         new EvaluateExpression(new ResolvableSymbol(new Identifier("SELF", pos)))
       case e: GrammarParser.BaseExpressionContext =>
         new EvaluateExpression(new ResolvableSymbol(new Identifier("BASE", pos)))
-      case e: GrammarParser.MinusExpressionContext =>
-        new UnaryExpression(UnaryExpression.MINUS, this.getExpression(e.expression), pos)
-      case e: GrammarParser.NegateExpressionContext =>
-        new UnaryExpression(UnaryExpression.NOT, this.getExpression(e.expression), pos)
+      case e: GrammarParser.UnaryExpressionContext =>
+        if (e.SUB() != null) {
+          new UnaryExpression(UnaryExpression.MINUS, this.getExpression(e.expression), pos)
+        } else {
+          new UnaryExpression(UnaryExpression.NOT, this.getExpression(e.expression), pos)
+        }
       case e: GrammarParser.InstantiateExpressionContext =>
         new NewExpression(this.resolvableClassIdentifierFromToken(e.Identifier.getSymbol))
       case e: GrammarParser.OpExpressionContext =>

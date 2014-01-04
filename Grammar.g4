@@ -1,6 +1,7 @@
 /* See also http://media.pragprog.com/titles/tpantlr2/code/tour/Java.g4 */
 grammar Grammar;
 
+NOT: 'NOT';
 AND: 'AND';
 OR:  'OR';
 MOD: 'MOD';
@@ -99,11 +100,10 @@ expression
   | literal                                         # literalExpression
   | 'SELF'                                          # selfExpression
   | 'BASE'                                          # baseExpression
-  | 'NOT' expression                                # negateExpression
   | 'NEW' Identifier                                # instantiateExpression
   | Identifier arguments?                           # memberAccessExpression
   | expression '.' Identifier arguments?            # memberAccess2Expression
-  | '-' expression                                  # minusExpression
+  | (SUB | NOT) expression                          # unaryExpression
   | expression op=(MUL | DIV | MOD) expression      # opExpression
   | expression op=(ADD | SUB) expression            # opExpression
   | expression op=(LEQ | GEQ | LT | GT) expression  # opExpression
