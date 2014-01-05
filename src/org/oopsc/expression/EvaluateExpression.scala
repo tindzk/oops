@@ -120,9 +120,10 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
         code.println("; CAST")
         val arg = this.arguments(0)
 
+        /* Push the object reference on the stack (R2). */
         arg.generateCode(code, true)
 
-        /* TODO What is supposed to happen for Object(NULL) or Main(NULL)? */
+        /* TODO What is supposed to happen for casts such as Object(NULL) or Main(NULL)? */
 
         code.println("MRM R5, (R2)") // R5 = Evaluated value of this.oper.
 
@@ -134,7 +135,10 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
         code.println("MMR (R2), R5")
 
         code.println(s"$endLabel:")
-        /* Code to be executed after match or mismatch. */
+
+        /* Code to be executed after match or mismatch. If R2 was not set to NULL (upon a mismatch),
+         * it will now still contain the object reference.
+         */
 
       case sym: AttributeSymbol =>
         this._generateContextCode(code)
