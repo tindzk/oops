@@ -43,9 +43,11 @@ class IfStatement(_condition: Expression, _thenStatements: ListBuffer[Statement]
     this.branches = newBranches
     this.elseBranch = this.elseBranch.map(_.optimPass())
 
+    /* this.elseBranch may contain a NullStatement. Filter these elements out. */
+    this.elseBranch.filterNot(_.isInstanceOf[NullStatement])
+
     /* If no branches left, return NullStatement. */
     if (this.branches.isEmpty && this.elseBranch.isEmpty) {
-      /* TODO this.elseBranch may contain a NullStatement. */
       return new NullStatement
     }
 
