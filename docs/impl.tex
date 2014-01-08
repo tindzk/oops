@@ -1,0 +1,439 @@
+\documentclass{guide}
+
+\usepackage{url}
+
+\title{OOPS Compiler Implementation Details}
+\date{\today}
+
+%\lstset{
+%  numbers=left,
+%  frame=single,
+%  breaklines=true
+%}
+
+% A statement.
+\newcommand{\st}[1]{\texttt{#1}}
+% A constant.
+\newcommand{\const}[1]{\texttt{#1}}
+\newcommand{\type}[1]{\texttt{#1}}
+\newcommand{\keyword}[1]{\texttt{#1}}
+\newcommand{\oper}[1]{\texttt{#1}}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\chapter{Introduction}
+OOPS is a simple object-oriented programming language for teaching purposes. In
+this document, I am outlining my implementation of a compiler for the OOPS
+language. The compiler produces assembly code to be run by a virtual machine.
+
+The project was developped within the scope of the lecture
+``Übersetzerpraktikum'' held at the University of Bremen, Germany during the
+summer semester 2013. Even though a preliminary compiler, written in Java, was
+provided, I chose to rewrite it in Scala, resulting in a number of code
+reductions due to the expressiveness and the functional programming features of
+this language.
+
+If the following I refer to the compiler by \textit{oopsc} and the virtual
+machine as \textit{oopsvm}.
+
+\chapter{Overview}
+	\section{Language features}
+	\begin{itemize}
+		\item Simple and consistent syntax.
+		\item Limited language features; reduced to essential functionality.
+		\item Only two system calls for I/O; for processing standard input/output.
+		\item Exception support
+			\begin{itemize}
+				\item Exceptions can be caught or propagated.
+				\item Exception is thrown upon NULL pointer dereferencing.
+				\item Exception is thrown upon ``division by zero''.
+				\item Exception codes are Integer literals (or characters).
+				\item A default exception handler is defined.
+			\end{itemize}
+		\item Object-oriented.
+			\begin{itemize}
+				\item Methods have return values, parameters.
+				\item Classes have attributes.
+				\item Single inheritance with cycle detection.
+				\item Method overloading.
+				\item Late state binding: Virtual method calls and virtual method tables.
+				\item Access levels: public, private, protected.
+				\item Run-time type casts, type checking.
+				\item Primitive data types are exposed as class objects.
+				\item Automatic boxing/unboxing faciliates access to primitive data types.
+			\end{itemize}
+		\item Primitive data types: Void, NULL, Integer, Boolean, String.
+		\item Class data types: Object, Boolean, Integer.
+		\item Code optimisations: Evaluation of constant expressions.
+		\item Control structures: if-conditions, while-loops.
+		\item Statically typed.
+		\item Entry point is always \texttt{Main.main()}.
+		\item No garbage collection.
+		\item VM is register-based (in total 7), stack is heap size is static.
+	\end{itemize}
+
+\chapter{Installation}
+	\section{Compilation from the sources}
+		\subsection{Prerequisites}
+		For compiling oopsc manually, the following libraries and programs have to be
+		installed on the host system:
+
+		\begin{itemize}
+			\item Scala 2.10
+			\item ANTLR4
+			\item Python 3
+			\item Java 1.7
+		\end{itemize}
+
+		\subsection{Compilation}
+		To compile oopsc manually, we need to generate the grammar first:
+\begin{verbatim}
+./grm.sh
+\end{verbatim}
+
+		Then, we have to copy the Scala runtime libraries \texttt{scala-library.jar}
+		and \texttt{scala-reflect.jar} to \texttt{libs/}. These can be usually found
+		in the directory \texttt{/usr/share/scala/lib/}.
+
+		Finally, the script \texttt{build.py} is used to compile the whole project,
+		producing \texttt{oopsc.jar} and \texttt{oopsvm.jar}.
+
+	\section{Execution}
+		\subsection{Prerequisites}
+		For running oopsc or oopsvm on the target system the only required
+		prerequisites are the compiled JAR files  \texttt{oopsc.jar} and
+		\texttt{oopsvm.jar} as well as Java 1.7. The files are self-contained and
+		include already all dependencies.
+
+\chapter{Getting started}
+	The available options of the compiler can be optained as follows:
+
+\begin{verbatim}
+$ java -jar oopsc.jar --help
+oopsc 0.1 (c) 2013 Tim Nieradzik
+Usage: java -jar oopsc.jar [OPTION]... [input] [<output>]
+oopsc is an OOPS compiler.
+
+Options:
+
+  -a, --ast                 print AST after contextual analysis
+  -c, --code                enable code generation (default)
+      --nocode              disable code generation
+  -d, --debug               enable debug mode
+      --heap-size  <arg>    heap size (default = 100)
+  -o, --optim               enable optimisations
+      --stack-size  <arg>   stack size (default = 100)
+  -s, --symbols             show symbols from the syntax analysis
+  -h, --help                print help
+      --version             Show version of this program
+
+ trailing arguments:
+  input (required)        input file
+  output (not required)   output file (default: stdout)
+\end{verbatim}
+
+\chapter{Implementation}
+	This chapter is meant to provide pointers as to how and where the particular
+	tasks were implemented. Note that the code is sufficiently annotated with
+	comments describing the functioning or the reasoning behind the chosen approach
+	in more detail.
+
+	\section{Structural changes}
+	The original compiler used a self-written parser for the syntax analysis. This
+	was replaced by a ANTLR4 grammar which is transformed directly into Java code.
+	This change allowed a faster implementation of further language extensions and
+	made the code parsing less error-prone while providing effortless error
+	reporting.
+
+	Minor changes to the interfaces of the virtual machine had to be made in order
+	to allow seamless testing using JUnit. The instruction set remains compatible,
+	though.
+
+	Previously, the syntax tree was rewritten during the contextual analysis. This
+	lead to code that was difficult to grasp and to debug. But the previous
+	approach also massively created unnecessary objects. This rewriting was used
+	for inserting \texttt{SELF} into the syntax tree when referring to a local method or
+	attribute. This was made redundant by storing a context variable in
+	\texttt{EvaluateExpression} which would by default point to the \texttt{SELF} variable
+	of the current method (given that the expression that is to be evaluated is a
+	method or an attribute). Another case where the syntax tree was rewritten is
+	boxing. The logic was merged and moved into \texttt{Expression}.
+
+	Another invasive change was the introduction of a more modular symbol table. It
+	was designed to resemble the approach described in
+	\cite[p.~182ff]{Parr:2009:LIP:1823613}. This change resulted in a separation of
+	the contextual analysis into three passes: a definition pass, a referential
+	pass and an (optional) optimisation pass.
+
+	Finally, a read-only data segment (\textit{rodata}) in the resulting assembly code is
+	created. This made the implementation of strings (as opposed to characters)
+	trivial. oopsc implements rodata in a similar way as in the binary format ELF
+	with the only difference that the first element of each entry contains its size
+	whereas in ELF the rodata elements are usually NUL-terminated strings.
+
+	\section{Approaches for the development}
+	The entire project was developped using the distributed version control system
+	Git. This increased the pace of the development. For instance, occasionally
+	introduced bugs could be found relatively easy by bisecting the responsible
+	commit.
+
+	The chosen development approach was test-driven development (TDD) using JUnit4,
+	also contributing to reducing the commit sizes as well as obtaining a better
+	overview as to what is required to implement a certain feature. At the same
+	time this ensured the correct functioning of all language features and the
+	interoperability thereof. Regressions could be detected more quickly, reducing
+	the development time.
+
+	\section{TRUE, FALSE}
+	\texttt{TRUE} and \texttt{FALSE} being literals, they appear in the grammar
+	(\texttt{Grammar.g4}) under the rule \texttt{literal}. By analogy, an
+	\texttt{BooleanLiteralExpression} object is instantiated during the
+	syntax analysis phase, see also \texttt{SyntaxAnalysis.getLiteral()}.
+
+	\section{ELSE, ELSEIF}
+	Similarly to the implementation of \texttt{TRUE} and \texttt{FALSE} the grammar
+	was extended accordingly. This happens in the rule \texttt{statement}:
+
+\begin{verbatim}
+'IF' expression 'THEN' statements
+('ELSEIF' expression 'THEN' statements)*
+('ELSE' statements)?
+'END IF'
+\end{verbatim}
+
+    In \texttt{SyntaxAnalysis.getIfStatement()} the \texttt{ELSEIF} and
+    \texttt{ELSE} blocks are being taken into account.
+
+    \texttt{IfStatement} stores all \texttt{IF} and \texttt{ELSEIF} branches in
+    a list of tuples containing the expression as well as the statements. The
+    final \texttt{ELSE} branch is stored separately.
+
+    In \texttt{generateCode()} a label is generated for each branch. When the
+    current branch expression does not evaluate to \texttt{true}, a jump to the
+    next expression check is performed. This is repeated as long as no
+    \texttt{ELSEIF} branches is left. If the last expression also evaluated to
+    \texttt{false}, then the \texttt{ELSE} block is executed.
+
+	\section{Boolean arithmetic (AND, OR, NOT)}
+	In ANTLR4 the order of subrules defines implicitly their precedence. The
+	implementation in the grammar for \texttt{AND}, \texttt{OR} and \texttt{NOT}
+	therefore looks as follows:
+
+\begin{verbatim}
+| 'NOT' expression                                # negateExpression
+...
+| expression op=AND expression                    # opExpression
+| expression op=OR expression                     # opExpression
+\end{verbatim}
+	
+	The \texttt{NOT} operator is transformed into an \texttt{UnaryExpression}
+	whereas \texttt{AND} and \texttt{OR} become \texttt{BinaryExpression}s.
+
+	For the \texttt{NOT} operator the evaluated value just needs to be XOR-ed with
+	1. For the \texttt{AND} and \texttt{OR} operators the equivalent assembly
+	instructions are being used (see \texttt{generateCode()}). Both operators
+	require that the operands are \texttt{Boolean} values. This is verified in
+	\texttt{refPass()}. The optimisations were implemented in \texttt{optimPass()}.
+
+	\section{Pre-defined class Boolean}
+	The type class \texttt{Boolean} is defined in \texttt{Types}. The following
+	type checks were added to \texttt{ClassSymbol.isA()}:
+
+\begin{verbatim}
+if ((this eq Types.boolType) && (expected eq Types.boolClass)) {
+  return true
+}
+
+if ((this eq Types.boolClass) && (expected eq Types.boolType)) {
+  return true
+}
+\end{verbatim}
+
+    Boxing was implemented in \texttt{Expression.generateCode()} by
+    instantiating the \texttt{Boolean} class during runtime with the desired
+    value as the first attribute.
+
+	\section{Declaration of multiple user classes}
+	To support multiple user classes only one minor change to the grammar was
+	necessary:
+
+\begin{verbatim}
+program
+  : classDeclaration*;
+\end{verbatim}
+
+	Then, for each class defined by a program, we add an entry to the list of
+	user-defined classes in \texttt{Program} via \texttt{addClass()}. During the
+	semantic analysis, this list is extended by all built-in classes that wrap primitive
+	data types, namely \texttt{Object}, \texttt{Integer} and
+	\texttt{Boolean}.
+
+	\section{Methods with parameters}
+	The changes to the grammar were trivial.
+
+	When a new method is created, \texttt{MethodSymbol} must declare all parameters in the
+	definition pass. Then, we assign an offset to each parameter
+	denoting the position on the stack.
+
+	When a method is called (\texttt{EvaluateExpression}), the arguments must
+	be pushed on the stack, i.e. right before the return address.
+
+	Also, the contextual analysis of \texttt{EvaluateExpression} takes into account
+	any potential type mismatches. It also considers that the number of arguments
+	may mismatch the number of method parameters.
+
+	The object class \texttt{Types} contains all available built-in types and classes.
+	Also, an attribute \texttt{\_value} is added to \texttt{intClass} und \texttt{boolClass}
+	with the respective type.
+
+	\section{Constant expressions}
+	Scala allows matching class parameters. This feature facilitated the
+	implementation of evaluating constant expressions during compile-time. The
+	required transformations were implemented in \texttt{UnaryExpression} and
+	\texttt{BinaryExpression}.
+
+	\section{Methods with return values}
+	A method \texttt{resolvedType()} was introduced in \texttt{Expression}. It
+	is overridden in \texttt{EvaluateExpression} to return the result of a
+	method (as opposed to \texttt{Void}).
+
+\begin{verbatim}
+override def resolvedType(): ClassSymbol =
+  this.ref.declaration.get match {
+    case v: VariableSymbol => v.getResolvedType
+    case m: MethodSymbol => m.getResolvedReturnType
+    case c: ClassSymbol => c
+    case _ => super.resolvedType()
+  }
+\end{verbatim}
+
+	Each \texttt{MethodSymbol} must therefore store the return type which defaults
+	to \texttt{Void}. Minor sanity checks are performed during the referential
+	phase such as the following:
+
+\begin{verbatim}
+if ((sem.currentClass.name == "Main") && (this.identifier.name == "main")) {
+  if (this.parameters.size != 0) {
+    throw new CompileException("Main.main() must not have any parameters.",
+      this.identifier.position)
+  } else if (this.getResolvedReturnType ne Types.voidType) {
+    throw new CompileException("Main.main() must not have a non-void return type.",
+      this.identifier.position)
+  }
+}
+\end{verbatim}
+
+	A \texttt{BranchEvaluator} was introduced to determine whether a method always
+	terminates, i.e., whether at least one \texttt{RETURN} or \texttt{THROW} statement is reachable.
+	This also takes into account loops and \texttt{IF} statements where the condition always
+	evaluates to \texttt{true}. Knowing whether a method terminates with at least one branch
+	allows further code optimisations; in \texttt{MethodSymbol} the method epilogue
+	must only be generated if a method does not terminate and does not have a
+	return value. This is due to the fact that the newly introduced
+	\texttt{ReturnStatement} generates the method epilogue as well.
+
+	The result of the \texttt{BranchEvaluator} is also used during the contextual
+	analysis. An exception is thrown if a method is declared to have a return value
+	even though it does not terminate (does not return anything or does not throw
+	an exception).
+
+	\section{Exception handling}
+	At the very beginning of the assembly code of each program, the initial
+	exception frame needs to be initialised. As the exception stack is rewinded
+	traversing each \texttt{TRY} block, the default behaviour when no block is left is to jump
+	to an internal function dealing with uncaught exceptions. This function is defined in the
+	section \texttt{\_uncaughtException} which is situated right before
+	\texttt{\_end} in order to terminate the program afterwards.
+
+	The current exception frame is stored in
+	the program segment \texttt{\_currentExceptionFrame} which is basically a linked
+	list. An exception frame contains two elements. The first element denotes the
+	exception handler (the label referencing the \texttt{TRY} block) and the second element
+	the address pointing to the previous exception frame. When a new \texttt{TRY} block is
+	entered, the 
+	assembly code for pushing a new element on the exception stack is generated in \texttt{TryStatement}. In \texttt{ThrowStatement}
+	we then store the exception code in a register and jump to the latest exception
+	handler. In \texttt{TryStatement} this exception handler either catches the
+	exception (if the exception code matches), or propagates the exception to the
+	next exception hander. In both cases we need to pop one exception frame. When a
+	normal \texttt{RETURN} takes place (\texttt{ReturnStatement}), we have to drop all
+	exception frames (apart from the first one) as no exception occurred.
+
+	This outlines the basic flow of throwing and catching an exception. Please see
+	the particular classes for more detailed explanations.
+
+	Error lists and \texttt{CATCH} alternatives are supported. In
+	\texttt{Expression.generateDeRefCode()} we throw an exception when dereferencing
+	instances pointing to \texttt{NULL}. Also, \texttt{BinaryExpression.generateCode()} throws an
+	exception upon ``division by zero''.
+
+	\section{Inheritance (virtual methods, BASE)}
+	In each \texttt{ClassSymbol} the identifier of its super class must be stored.
+	If there is none, the super class is \texttt{Object}. During the referential
+	pass the super class is resolved to a \texttt{ClassSymbol} while checking
+	for potential cycles.
+
+	The referential pass is slightly more complicated than for the previous
+	assignments; we need to verify whether all overridden methods have the same
+	signature as its parent. Also, a method must not override an attribute in the
+	super class and vice-versa. Finally, an index in the virtual method table (VMT)
+	is assigned to each method, continuing the index of the super class. If a
+	method is overridden, the VMT index from its parent method is inherited. In
+	\texttt{isA()} the class hierarchy has to be taken into account, i.e., at least
+	one class in the super class chain has to match.
+
+	When calling a method in the super class, we need to take into account that a
+	static call must be effectuated instead. The left operand is therefore \texttt{BASE}
+	which is a variable declared in each class method. It
+	has the same offset as the \texttt{SELF} variable. However, as the type of the super
+	class is already known due to the inheritance chain during compile-time, it
+	also has this type. In \texttt{AccessExpression} the static call is handled as
+	follows:
+
+\begin{verbatim}
+this.leftOperand match {
+  case call: EvaluateExpression =>
+    if (call.ref.identifier.name == "BASE") {
+      this.rightOperand.generateContextCode(true)
+      this.rightOperand.setContext(
+        call.ref.declaration.get.asInstanceOf[VariableSymbol], true)
+    }
+  case _ =>
+}
+\end{verbatim}
+
+    For each registered class, a VMT is generated in the assembly code. This
+    is performed in \texttt{Program}. The first entry of the VMT is the reference
+    to the VMT of the super class. The latter is needed for dynamic type casts.
+
+    When a class is instantiated using \texttt{NewStatement}, the address to
+    VMT of the respective class is written at position 0 of the resulting
+    object.
+
+	A dynamic call is effectuated by obtaining the VMT from the object. Then, the
+	function address can be resolved from the VMT as the method offset is known
+	beforehand.
+
+	The logic for validating the access levels was mainly implemented in
+	\texttt{Scope.resolve()} under the use of the helper function
+	\texttt{Symbol.availableFor()}. The levels of overridden methods are validated
+	in the referential pass of \texttt{MethodSymbol}.
+
+	\section{Type checking and type casts}
+	The \texttt{TypeCheckExpression} implements the logic for dynamic type
+	checking. This is implemented by first resolving the object's VMT and then
+	following the class hierarchy until a match was found. To prevent replication,
+	a helper function \texttt{checkType()} was written. It is also used in
+	\texttt{EvaluateExpression} to check whether a conversion is valid. If so, the
+	top of the stack contains already the correct value. Otherwise, the value
+	is replaced by \texttt{NULL}.
+
+	\section{Garbage collection}
+	Due to time constraints it was not possible to implement garbage collection.
+
+%\bibliographystyle{abbrv}
+\bibliography{impl}
+
+\end{document}
