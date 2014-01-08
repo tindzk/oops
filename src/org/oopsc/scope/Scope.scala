@@ -6,20 +6,20 @@ import scala.collection.mutable.LinkedHashMap
 import org.oopsc.symbol.ClassSymbol
 
 trait Scope {
-  /** Scope in which this scope defined. For global scope, it's None */
+  /** Scope in which this scope defined. For the global scope, the value is None. */
   var enclosingScope: Option[Scope] = None
 
-  /** Symbol table, maps identifier to symbol object. */
+  /** Symbol table that maps an identifier to a symbol object. */
   protected var symbols = new LinkedHashMap[String, Symbol]()
 
   /**
-   * The parent scope denotes where to look next for a symbol lookup, i.e.,
-   * in the superclass or enclosing scope (default). This method may be overwritten
+   * The parent scope denotes where to look next upon a symbol lookup, i.e.,
+   * in the superclass or in the enclosing scope (default). This method may be overwritten
    * by a symbol class.
    */
   def getParentScope: Option[Scope] = this.enclosingScope
 
-  /* Returns the scope name. */
+  /** Returns the scope name. */
   def getScopeName: String
 
   /** Define a symbol in the current scope. */

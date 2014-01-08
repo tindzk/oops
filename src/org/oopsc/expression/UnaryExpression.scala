@@ -8,9 +8,6 @@ object UnaryExpression extends Enumeration {
   val MINUS, NOT = Value
 }
 
-/**
- * Represents an expression with an unary operator in the syntax tree.
- */
 case class UnaryExpression(var operator: UnaryExpression.Operator, var operand: Expression, _position: Position) extends Expression(_position) {
   import UnaryExpression._
 
@@ -70,7 +67,7 @@ case class UnaryExpression(var operator: UnaryExpression.Operator, var operand: 
   def generateCode(code: CodeStream) {
     this.operand.generateCode(code, false)
 
-    code.println("; " + this.operator)
+    code.println(s"; ${this.operator}")
     code.println("MRM R5, (R2)")
 
     this.operator match {

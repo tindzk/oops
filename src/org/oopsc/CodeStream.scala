@@ -5,28 +5,20 @@ import java.io.OutputStream
 import java.io.PrintStream
 
 /**
- * Die Klasse repräsentiert einen Datenstrom, in der Assemblercode des
- * auszugebenen Programms geschrieben wird. Da die Klasse von {@link java.io.PrintStream
- * PrintStream} erbt, können alle Methoden
- * verwendet werden, mit denen man auch auf die Konsole schreiben kann.
- * Zusätzlich kann die Klasse eindeutige Marken für den Assemblerquelltext
- * generieren.
+ * Data stream printing the assembly code, allows to generate unique markers
+ * based upon a custom namespace.
  */
 trait CodeStream extends PrintStream {
-  /** Das Attribut enthält den gerade gültigen Namensraum (Klasse + Methode). */
+  /** Current namespace, typically consisting of the class and method name. */
   private var namespace: String = null
 
-  /** Das Attribut ist ein Zähler zur Generierung eindeutiger Bezeichner. */
-  private var counter: Int = 0
+  /** Counter for generating unique markers. */
+  private var counter = 0
 
   /**
-   * Die Methode setzt den aktuell gültigen Namensraum.
-   * Dieser wird verwendet, um eindeutige Marken zu generieren.
-   * Derselbe Namensraum darf nur einmal während der Code-Erzeugung
-   * gesetzt werden.
+   * Sets the current namespace.
    *
-   * @param namespace
-	 * Den ab jetzt gültigen Namensraum (Klasse + Methode).
+   * @param namespace Namespace; must be a valid assembly identifier.
    */
   def setNamespace(namespace: String) {
     this.namespace = namespace
@@ -34,9 +26,7 @@ trait CodeStream extends PrintStream {
   }
 
   /**
-   * Die Methode erzeugt eine eindeutige Marke im aktuellen Namensraum.
-   *
-   * @return Die Marke.
+   * Generate a new marker.
    */
   def nextLabel: String = {
     this.counter += 1

@@ -8,7 +8,7 @@ abstract class LiteralExpression(`type`: ClassSymbol, position: Position = new P
 
   def _generateIntCode(value: Int, code: CodeStream) {
     /* Load value into R5. */
-    code.println("MRI R5, " + value)
+    code.println(s"MRI R5, $value")
 
     /* Allocate space on the stack. */
     code.println("ADD R2, R1")
@@ -28,7 +28,7 @@ case class BooleanLiteralExpression(value: Boolean, var _position: Position = ne
   }
 
   def generateCode(code: CodeStream) {
-    code.println("; " + this.value)
+    code.println(s"; ${this.value}")
     _generateIntCode(if (value) 1 else 0, code)
   }
 }
@@ -39,7 +39,7 @@ case class IntegerLiteralExpression(var value: Int, var _position: Position = ne
   }
 
   def generateCode(code: CodeStream) {
-    code.println("; " + this.value)
+    code.println(s"; ${this.value}")
     _generateIntCode(value, code)
   }
 
@@ -54,7 +54,7 @@ case class CharacterLiteralExpression(value: Char, var _position: Position = new
   }
 
   def generateCode(code: CodeStream) {
-    code.println("; " + this.value)
+    code.println(s"; ${this.value}")
     _generateIntCode(value, code)
   }
 
@@ -73,7 +73,7 @@ case class StringLiteralExpression(value: String, var _position: Position = new 
   }
 
   def generateCode(code: CodeStream) {
-    code.println(s"; ${this.value}: String")
+    code.println(s"; '${this.value}'")
     code.println(s"MRI R5, _rodata_${this.offset}")
     code.println("ADD R2, R1")
     code.println("MMR (R2), R5")

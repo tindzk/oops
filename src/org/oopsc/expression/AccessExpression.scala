@@ -4,15 +4,14 @@ import org.oopsc.symbol.VariableSymbol
 import org.oopsc.{ CodeStream, TreeStream, SemanticAnalysis }
 
 /**
- * Represents an expression with an attribute or method access
- * operator (i.e. dot) in the syntax tree.
+ * Represents a method or attribute access.
  */
 class AccessExpression(var leftOperand: Expression, rightOperand: EvaluateExpression) extends Expression(leftOperand.position) {
   override def refPass(sem: SemanticAnalysis) {
     this.leftOperand.refPass(sem)
 
     /* The left operand denotes the context. The right operand therefore does not
-     * need to resolve the context. */
+     * need to resolve the context in the assembly code. */
     this.rightOperand.generateContextCode(false)
 
     /* Deal with accesses to methods or attributes in the base class. */
@@ -27,7 +26,7 @@ class AccessExpression(var leftOperand: Expression, rightOperand: EvaluateExpres
 
     /* The scope of the right operand consists of the result type of the left
      * operand. */
-    this.rightOperand.scope = this.leftOperand.resolvedType()
+    this.rightOperand.setScope(this.leftOperand.resolvedType())
     this.rightOperand.refPass(sem)
 
     /* The type of this expression is always the type of the right operand. */

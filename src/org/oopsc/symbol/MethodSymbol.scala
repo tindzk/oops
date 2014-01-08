@@ -21,12 +21,14 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   /** The method body, i.e. its statements. */
   var statements = new ListBuffer[Statement]
 
-  /** Return type. Default type corresponds to Types.voidType. */
+  /** Return type. Default type corresponds to Void. */
   var retType: Identifier = null
   var resolvedRetType: Option[ClassSymbol] = None
 
   var vmtIndex = -1
   var overrides: Option[MethodSymbol] = None
+
+  private var needsEpilogue = false
 
   /**
    * Returns method name in an assembly string. By accessing the declaring class,
@@ -121,8 +123,6 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     sem.leave()
   }
 
-  var needsEpilogue = false
-
   override def refPass(sem: SemanticAnalysis) {
     sem.enter(this)
 
@@ -209,8 +209,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   /**
-   * @param customInstruction
-   * Will be inserted after fixing up the stack.
+   * @param customInstruction Will be inserted after fixing up the stack.
    */
   def generateMethodEpilogue(code: CodeStream, customInstruction: String) {
     /* Calculate size of stack space occupied by this method and its call, +2 for old stack frame and
@@ -219,7 +218,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     val size = this.locals.size + this.parameters.size + 2
 
     /* Make R2 point to the same address as before the method was called. */
-    code.println("MRI R5, " + (size + 1))
+    code.println(s"MRI R5, ${size + 1}")
     code.println("SUB R2, R5 ; Free the stack space.")
 
     if (customInstruction.length != 0) {
@@ -240,7 +239,7 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   def generateCode(code: CodeStream, tryContexts: Int) {
-    code.println("; METHOD " + this.identifier.name)
+    code.println(s"; METHOD ${this.identifier.name}")
     this.generateMethodPrologue(code)
 
     code.println("")
@@ -248,16 +247,16 @@ class MethodSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     code.println("")
 
     for (s <- this.statements) {
-      code.println("; Statement: " + s.getClass.getName)
+      code.println(s"; Statement: ${s.getClass.getName}")
       s.generateCode(code, tryContexts)
       code.println("")
     }
 
-    code.println("; END METHOD " + this.identifier.name)
-
     if (this.needsEpilogue) {
       this.generateMethodEpilogue(code, "")
     }
+
+    code.println("; END METHOD")
   }
 
   /**

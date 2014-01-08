@@ -6,8 +6,8 @@ import scala.collection.mutable.ListBuffer
 
 object TryStatement {
   /**
-   * After the exception frame allocated by a TRY block is not used anymore, this
-   * method must be called to unwind the stack to its state before.
+   * After the exception, the frame allocated by a TRY block is not used anymore. This
+   * method must be called to unwind the stack to its previous state.
    */
   def popException(code: CodeStream, restoreStackFp: Boolean) {
     /* Load current exception frame and dereference it. */
@@ -51,7 +51,7 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
   override def refPass(sem: SemanticAnalysis) {
     this.tryStatements.foreach(_.refPass(sem))
 
-    val allExprs = this.catchStatements.map(b => b._1.map(_.intValue)).flatten
+    val allExprs = this.catchStatements.flatMap(b => b._1.map(_.intValue))
     if (allExprs.size != allExprs.toSet.size) {
       throw new CompileException(s"All CATCH expressions must be unique.", this.position)
     }
@@ -108,9 +108,9 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
 
     var catchLabel = code.nextLabel
 
-    /* Push address to the exception handler on the stack, denotes at the same
+    /* Push address to the exception handler on the stack. Denotes at the same
      * time the beginning of our new exception frame. */
-    code.println("MRI R5, " + catchLabel)
+    code.println(s"MRI R5, $catchLabel")
     code.println("ADD R2, R1")
     code.println("MMR (R2), R5")
 
@@ -133,7 +133,7 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
     this.tryStatements.foreach(_.generateCode(code, tryContexts + 1))
 
     /* This instruction is only reached if no exception was thrown. */
-    code.println("MRI R0, " + endLabel)
+    code.println(s"MRI R0, $endLabel")
 
     for ((exprs, stmts) <- this.catchStatements) {
       /* An exception was thrown. */
@@ -146,20 +146,20 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
         catchLabel = code.nextLabel
 
         /* When an exception is thrown, the associated error code is stored in R7. */
-        code.println("MRI R5, " + expr.intValue)
+        code.println(s"MRI R5, ${expr.intValue}")
         code.println("SUB R5, R7")
 
-        /* If entry.getKey().value == error code... */
+        /* If error code matches... */
         code.println("ISZ R5, R5")
 
         /* ...then jump to the statement block of this catch branch. */
-        code.println("JPC R5, " + catchStatementLabel)
+        code.println(s"JPC R5, $catchStatementLabel")
 
         /* Otherwise jump to next catch. */
-        code.println("MRI R0, " + catchLabel)
+        code.println(s"MRI R0, $catchLabel")
       }
 
-      code.println(catchStatementLabel + ":")
+      code.println(s"$catchStatementLabel:")
 
       /* The exception was caught. Therefore, pop the exception off the stack
        * before executing the statements. */
@@ -168,12 +168,12 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
       stmts.foreach(_.generateCode(code, tryContexts))
 
       /* Jump to the end of the TRY block. */
-      code.println("MRI R0, " + endLabel)
+      code.println(s"MRI R0, $endLabel")
       code.println("; END CATCH")
     }
 
     /* The exception could not be dealt with. */
-    code.println(catchLabel + ":")
+    code.println(s"$catchLabel:")
 
     /* Pop the exception off the stack, restoring the stack frame pointer. */
     TryStatement.popException(code, true)
@@ -182,6 +182,6 @@ class TryStatement(var tryStatements: ListBuffer[Statement], position: Position)
     ThrowStatement.throwException(code)
 
     code.println("; END TRY")
-    code.println(endLabel + ":")
+    code.println(s"$endLabel:")
   }
 }

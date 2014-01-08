@@ -10,9 +10,6 @@ object BinaryExpression extends Enumeration {
   val EQ, NEQ, GT, GTEQ, LT, LTEQ, PLUS, MINUS, MUL, DIV, MOD, AND, OR, NOT = Value
 }
 
-/**
- * Represents an expression with a binary operator in the syntax tree.
- */
 class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpression.Operator, var rightOperand: Expression) extends Expression(leftOperand.position) with Logging {
   import BinaryExpression._
 
@@ -141,9 +138,9 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
         val value = l.value != r.value
         return BooleanLiteralExpression(value, this.position)
       case (l@IntegerLiteralExpression(value, _), r@UnaryExpression(UnaryExpression.MINUS, _, _), MUL) =>
-          /* c * (-x) → -c * x */
-          l.value = -l.value
-          this.rightOperand = r.operand
+        /* c * (-x) → -c * x */
+        l.value = -l.value
+        this.rightOperand = r.operand
       case (l@IntegerLiteralExpression(value, _), r@UnaryExpression(UnaryExpression.MINUS, _, _), DIV) =>
         /* c / -x → -c / x */
         l.value = -l.value
@@ -204,10 +201,12 @@ class BinaryExpression(var leftOperand: Expression, var operator: BinaryExpressi
   }
 
   def generateCode(code: CodeStream) {
-    /* If one of the operands is NULL, then the other one must be an object.
-     * Box the value if this is the case. */
-    this.leftOperand.generateCode(code, (this.leftOperand.resolvedType() eq Types.nullType))
-    this.rightOperand.generateCode(code, (this.rightOperand.resolvedType() eq Types.nullType))
+    /* If one of the operands is NULL, then the other one must be an object, too.
+     * Box the other value if this is the case. */
+    val box = (this.leftOperand.resolvedType() eq Types.nullType) || (this.rightOperand.resolvedType() eq Types.nullType)
+
+    this.leftOperand.generateCode(code, box)
+    this.rightOperand.generateCode(code, box)
 
     code.println("; " + this.operator)
 

@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import org.rogach.scallop._
 
 class Conf(args : Seq[String]) extends ScallopConf(args) {
-  version("oopsc 0.1 (c) 2013 Tim Nieradzik")
+  version(s"oopsc ${OOPSC.Version} (c) 2013-2014 Tim Nieradzik")
   banner("""Usage: java -jar oopsc.jar [OPTION]... [input] [<output>]
            |oopsc is an OOPS compiler.
            |
@@ -24,6 +24,8 @@ class Conf(args : Seq[String]) extends ScallopConf(args) {
 }
 
 object OOPSC extends Logging {
+  val Version = "0.1"
+
   def main(args: Array[String]) {
     val conf = new Conf(args)
 

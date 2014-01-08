@@ -9,13 +9,13 @@ import org.oopsc.symbol._
  */
 class ReadStatement(var operand: Expression) extends Statement {
   /** An expression for creating a new object with the type Integer. */
-  var newInt: Expression = new NewExpression(new ResolvableClassSymbol(new Identifier("Integer")))
+  private var newInt = new NewExpression(new ResolvableClassSymbol(new Identifier("Integer")))
 
   override def refPass(sem: SemanticAnalysis) {
     this.operand.refPass(sem)
 
     if (!this.operand.lValue) {
-      throw new CompileException("Lvalue expected", this.operand.position)
+      throw new CompileException("Variable reference expected.", this.operand.position)
     }
 
     this.operand.resolvedType.check(Types.intClass, this.operand.position)
@@ -35,25 +35,26 @@ class ReadStatement(var operand: Expression) extends Statement {
   }
 
   override def generateCode(code: CodeStream, tryContexts: Int) {
-    code.println("; READ lvalue ablegen")
+    code.println("; READ")
+    code.println("; Push operand (lvalue) on the stack.")
     this.operand.generateCode(code)
 
-    code.println("; READ Speicher allokieren")
+    code.println("; Allocate memory for the character.")
     this.newInt.generateCode(code)
 
     code.println("; READ")
     code.println("MRM R5, (R2)") /* R2 points to a boxed Integer value. */
 
     /* Skip header. */
-    code.println("MRI R6, " + ClassSymbol.HEADERSIZE)
+    code.println(s"MRI R6, ${ClassSymbol.HEADERSIZE}")
     code.println("ADD R5, R6")
 
-    code.println("SYS 0, 6 ; Gelesenen Wert in R6 ablegen")
-    code.println("MMR (R5), R6 ; Zeichen in neuen Integer schreiben")
-    code.println("MRM R5, (R2) ; Neuen Integer vom Stapel entnehmen")
+    code.println("SYS 0, 6 ; Store read value in R6.")
+    code.println("MMR (R5), R6 ; Set the value of the Integer object to the read character.")
+    code.println("MRM R5, (R2) ; Read the allocated object reference from the stack.")
     code.println("SUB R2, R1")
-    code.println("MRM R6, (R2) ; Ziel vom Stapel entnehmen")
+    code.println("MRM R6, (R2) ; Read destination from the stack.")
     code.println("SUB R2, R1")
-    code.println("MMR (R6), R5 ; Zuweisen")
+    code.println("MMR (R6), R5 ; Assign.")
   }
 }

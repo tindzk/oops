@@ -20,8 +20,8 @@ class VariableSymbol(ident: Identifier) extends Symbol(ident) {
   }
 
   /**
-   * Die Position der Variablen im Stapelrahmen bzw. des Attributs im Objekt.
-   * Dies wird während der semantischen Analyse eingetragen.
+   * Position of the variable in the stack frame, or the position of the attribute
+   * in the object. Set during the contextual analysis.
    */
   var offset = 0
 

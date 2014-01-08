@@ -6,11 +6,10 @@ import org.oopsc.symbol._
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Represents a variable/attribute access or method call expression in the syntax tree.
+ * Represents a variable/attribute access or a method call.
  */
 class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.identifier.position) {
-  var scope: Scope = null
-
+  protected var scope: Scope = null
   protected var context: VariableSymbol = null
   protected var isStaticContext = false
   protected var generateContextCode = true
@@ -26,15 +25,17 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
   }
 
   /**
-   * Sets a (static) context. By default, methods are called dynamically by resolving the target
-   * index from the VMT to which the object counts to. A static context bypasses the VMT and calls
-   * the method directly. This method can be used for calling methods in the base class.
-   *
-   * @param context
+   * Sets a static/dynamic context. By default, methods are called dynamically by resolving the target
+   * index from the VMT to which the object points to. A static context bypasses the VMT and calls
+   * the method directly. This method can be used for calling methods from the base class.
    */
   def setContext(context: VariableSymbol, isStatic: Boolean) {
     this.context = context
     this.isStaticContext = isStatic
+  }
+
+  def setScope(scope: Scope) {
+    this.scope = scope
   }
 
   override def refPass(sem: SemanticAnalysis) {
@@ -141,17 +142,16 @@ class EvaluateExpression(var ref: ResolvableSymbol) extends Expression(ref.ident
          */
 
       case sym: AttributeSymbol =>
-        this._generateContextCode(code)
-
-        /* Stored in the class object. */
+        /* An attribute is stored in the class object. */
         code.println("; Referencing attribute " + this.ref.identifier.name)
+        this._generateContextCode(code)
         code.println("MRM R5, (R2)")
         code.println("MRI R6, " + sym.offset)
         code.println("ADD R5, R6")
         code.println("MMR (R2), R5")
 
       case sym: VariableSymbol =>
-        /* Stored in the stack frame. */
+        /* A variable is stored in the stack frame. */
         code.println("; Referencing local variable " + this.ref.identifier.name)
         code.println("MRI R5, " + sym.offset)
         code.println("ADD R5, R3")

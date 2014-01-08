@@ -23,10 +23,9 @@ abstract class Symbol(var identifier: Identifier) {
   def refPass(sem: SemanticAnalysis)
 
   /**
-   * Die Methode gibt diese Deklaration in einer Baumstruktur aus.
+   * Prints declaration in a tree structure.
    *
-   * @param tree
-   * Der Strom, in den die Ausgabe erfolgt.
+   * @param tree Output stream.
    */
   def print(tree: TreeStream)
 
@@ -40,7 +39,7 @@ abstract class Symbol(var identifier: Identifier) {
         }
       case AccessLevel.Protected =>
         (clazz, this.declaringClass) match {
-          /* isA checks the class hierarchy (as opposed to a simple reference check with `eq'). */
+          /* isA() checks the class hierarchy (as opposed to a simple reference check with `eq'). */
           case (Some(c), Some(c2)) => c.isA(c2)
           case _ => false
         }

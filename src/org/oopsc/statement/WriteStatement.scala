@@ -29,12 +29,13 @@ class WriteStatement(var operand: Expression) extends Statement {
   }
 
   override def generateCode(code: CodeStream, tryContexts: Int) {
-    code.println("; WRITE operand code")
-    this.operand.generateCode(code, false)
-
     code.println("; WRITE")
 
+    code.println("; Operand code.")
+    this.operand.generateCode(code, false)
+
     if (this.operand.isInstanceOf[StringLiteralExpression]) {
+      code.println("; String literal.")
       code.println("MRM R5, (R2)") /* R5 contains the address pointing to the string length. */
       code.println("SUB R2, R1") /* Clean stack. */
       code.println("MRM R6, (R5)") /* R6 is our counter that will be decreased when a character was printed. */
@@ -58,5 +59,7 @@ class WriteStatement(var operand: Expression) extends Statement {
       code.println("SUB R2, R1")
       code.println("SYS 1, 5")
     }
+
+    code.println("; END WRITE")
   }
 }

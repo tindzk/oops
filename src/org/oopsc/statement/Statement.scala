@@ -22,22 +22,19 @@ abstract class Statement {
   def optimPass() = this
 
   /**
-   * Die Methode gibt diese Anweisung in einer Baumstruktur aus.
+   * Prints statement in a tree structure.
    *
-   * @param tree
-   * Der Strom, in den die Ausgabe erfolgt.
+   * @param tree Output stream.
    */
   def print(tree: TreeStream)
 
   /**
-   * Die Methode generiert den Assembler-Code für diese Anweisung. Sie geht
-   * davon aus, dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
+   * Generates assembly code for the statement. Requires prior completion of the
+   * contextual analysis.
    *
-   * @param code
-   * Der Strom, in den die Ausgabe erfolgt.
-   * @param tryContexts
-   * Current number of TRY blocks. May be used to inject instructions for unwinding
-   * the stack (as needed for RETURN statements in TRY blocks).
+   * @param code Output stream.
+   * @param tryContexts Current number of TRY blocks. May be used to inject instructions
+   *                    for unwinding the stack (as needed for RETURN statements in TRY blocks).
    */
   def generateCode(code: CodeStream, tryContexts: Int)
 }

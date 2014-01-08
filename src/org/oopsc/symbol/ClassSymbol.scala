@@ -8,46 +8,38 @@ import org.oopsc.scope.Scope
 
 object ClassSymbol {
   /**
-   * Konstante für die Größe der Verwaltungsinformation am Anfang eines jeden Objekts.
-   * As of now, the header only contains an address to the VMT of the object.
+   * Constant for the size of the header at the beginning of each object.
+   * As of now, the header only contains an address to the object's VMT.
    */
   final val HEADERSIZE = 1
 
   /**
-   * Die Methode erzeugt eine Ausnahme für einen Typfehler. Sie wandelt dabei intern verwendete
-   * Typnamen in die auch außen sichtbaren Namen um.
+   * Throws an exception for a type mismatch, converting the type names into a string.
    *
-   * @param expected
-   * Der Typ, der nicht kompatibel ist.
-   * @param position
-   * Die Stelle im Quelltext, an der der Typfehler gefunden wurde.
-   * @throws CompileException
-   * Die Meldung über den Typfehler.
+   * @param expected Expected type.
+   * @param position Position in the source code.
    */
   def typeError(expected: ClassSymbol, given: ClassSymbol, position: Position) {
     throw new CompileException(s"Type mismatch: ${expected.identifier.name} expected, ${given.identifier.name} given.", position)
   }
 }
 
-/**
- * superClass - This is the superclass not enclosingScope field. We still record
- *  the enclosing scope so we can push in and pop out of class defs.
- */
 class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   /** List of all fields and methods. */
   var members = new LinkedHashMap[String, Symbol]()
 
-  /** Die Attribute dieser Klasse. */
+  /** Attributes declared in this class. */
   var attributes = new ListBuffer[VariableSymbol]
 
-  /** Die Methoden dieser Klasse. */
+  /** Methods declared in this class. */
   var methods = new ListBuffer[MethodSymbol]
 
+  /** Parent class. */
   var superClass: Option[ResolvableClassSymbol] = None
 
   /**
-   * Die Größe eines Objekts dieser Klasse. Die Größe wird später bestimmt.
-   * Default size for all objects.
+   * The size of an object in this class. The exact size will be determined
+   * during the referential pass. The minimum size for all objects is the header size.
    */
   var objectSize = ClassSymbol.HEADERSIZE
 
@@ -75,7 +67,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
 
   /**
    * Generates a VMT for the current class, including its sub-classes. Requires
-   * that the contextual analysis was performed before.
+   * that the contextual analysis was previously performed.
    */
   def generateVMT = this.collectMethods().sortBy(_.vmtIndex)
 
@@ -171,13 +163,10 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
             case None =>
           }
 
-          base.getAttribute(m.identifier.name) match {
-            case Some(baseAttribute) =>
-              throw new CompileException(
-                s"The method ${this.identifier.name}.${m.identifier.name}() is overriding a method of its base class ${base.identifier.name}.",
-                identifier.position)
-
-            case None =>
+          if (base.getAttribute(m.identifier.name).isDefined) {
+            throw new CompileException(
+              s"The method ${this.identifier.name}.${m.identifier.name}() is overriding a method of its base class ${base.identifier.name}.",
+              identifier.position)
           }
         }
 
@@ -217,7 +206,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
         }
     }
 
-    // Attributtypen auflösen und Indizes innerhalb des Objekts vergeben.
+    /* Resolve attribute types and assign indices. */
     for (a <- this.attributes) {
       a.refPass(sem)
       a.offset = this.objectSize
@@ -246,20 +235,19 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     this.methods.find(_.name() == name)
 
   /**
-   * Generiert den Assembler-Code für diese Klasse. Dabei wird davon ausgegangen,
-   * dass die Kontextanalyse vorher erfolgreich abgeschlossen wurde.
+   * Generates assembly code for this class. Requires prior completion of the
+   * contextual analysis.
    *
-   * @param code
-   * Der Strom, in den die Ausgabe erfolgt.
+   * @param code Output stream.
    */
   def generateCode(code: CodeStream) {
-    code.println("; CLASS " + this.identifier.name)
+    code.println(s"; CLASS ${this.identifier.name}")
 
     for (m <- this.methods) {
       m.generateCode(code, 0)
     }
 
-    code.println("; END CLASS " + this.identifier.name)
+    code.println("; END CLASS")
   }
 
   override def print(tree: TreeStream) {
@@ -269,22 +257,14 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     if (!this.attributes.isEmpty) {
       tree.println("ATTRIBUTES")
       tree.indent
-
-      for (a <- this.attributes) {
-        a.print(tree)
-      }
-
+      this.attributes.foreach(_.print(tree))
       tree.unindent
     }
 
     if (!this.methods.isEmpty) {
       tree.println("METHODS")
       tree.indent
-
-      for (m <- this.methods) {
-        m.print(tree)
-      }
-
+      this.methods.foreach(_.print(tree))
       tree.unindent
     }
 
@@ -292,16 +272,10 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   /**
-   * Die Methode prüft, ob dieser Typ kompatibel mit einem anderen Typ ist.
-   * Sollte das nicht der Fall sein, wird eine Ausnahme mit einer Fehlermeldung generiert.
+   * Checks the compatibility to the given type. Throws an exception upon type mismatch.
    *
-   * @param expected
-   * Der Typ, mit dem verglichen wird.
-   * @param position
-   * Die Position im Quelltext, an der diese Überprüfung
-   * relevant ist. Die Position wird in der Fehlermeldung verwendet.
-   * @throws CompileException
-   * Die Typen sind nicht kompatibel.
+   * @param expected Expected type.
+   * @param position Position in the source code.
    */
   def check(expected: ClassSymbol, position: Position) {
     if (!this.isA(expected)) {
@@ -310,16 +284,14 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
   }
 
   /**
-   * Die Methode prüft, ob dieser Typ kompatibel mit einem anderen Typ ist.
+   * Checks the compatibility to the given type.
    *
-   * @param expected
-   * Der Typ, mit dem verglichen wird.
-   * @return Sind die beiden Typen sind kompatibel?
+   * @param expected Expected type.
    */
   def isA(expected: ClassSymbol): Boolean = {
-    // Spezialbehandlung für null, das mit allen Klassen kompatibel ist,
-    // aber nicht mit den Basisdatentypen _Integer und _Boolean sowie auch nicht
-    // an Stellen erlaubt ist, wo gar kein Wert erwartet wird.
+    /* Special handling for NULL which is compatible to all classes except for
+     * built-in types such as Integer, Boolean and Void.
+     */
     if ((this eq Types.nullType) &&
       (expected ne Types.intType) &&
       (expected ne Types.boolType) &&
@@ -327,10 +299,11 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
       return true
     }
 
-    /* Type promotions for built-in types integer and boolean. */
+    /* Type promotions for built-in types Integer and Boolean. */
     if ((this eq Types.intType) && (expected eq Types.intClass)) {
       return true
     }
+
     if ((this eq Types.intClass) && (expected eq Types.intType)) {
       return true
     }
@@ -338,6 +311,7 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     if ((this eq Types.boolType) && (expected eq Types.boolClass)) {
       return true
     }
+
     if ((this eq Types.boolClass) && (expected eq Types.boolType)) {
       return true
     }
@@ -359,13 +333,14 @@ class ClassSymbol(ident: Identifier) extends ScopedSymbol(ident) {
     superClass match {
       case Some(c) =>
         c.declaration match {
-          case Some(s) => Some(s) // if not root object, return super
+          case Some(s) => Some(s)
           case None => enclosingScope
         }
-      case None => enclosingScope // globals
+
+      case None => enclosingScope
     }
 
-  /** For a.b, only look in a's class hierarchy to resolve b. */
+  /** For access such as a.b, only look in a's class hierarchy to resolve b. */
   def resolveMember(name: String): Option[Symbol] = {
     members.get(name) match {
       case Some(m) => return Some(m)

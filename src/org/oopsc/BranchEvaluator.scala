@@ -28,7 +28,7 @@ class Branch {
 object BranchEvaluator {
   /**
    * Constructs a tree for the given statements, notably all branches. This
-   * method is called recursively, taking into all nesting levels.
+   * method is called recursively, taking into account all nesting levels.
    */
   protected def constructTree(sem: SemanticAnalysis, parent: Branch, stmts: ListBuffer[Statement]) {
     for (stmt <- stmts) {
@@ -60,7 +60,7 @@ object BranchEvaluator {
           }
 
         case whileStmt: WhileStatement =>
-          /* Only consider while statements if the condition is always true. */
+          /* Only consider while-statements if the condition is always true. */
           whileStmt.condition match {
             case BooleanLiteralExpression(true, _) =>
               val branch = new Branch

@@ -34,11 +34,7 @@ class WhileStatement(var condition: Expression, var statements: ListBuffer[State
     if (!this.statements.isEmpty) {
       tree.println("DO")
       tree.indent
-
-      for (s <- this.statements) {
-        s.print(tree)
-      }
-
+      this.statements.foreach(_.print(tree))
       tree.unindent
     }
 
@@ -50,18 +46,18 @@ class WhileStatement(var condition: Expression, var statements: ListBuffer[State
     val endLabel = code.nextLabel
 
     code.println("; WHILE")
-    code.println(whileLabel + ":")
+    code.println(s"$whileLabel:")
 
     this.condition match {
       case BooleanLiteralExpression(true, _) =>
-        /* Minor optimisation: No need to generate evaluation code for the true literal. */
+        /* Minor optimisation: No need to generate evaluation code for the `true' literal. */
       case _ =>
         this.condition.generateCode(code, false)
 
-        code.println("MRM R5, (R2) ; Bedingung vom Stapel nehmen")
+        code.println("MRM R5, (R2) ; Take condition from the stack.")
         code.println("SUB R2, R1")
-        code.println("ISZ R5, R5 ; Wenn 0, dann")
-        code.println("JPC R5, " + endLabel + " ; Schleife verlassen")
+        code.println("ISZ R5, R5 ; If 0, then...")
+        code.println(s"JPC R5, $endLabel ; ...leave the loop.")
     }
 
     code.println("; DO")
@@ -70,8 +66,8 @@ class WhileStatement(var condition: Expression, var statements: ListBuffer[State
       s.generateCode(code, tryContexts)
     }
 
+    code.println(s"MRI R0, $whileLabel ; Another iteration.")
     code.println("; END WHILE")
-    code.println("MRI R0, " + whileLabel)
     code.println(endLabel + ":")
   }
 }

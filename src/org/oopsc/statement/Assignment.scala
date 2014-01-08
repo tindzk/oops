@@ -13,7 +13,7 @@ class Assignment(var leftOperand: Expression, var rightOperand: Expression) exte
     this.rightOperand.refPass(sem)
 
     if (!this.leftOperand.lValue) {
-      throw new CompileException("Lvalue expected", this.leftOperand.position)
+      throw new CompileException("Variable reference expected.", this.leftOperand.position)
     } else {
       this.leftOperand match {
         case left: EvaluateExpression =>
@@ -45,15 +45,16 @@ class Assignment(var leftOperand: Expression, var rightOperand: Expression) exte
   }
 
   override def generateCode(code: CodeStream, tryContexts: Int) {
-    code.println("; ASSIGNMENT code for left operand")
-    this.leftOperand.generateCode(code)
-    code.println("; ASSIGNMENT code for right operand")
-    this.rightOperand.generateCode(code, true)
     code.println("; ASSIGNMENT")
-    code.println("MRM R5, (R2) ; Rechten Wert vom Stapel nehmen")
+    code.println("; Left operand.")
+    this.leftOperand.generateCode(code)
+    code.println("; Right operand.")
+    this.rightOperand.generateCode(code, true)
+    code.println("MRM R5, (R2) ; Take right value from the stack.")
     code.println("SUB R2, R1")
-    code.println("MRM R6, (R2) ; Referenz auf linken Wert vom Stapel nehmen")
+    code.println("MRM R6, (R2) ; Take reference to the left value from the stack.")
     code.println("SUB R2, R1")
-    code.println("MMR (R6), R5 ; Zuweisen")
+    code.println("MMR (R6), R5 ; Assign.")
+    code.println("; END ASSIGNMENT")
   }
 }
